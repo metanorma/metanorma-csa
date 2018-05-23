@@ -4,7 +4,7 @@ module IsoDoc
   module Csand
     # A {Converter} implementation that generates CSAND output, and a document
     # schema encapsulation of the document for validation
-    class CsandConvert < IsoDoc::Convert
+    class Convert < IsoDoc::Convert
       def html_doc_path(file)
         File.join(File.dirname(__FILE__), File.join("html", file))
       end
@@ -13,8 +13,8 @@ module IsoDoc
         super
         @htmlstylesheet = generate_css(html_doc_path("htmlstyle.scss"), true, default_fonts(options))
         # @standardstylesheet = generate_css(html_doc_path("csd.scss"), true, default_fonts(options))
-        @htmlcoverpage = html_doc_path("html_csd_titlepage.html")
-        @htmlintropage = html_doc_path("html_csd_intro.html")
+        @htmlcoverpage = html_doc_path("html_csand_titlepage.html")
+        @htmlintropage = html_doc_path("html_csand_intro.html")
         @scripts = html_doc_path("scripts.html")
         set_metadata(:status, "XXX")
       end

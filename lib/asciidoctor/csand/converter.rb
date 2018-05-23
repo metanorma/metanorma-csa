@@ -11,7 +11,7 @@ module Asciidoctor
     # schema encapsulation of the document for validation
     class Converter < ISO::Converter
 
-      register_for "csd"
+      register_for "csand"
 
       def metadata_author(node, xml)
         xml.contributor do |c|
