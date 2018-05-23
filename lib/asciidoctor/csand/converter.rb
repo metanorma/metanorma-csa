@@ -33,7 +33,7 @@ module Asciidoctor
 
       def metadata_committee(node, xml)
         xml.editorialgroup do |a|
-          a.technical_committee node.attr("technical-committee"),
+          a.committee node.attr("technical-committee"),
             **attr_code(type: node.attr("technical-committee-type"))
         end
       end
@@ -81,6 +81,15 @@ module Asciidoctor
         validate(ret1)
         ret1.root.add_namespace(nil, CSAND_NAMESPACE)
         ret1
+      end
+
+      def doctype(node)
+        d = node.attr("doctype")
+        unless %w{guidance proposal standard report whitepaper charter policy glossary case-study}.include? d
+          warn "#{d} is not a legal document type: reverting to 'standard'"
+          d = "standard"
+        end
+        d
       end
 
       def document(node)

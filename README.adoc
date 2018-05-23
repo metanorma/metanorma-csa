@@ -235,18 +235,14 @@ introduced with `=`, is ignored)
 CSAND publications) (mandatory). The permitted types are:
 +
 --
-code:: Code Artifact
-presentation:: Presentation
-proposal:: Proposal; includes IETF DRAFT
-standard:: Recommendation; includes IETF RFC
-report:: report
+guidance, proposal, standard, report, whitepaper, charter, policy, glossary, case-study
 --
 
 `:status:``:: The document status. The permitted types are: `proposal`,
 `working-draft`, `committee-draft`, `draft-standard`, `final-draft`,
 `published`, `withdrawn`.
 
-`:technical-committee:`:: The name of the relevant CSAND technical committee
+`:committee:`:: The name of the relevant CSAND technical committee
 (mandatory)
 
 `:language:` :: The language of the document (only `en` for now)  (mandatory)
