@@ -1,17 +1,17 @@
 require "asciidoctor"
 require "asciidoctor/csand/version"
-require "asciidoctor/csand/csandconvert"
+require "isodoc/csand/csandconvert"
 require "asciidoctor/iso/converter"
 
 module Asciidoctor
   module Csand
-    CSAND_NAMESPACE = "https://open.ribose.com/standards/csand"
+        CSAND_NAMESPACE = "https://open.ribose.com/standards/csand"
 
-    # A {Converter} implementation that generates CSAND output, and a document
+    # A {Converter} implementation that generates CSD output, and a document
     # schema encapsulation of the document for validation
     class Converter < ISO::Converter
 
-      register_for "csand"
+      register_for "csd"
 
       def metadata_author(node, xml)
         xml.contributor do |c|
@@ -87,10 +87,12 @@ module Asciidoctor
         init(node)
         ret1 = makexml(node)
         ret = ret1.to_xml(indent: 2)
-        filename = node.attr("docfile").gsub(/\.adoc/, ".xml").
-          gsub(%r{^.*/}, "")
-        File.open(filename, "w") { |f| f.write(ret) }
-        html_converter(node).convert filename unless node.attr("nodoc")
+        unless node.attr("nodoc") || !node.attr("docfile")
+          filename = node.attr("docfile").gsub(/\.adoc/, ".xml").
+            gsub(%r{^.*/}, "")
+          File.open(filename, "w") { |f| f.write(ret) }
+          html_converter(node).convert filename unless node.attr("nodoc")
+        end
         @files_to_delete.each { |f| system "rm #{f}" }
         ret
       end
@@ -125,25 +127,16 @@ module Asciidoctor
         return
       end
 
-      def html_converter(_node)
-        CsandConvert.new(
-          htmlstylesheet: generate_css(html_doc_path("htmlstyle.scss"), true),
-          standardstylesheet: generate_css(html_doc_path("csand.scss"), true),
-          htmlcoverpage: html_doc_path("html_csand_titlepage.html"),
-          htmlintropage: html_doc_path("html_csand_intro.html"),
-          scripts: html_doc_path("scripts.html"),
+      def html_converter(node)
+        IsoDoc::Csand::Convert.new(
+          script: node.attr("script"),
+          bodyfont: node.attr("body-font"),
+          headerfont: node.attr("header-font"),
+          monospacefont: node.attr("monospace-font"),
+          titlefont: node.attr("title-font"),
+          i18nyaml: node.attr("i18nyaml"),
+          scope: node.attr("scope"),
         )
-      end
-
-      def default_fonts(node)
-        b = node.attr("body-font") ||
-          (node.attr("script") == "Hans" ? '"SimSun",serif' :
-           '"Overpass",sans-serif')
-        h = node.attr("header-font") ||
-          (node.attr("script") == "Hans" ? '"SimHei",sans-serif' :
-           '"Overpass",sans-serif')
-        m = node.attr("monospace-font") || '"Space Mono",monospace'
-        "$bodyfont: #{b};\n$headerfont: #{h};\n$monospacefont: #{m};\n"
       end
 
       def inline_quoted(node)
