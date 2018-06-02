@@ -25,7 +25,7 @@
 
     <div class="coverpage-title">
       <span class="title-first">{{ doctitle }}</span>
-      <!--<span class="title-second">{{ docsubtitle }}</span>-->
+      <span class="title-second">{{ docsubtitle }}</span>
     </div>
   </div>
 
@@ -34,11 +34,16 @@
   </div>
 
   <div class="coverpage-tc-name">
-    <span>TC {{ tc }}</span>
+    <span>{{ tc }}</span>
+  </div>
+
+  <div class="coverpage-doc-identity">
+    <img class="csa-logo" src="csa-logo-white.png" alt="csa-logo">
   </div>
   </div>
 
   <div class="WordSection11">
+  <div class="document-info">
   <div class="coverpage-stage-block" >
     <span class="coverpage-stage" id="{{ doctype | replace: ' ', '-' | downcase }}">CSA {{ doctype }}</span>
   </div>
@@ -63,7 +68,7 @@
 
 <div class="copyright">
   <p class="year">
-    &copy; {{ docyear }} Cloud Security Alliance, Inc.
+    &copy; {{ docyear }} Cloud Security Alliance, LLC.
   </p>
 
   <p class="message">
@@ -87,6 +92,7 @@
   </p>
 </div>
 </div>
+  </div>
 
 <div class="rule"></div>
 </div>
