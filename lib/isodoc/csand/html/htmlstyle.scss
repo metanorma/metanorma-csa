@@ -767,7 +767,7 @@ p {
   }
 
   .doc-number {
-      font-size: 0.5em;
+      font-size: 1em;
       font-family: $bodyfont;
   }
 
@@ -794,6 +794,11 @@ p {
 
   .coverpage {
     text-align: center;
+  }
+
+  .coverpage-logo {
+      margin-top: 2em;
+      margin-bottom: 6em;
   }
 
   .coverpage-logo span, .coverpage-tc-name span {
