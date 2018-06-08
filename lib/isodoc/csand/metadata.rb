@@ -7,12 +7,12 @@ module IsoDoc
     class Metadata < IsoDoc::Metadata
             def initialize(lang, script, labels)
         super
-        set_metadata(:status, "XXX")
+        set(:status, "XXX")
       end
 
       def title(isoxml, _out)
         main = isoxml&.at(ns("//title[@language='en']"))&.text
-        set_metadata(:doctitle, main)
+        set(:doctitle, main)
       end
 
       def subtitle(_isoxml, _out)
@@ -20,9 +20,9 @@ module IsoDoc
       end
 
       def author(isoxml, _out)
-        set_metadata(:tc, "XXXX")
-        tc = isoxml.at(ns("//editorialgroup/technical-committee"))
-        set_metadata(:tc, tc.text) if tc
+        set(:tc, "XXXX")
+        tc = isoxml.at(ns("//editorialgroup/committee"))
+        set(:tc, tc.text) if tc
       end
 
 
@@ -31,11 +31,11 @@ module IsoDoc
         docstatus = isoxml.at(ns("//bibdata/status"))
         dn = docnumber&.text
         if docstatus
-          set_metadata(:status, status_print(docstatus.text))
+          set(:status, status_print(docstatus.text))
           abbr = status_abbr(docstatus.text)
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
-        set_metadata(:docnumber, dn)
+        set(:docnumber, dn)
       end
 
       def status_print(status)

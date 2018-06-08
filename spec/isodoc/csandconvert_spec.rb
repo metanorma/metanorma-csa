@@ -1,8 +1,9 @@
 require "spec_helper"
 
-RSpec.describe Asciidoctor::Csand do
+RSpec.describe IsoDoc::Csand do
   it "processes default metadata" do
-    expect(Hash[Asciidoctor::Csand::CsandConvert.new({}).info(Nokogiri::XML(<<~"INPUT"), nil).sort]).to be_equivalent_to <<~"OUTPUT"
+        csdc = IsoDoc::Csand::Convert.new({})
+    docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
   <title language="en" format="plain">Main Title</title>
@@ -31,7 +32,7 @@ RSpec.describe Asciidoctor::Csand do
     </owner>
   </copyright>
   <editorialgroup>
-    <technical-committee type="A">TC</technical-committee>
+    <committee type="A">TC</committee>
   </editorialgroup>
 </bibdata><version>
   <edition>2</edition>
@@ -41,12 +42,15 @@ RSpec.describe Asciidoctor::Csand do
 <sections/>
 </csand-standard>
     INPUT
-           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>"1000(wd)", :doctitle=>"Main Title", :doctype=>"Standard", :docyear=>"2001", :draft=>"3.4", :draftinfo=>" ( 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Working Draft", :tc=>"TC", :updateddate=>"XXX", :wg=>"XXXX"}
+        expect(htmlencode(Hash[csdc.info(docxml, nil).sort].to_s)).to be_equivalent_to <<~"OUTPUT"
+
+           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>"1000(wd)", :doctitle=>"Main Title", :doctype=>"Standard", :docyear=>"2001", :draft=>"3.4", :draftinfo=>" (draft 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Working Draft", :tc=>"TC", :updateddate=>"XXX", :wg=>"XXXX"}
     OUTPUT
   end
 
   it "abbreviates committee-draft" do
-    expect(Hash[Asciidoctor::Csand::CsandConvert.new({}).info(Nokogiri::XML(<<~"INPUT"), nil).sort]).to be_equivalent_to <<~"OUTPUT"
+            csdc = IsoDoc::Csand::Convert.new({})
+    docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
   <status format="plain">committee-draft</status>
@@ -58,12 +62,14 @@ RSpec.describe Asciidoctor::Csand do
 <sections/>
 </csand-standard>
     INPUT
-           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>"(cd)", :doctitle=>nil, :doctype=>"Standard", :docyear=>nil, :draft=>"3.4", :draftinfo=>" ( 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Committee Draft", :tc=>"XXXX", :updateddate=>"XXX", :wg=>"XXXX"}
+            expect(htmlencode(Hash[csdc.info(docxml, nil).sort].to_s)).to be_equivalent_to <<~"OUTPUT"
+           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>"(cd)", :doctitle=>nil, :doctype=>"Standard", :docyear=>nil, :draft=>"3.4", :draftinfo=>" (draft 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Committee Draft", :tc=>"XXXX", :updateddate=>"XXX", :wg=>"XXXX"}
     OUTPUT
   end
 
   it "abbreviates draft-standard" do
-    expect(Hash[Asciidoctor::Csand::CsandConvert.new({}).info(Nokogiri::XML(<<~"INPUT"), nil).sort]).to be_equivalent_to <<~"OUTPUT"
+                csdc = IsoDoc::Csand::Convert.new({})
+    docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
   <status format="plain">draft-standard</status>
@@ -75,12 +81,14 @@ RSpec.describe Asciidoctor::Csand do
 <sections/>
 </csand-standard>
     INPUT
-           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>"(d)", :doctitle=>nil, :doctype=>"Standard", :docyear=>nil, :draft=>"3.4", :draftinfo=>" ( 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Draft Standard", :tc=>"XXXX", :updateddate=>"XXX", :wg=>"XXXX"}
+                expect(htmlencode(Hash[csdc.info(docxml, nil).sort].to_s)).to be_equivalent_to <<~"OUTPUT"
+           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>"(d)", :doctitle=>nil, :doctype=>"Standard", :docyear=>nil, :draft=>"3.4", :draftinfo=>" (draft 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Draft Standard", :tc=>"XXXX", :updateddate=>"XXX", :wg=>"XXXX"}
     OUTPUT
   end
 
   it "ignores unrecognised status" do
-    expect(Hash[Asciidoctor::Csand::CsandConvert.new({}).info(Nokogiri::XML(<<~"INPUT"), nil).sort]).to be_equivalent_to <<~"OUTPUT"
+                csdc = IsoDoc::Csand::Convert.new({})
+    docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
   <status format="plain">standard</status>
@@ -92,80 +100,71 @@ RSpec.describe Asciidoctor::Csand do
 <sections/>
 </csand-standard>
     INPUT
-           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>nil, :doctitle=>nil, :doctype=>"Standard", :docyear=>nil, :draft=>"3.4", :draftinfo=>" ( 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Standard", :tc=>"XXXX", :updateddate=>"XXX", :wg=>"XXXX"}
+                    expect(htmlencode(Hash[csdc.info(docxml, nil).sort].to_s)).to be_equivalent_to <<~"OUTPUT"
+           {:accesseddate=>"XXX", :confirmeddate=>"XXX", :createddate=>"XXX", :docnumber=>nil, :doctitle=>nil, :doctype=>"Standard", :docyear=>nil, :draft=>"3.4", :draftinfo=>" (draft 3.4, 2000-01-01)", :editorialgroup=>[], :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :obsoletes=>nil, :obsoletes_part=>nil, :publisheddate=>"XXX", :revdate=>"2000-01-01", :sc=>"XXXX", :secretariat=>"XXXX", :status=>"Standard", :tc=>"XXXX", :updateddate=>"XXX", :wg=>"XXXX"}
     OUTPUT
   end
 
   it "processes pre" do
-    expect(Asciidoctor::Csand::CsandConvert.new({}).convert_file(<<~"INPUT", "test", true)).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <preface><foreword>
 <pre>ABC</pre>
 </foreword></preface>
 </csand-standard>
     INPUT
-           <html xmlns:epub="http://www.idpf.org/2007/ops">
-         <head>
-           <title>test</title>
            <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
-             <div class="WordSection1">
-               <p>&#160;</p>
-             </div>
+           <div class="WordSection1">
+             <p>&#160;</p>
+           </div>
+           <br/>
+           <div class="WordSection2">
+             <p>&#160;</p>
+           </div>
+           <br/>
+           <div class="WordSection3">
              <br/>
-             <div class="WordSection2">
-               <br/>
-               <div>
-                 <h1 class="ForewordTitle">Foreword</h1>
-                 <pre>ABC</pre>
-               </div>
-               <p>&#160;</p>
+             <div>
+               <h1 class="ForewordTitle">Foreword</h1>
+               <pre>ABC</pre>
              </div>
-             <br/>
-             <div class="WordSection3">
-               <p class="zzSTDTitle1"/>
-             </div>
-           </body>
-         </head>
-       </html>
+             <p class="zzSTDTitle1"/>
+           </div>
+         </body>
     OUTPUT
   end
 
   it "processes keyword" do
-    expect(Asciidoctor::Csand::CsandConvert.new({}).convert_file(<<~"INPUT", "test", true)).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <preface><foreword>
 <keyword>ABC</keyword>
 </foreword></preface>
 </csand-standard>
     INPUT
-           <html xmlns:epub="http://www.idpf.org/2007/ops">
-         <head>
-           <title>test</title>
            <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
-             <div class="WordSection1">
-               <p>&#160;</p>
-             </div>
+           <div class="WordSection1">
+             <p>&#160;</p>
+           </div>
+           <br/>
+           <div class="WordSection2">
+             <p>&#160;</p>
+           </div>
+           <br/>
+           <div class="WordSection3">
              <br/>
-             <div class="WordSection2">
-               <br/>
-               <div>
-                 <h1 class="ForewordTitle">Foreword</h1>
-                 <span class="keyword">ABC</span>
-               </div>
-               <p>&#160;</p>
+             <div>
+               <h1 class="ForewordTitle">Foreword</h1>
+               <span class="keyword">ABC</span>
              </div>
-             <br/>
-             <div class="WordSection3">
-               <p class="zzSTDTitle1"/>
-             </div>
-           </body>
-         </head>
-       </html>
+             <p class="zzSTDTitle1"/>
+           </div>
+         </body>
     OUTPUT
   end
 
   it "processes simple terms & definitions" do
-    expect(Asciidoctor::Csand::CsandConvert.new({}).convert_file(<<~"INPUT", "test", true)).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
        <sections>
        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -176,9 +175,6 @@ RSpec.describe Asciidoctor::Csand do
         </sections>
         </csand-standard>
     INPUT
-           <html xmlns:epub="http://www.idpf.org/2007/ops">
-         <head>
-           <title>test</title>
            <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
              <div class="WordSection1">
                <p>&#160;</p>
@@ -197,15 +193,13 @@ RSpec.describe Asciidoctor::Csand do
        </div>
              </div>
            </body>
-         </head>
-       </html>
     OUTPUT
   end
 
   it "processes terms & definitions with external source" do
-    expect(Asciidoctor::Csand::CsandConvert.new({}).convert_file(<<~"INPUT", "test", true)).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
-         <termdocsource type="inline" target="ISO712"/>
+         <termdocsource type="inline" bibitemid="ISO712"/>
        <sections>
        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
          <term id="J">
@@ -228,9 +222,6 @@ RSpec.describe Asciidoctor::Csand do
 </bibliography>
         </csand-standard>
     INPUT
-           <html xmlns:epub="http://www.idpf.org/2007/ops">
-         <head>
-           <title>test</title>
            <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
              <div class="WordSection1">
                <p>&#160;</p>
@@ -245,7 +236,7 @@ RSpec.describe Asciidoctor::Csand do
                <div>
                  <h1>1.&#160; Normative References</h1>
                  <p>The following documents are referred to in the text in such a way that some or all of their content constitutes requirements of this document. For dated references, only the edition cited applies. For undated references, the latest edition of the referenced document (including any amendments) applies.</p>
-                 <p id="ISO712">ISO 712, <i> Cereals and cereal products?~@~I?~@~T?~@~IDetermination of moisture content?~@~I?~@~T?~@~IReference method</i></p>
+                 <p id="ISO712" class="NormRef">ISO 712, <i> Cereals and cereal products?~@~I?~@~T?~@~IDetermination of moisture content?~@~I?~@~T?~@~IReference method</i></p>
                </div>
                <div id="H"><h1>2.&#160; Terms and Definitions</h1><p>For the purposes of this document, the terms and definitions
          given in ISO 712 and the following apply.</p>
@@ -254,13 +245,11 @@ RSpec.describe Asciidoctor::Csand do
               </div>
              </div>
            </body>
-         </head>
-       </html>
     OUTPUT
   end
 
   it "processes empty terms & definitions" do
-    expect(Asciidoctor::Csand::CsandConvert.new({}).convert_file(<<~"INPUT", "test", true)).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
        <sections>
        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -268,9 +257,6 @@ RSpec.describe Asciidoctor::Csand do
         </sections>
         </csand-standard>
     INPUT
-           <html xmlns:epub="http://www.idpf.org/2007/ops">
-         <head>
-           <title>test</title>
            <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
              <div class="WordSection1">
                <p>&#160;</p>
@@ -286,13 +272,11 @@ RSpec.describe Asciidoctor::Csand do
        </div>
              </div>
            </body>
-         </head>
-       </html>
     OUTPUT
   end
 
   it "processes section names" do
-    expect(Asciidoctor::Csand::CsandConvert.new({}).convert_file(<<~"INPUT", "test", true)).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
       <preface>
       <foreword obligation="informative">
@@ -359,16 +343,17 @@ RSpec.describe Asciidoctor::Csand do
        </bibliography>
        </csand-standard>
     INPUT
-           <html xmlns:epub="http://www.idpf.org/2007/ops">
-         <head>
-           <title>test</title>
            <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
              <div class="WordSection1">
                <p>&#160;</p>
              </div>
              <br/>
              <div class="WordSection2">
-               <br/>
+               <p>&#160;</p>
+             </div>
+             <br/>
+             <div class="WordSection3">
+             <br/>
                <div>
                  <h1 class="ForewordTitle">Foreword</h1>
                  <p id="A">This is a preamble</p>
@@ -380,11 +365,7 @@ RSpec.describe Asciidoctor::Csand do
           <h2>0.1. Introduction Subsection</h2>
         </div>
                  <p>This is patent boilerplate</p>
-               </div>
-               <p>&#160;</p>
              </div>
-             <br/>
-             <div class="WordSection3">
                <p class="zzSTDTitle1"/>
                <div id="D">
                  <h1>1.&#160; Scope</h1>
@@ -424,7 +405,7 @@ RSpec.describe Asciidoctor::Csand do
                </div>
                <br/>
                <div id="P" class="Section3">
-                 <h1 class="Annex"><b>Appendix A</b><br/>(normative)<br/><br/><b>Annex</b></h1>
+                 <h1 class="Annex"><b>Appendix A</b> (normative) <b>Annex</b></h1>
                  <div id="Q">
           <h2>A.1. Annex A.1</h2>
           <div id="Q1">
@@ -444,8 +425,6 @@ RSpec.describe Asciidoctor::Csand do
                </div>
              </div>
            </body>
-         </head>
-       </html>
     OUTPUT
   end
 
@@ -461,10 +440,9 @@ RSpec.describe Asciidoctor::Csand do
 <sections/>
 </csand-standard>
     OUTPUT
-    html = File.read("test.html")
+    html = File.read("test.html", encoding: "utf-8")
     expect(html).to match(%r{jquery\.min\.js})
     expect(html).to match(%r{Overpass})
-    expect(html).to match(%r{<main><button})
   end
 
 
