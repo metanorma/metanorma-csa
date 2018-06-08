@@ -317,7 +317,7 @@ p.document-stage {
 }
 
 #standard-band {
-    background-color: #0ac442;
+    color: #0ac442;
 }
 
 #standard {
@@ -353,7 +353,7 @@ p.document-stage {
 }
 
 #working-draft-band p {
-    background-color: #fda706;
+    color: #fda706;
 }
 
 #committee-draft {
@@ -374,10 +374,6 @@ p.document-stage {
 
 #standard {
     border-bottom: solid 3px #0ac442;
-}
-
-#standard-band {
-    background-color: #0ac442;
 }
 
 #obsolete {
@@ -421,7 +417,7 @@ p.document-stage {
   h3 {
     font-size: 1.5em;
   }
-
+/*
   span[id^="toc"]:after {
     float: left;
     padding-right: 4px;
@@ -432,7 +428,7 @@ p.document-stage {
     color: #cfcfcf;
     content: "\f0c1";
   }
-
+*/
   .TermNum, .Terms, .AltTerms {
     color: #00549f;
     font-weight: 400;
@@ -892,10 +888,12 @@ p {
 
 h2 {
     border-bottom: solid 1px #4D7EA5;
-    color: black;
+    color: #4D7EA5;
 }
 
-  
+h3, h4, h5, h6 {
+     color: #EE9C4F;
+} 
   
 /*
     4.3 Draft Warning
@@ -955,7 +953,7 @@ To top button
     font-size: 12px;
     border: none;
     outline: none;
-    background-color: #1d1d1d;
+    background-color: #4D7EA5;
     opacity: 0.15;
     color: white;
     cursor: pointer;
@@ -971,6 +969,18 @@ a.anchorjs-link:hover {
   background: none;
   color: #485094;
   box-shadow: none;
+}
+
+nav h1:hover a:after {
+     display: none;
+}
+
+.document-stage-band p {
+     color: #EE9C4F!important;
+}
+ 
+.document-type-band p {
+     color: #4D7EA5!important;
 }
 
 @page {
