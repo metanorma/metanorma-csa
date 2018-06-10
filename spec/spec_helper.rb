@@ -87,3 +87,15 @@ BLANK_HDR = <<~"HDR"
        </bibdata>
 HDR
 
+HTML_HDR = <<~"HDR"
+           <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
+           <div class="WordSection1">
+             <p>&#160;</p>
+           </div>
+           <br/>
+           <div class="WordSection2">
+             <p>&#160;</p>
+           </div>
+           <br/>
+           <div class="WordSection3">
+HDR
