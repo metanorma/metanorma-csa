@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe IsoDoc::Csand do
   it "processes default metadata" do
-        csdc = IsoDoc::Csand::Convert.new({})
+        csdc = IsoDoc::Csand::HtmlConvert.new({})
     docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
@@ -49,7 +49,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "abbreviates committee-draft" do
-            csdc = IsoDoc::Csand::Convert.new({})
+            csdc = IsoDoc::Csand::HtmlConvert.new({})
     docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
@@ -68,7 +68,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "abbreviates draft-standard" do
-                csdc = IsoDoc::Csand::Convert.new({})
+                csdc = IsoDoc::Csand::HtmlConvert.new({})
     docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
@@ -87,7 +87,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "ignores unrecognised status" do
-                csdc = IsoDoc::Csand::Convert.new({})
+                csdc = IsoDoc::Csand::HtmlConvert.new({})
     docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <bibdata type="standard">
@@ -106,7 +106,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes pre" do
-    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <preface><foreword>
 <pre>ABC</pre>
@@ -126,7 +126,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes keyword" do
-    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <preface><foreword>
 <keyword>ABC</keyword>
@@ -146,7 +146,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes simple terms & definitions" do
-    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
        <sections>
        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -170,7 +170,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes terms & definitions with external source" do
-    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
          <termdocsource type="inline" bibitemid="ISO712"/>
        <sections>
@@ -213,7 +213,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes empty terms & definitions" do
-    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
        <sections>
        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -231,7 +231,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes section names" do
-    expect(IsoDoc::Csand::Convert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
                <csand-standard xmlns="http://riboseinc.com/isoxml">
       <preface>
       <foreword obligation="informative">
