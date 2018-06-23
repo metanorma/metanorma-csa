@@ -28,20 +28,18 @@ expressions.
 International Standards.
 * The XML representation is processed in turn to generate the following outputs
 as end deliverable CSAND standard drafts.
-** Microsoft Word output (`.doc`), following the style conventions of the
-https://www.csand.org/csand-templates.html[CSAND Standard Microsoft Word template].
-(In development)
-** PDF (forthcoming)
-** HTML (forthcoming)
+** HTML output (`.html`).
 
 This AsciiDoc syntax for writing CSAND standards is hereby named "AsciiCSAND".
 
 == Usage
 
+The preferred way to invoke this gem is via the `metanorma` script:
+
 [source,console]
 ----
-$ asciidoctor a.adoc  # HTML output of Asciidoc file
-$ asciidoctor -b csand -r 'asciidoctor-csand' a.adoc  # CSAND XML output
+$ gem install metanorma
+$ metanorma --type csand a.adoc
 ----
 
 The gem translates the document into CSAND XML format, and then
@@ -50,41 +48,15 @@ reported to console against the XML, and are intended for users to
 check that they have provided all necessary components of the
 document.
 
-TODO: The gem will then convert the XML to Word Document, HTML, and
-PDF, and output those files with the appropriate file suffixes.
-`lib/asciidoctor/csand/csand2wordhtml.rb` is work in progress, and not yet
-integrated into the executable.
+The gem then converts the XML to HTML, and
+outputs that files with the appropriate `.html` suffix.
 
-=== Content Warnings
+The gem can also be invoked directly within asciidoctor, though this is deprecated:
 
-The gem also realises several format checks as prescribed in ISO/IEC
-DIR 2, and warns the user about them in the console:
-
-* Numbers with what looks like dots instead of commas for decimal points.
-
-* Groups of numbers without spacing for every three digits. (The gem attempts
-to ignore CSAND references.)
-
-* No space before percent sign.
-
-* No bracketing of tolerance in percentage (e.g. `15 ± 7 % .`)
-
-* No recommendations, permissions or requirements (detected by keyword) in:
-foreword, scope, introduction, term examples and examples, notes, footnotes.
-
-* No subclauses that are the only child of a clause. (In clauses, annexes, or
-scopes.)
-
-* 5 levels of subclause nesting. (Never actuated, AsciiDoc only permits 4
-levels of subsections.)
-
-* Non-CSAND/IEC reference turning up as normative.
-
-* Term definition starts with an article, or ends with a period.
-
-* Title intro or title part appears in only one of French or English.
-
-== Approach
+[source,console]
+----
+$ asciidoctor -b csand -r 'asciidoctor-csand' a.adoc  
+----
 
 === Document model
 
