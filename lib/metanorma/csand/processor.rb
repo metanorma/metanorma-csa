@@ -11,9 +11,9 @@ module Metanorma
       end
 
       def output_formats
-        {
+        super.merge(
           html: "html"
-        }
+        )
       end
 
       def version
@@ -28,9 +28,10 @@ module Metanorma
         case format
         when :html
           IsoDoc::Csand::HtmlConvert.new(options).convert(outname, isodoc_node)
+        else
+          super
         end
       end
-
     end
   end
 end
