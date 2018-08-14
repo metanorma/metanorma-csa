@@ -11,9 +11,9 @@ WARNING: This gem is still under development.
 This gem processes http://asciidoctor.org/[Asciidoctor] documents following
 a template for generating CSAND documents.
 
-The gem currently inherits from the https://github.com/riboseinc/asciidoctor-iso
-gem, and aligns closely to it. Refer to the ISO gem
-for guidance, including https://github.com/riboseinc/asciidoctor-iso/wiki/Guidance-for-authoring
+The gem currently inherits from the https://github.com/riboseinc/metanorma-standoc
+gem, and aligns closely to it. Refer to the ISO gem documentation
+for guidance, including https://github.com/riboseinc/metanorma-iso/wiki/Guidance-for-authoring
 
 The following outputs are generated.
 
@@ -68,7 +68,7 @@ scripts such as this one. You need only run the following in a Terminal console:
 [source,console]
 ----
 $ bash <(curl -s https://raw.githubusercontent.com/riboseinc/metanorma-macos-setup/master/metanorma-setup)
-$ gem install asciidoctor-csand
+$ gem install metanorma-csand
 
 ----
 
