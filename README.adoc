@@ -6,6 +6,8 @@ image:https://codeclimate.com/github/riboseinc/asciidoctor-csand/badges/gpa.svg[
 
 WARNING: This gem is still under development.
 
+_Formerly known as_ `asciidoctor-csand`.
+
 == Functionality
 
 This gem processes http://asciidoctor.org/[Asciidoctor] documents following
