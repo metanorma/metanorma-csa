@@ -5,7 +5,7 @@ end
 
 require "bundler/setup"
 require "asciidoctor"
-require "asciidoctor-csand"
+require "metanorma-csand"
 require "asciidoctor/csand"
 require "isodoc/csand/csandconvert"
 require "asciidoctor/standoc/converter"
