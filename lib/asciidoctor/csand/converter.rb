@@ -1,5 +1,5 @@
 require "asciidoctor"
-require "asciidoctor/csand/version"
+require "metanorma/csand/version"
 require "isodoc/csand/csandconvert"
 require "asciidoctor/standoc/converter"
 

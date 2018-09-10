@@ -1,10 +1,10 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "asciidoctor/csand/version"
+require "metanorma/csand/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "metanorma-csand"
-  spec.version       = Asciidoctor::Csand::VERSION
+  spec.version       = Metanorma::Csand::VERSION
   spec.authors       = ["Ribose Inc."]
   spec.email         = ["open.source@ribose.com"]
 
