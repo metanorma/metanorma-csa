@@ -49,8 +49,9 @@ RSpec.describe Asciidoctor::Csand do
       :revdate: 2000-01-01
       :draft: 3.4
       :technical-committee: TC
-      :technical-committee-number: 1
       :technical-committee-type: A
+      :technical-committee_2: TC1
+      :technical-committee-type_2: B
       :subcommittee: SC
       :subcommittee-number: 2
       :subcommittee-type: B
@@ -94,6 +95,7 @@ RSpec.describe Asciidoctor::Csand do
   </copyright>
   <editorialgroup>
     <committee type="A">TC</committee>
+    <committee type="B">TC1</committee>
   </editorialgroup>
 </bibdata><version>
   <edition>2</edition>
