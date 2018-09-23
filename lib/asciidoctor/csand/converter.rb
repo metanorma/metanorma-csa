@@ -2,6 +2,7 @@ require "asciidoctor"
 require "metanorma/csand/version"
 require "isodoc/csand/csandconvert"
 require "asciidoctor/standoc/converter"
+require "fileutils"
 
 module Asciidoctor
   module Csand
@@ -108,7 +109,7 @@ module Asciidoctor
           File.open(filename, "w") { |f| f.write(ret) }
           html_converter(node).convert filename unless node.attr("nodoc")
         end
-        @files_to_delete.each { |f| system "rm #{f}" }
+        @files_to_delete.each { |f| FileUtils.rm f }
         ret
       end
 
