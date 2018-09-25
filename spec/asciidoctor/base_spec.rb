@@ -1,4 +1,5 @@
 require "spec_helper"
+require "fileutils"
 
 RSpec.describe Asciidoctor::Csand do
   it "has a version number" do
@@ -6,7 +7,8 @@ RSpec.describe Asciidoctor::Csand do
   end
 
   it "generates output for the Rice document" do
-  system "cd spec/examples; rm -f rfc6350.doc; rm -f rfc6350.html; asciidoctor --trace -b csand -r 'metanorma-csand' rfc6350.adoc; cd ../.."
+    FileUtils.rm_f %w(spec/examples/rfc6350.doc spec/examples/rfc6350.html)
+  system "cd spec/examples; asciidoctor --trace -b csand -r 'metanorma-csand' rfc6350.adoc; cd ../.."
   expect(File.exist?("spec/examples/rfc6350.doc")).to be false
   expect(File.exist?("spec/examples/rfc6350.html")).to be true
   end
@@ -22,7 +24,7 @@ RSpec.describe Asciidoctor::Csand do
   end
 
   it "converts a blank document" do
-    system "rm -f test.html"
+    FileUtils.rm_f "test.html"
     expect(Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true)).to be_equivalent_to <<~"OUTPUT"
       = Document title
       Author
@@ -152,7 +154,7 @@ RSpec.describe Asciidoctor::Csand do
   end
 
   it "uses default fonts" do
-    system "rm -f test.html"
+    FileUtils.rm_f "test.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true)
       = Document title
       Author
@@ -166,7 +168,7 @@ RSpec.describe Asciidoctor::Csand do
   end
 
   it "uses Chinese fonts" do
-    system "rm -f test.html"
+    FileUtils.rm_f "test.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true)
       = Document title
       Author
@@ -181,7 +183,7 @@ RSpec.describe Asciidoctor::Csand do
   end
 
   it "uses specified fonts" do
-    system "rm -f test.html"
+    FileUtils.rm_f "test.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true)
       = Document title
       Author

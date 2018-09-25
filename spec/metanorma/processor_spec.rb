@@ -34,7 +34,7 @@ RSpec.describe Metanorma::Csand::Processor do
   end
 
   it "generates HTML from IsoDoc XML" do
-    system "rm -f test.xml"
+    FileUtils.rm_f "test.xml"
     processor.output(<<~"INPUT", "test.html", :html)
                <csand-standard xmlns="http://riboseinc.com/isoxml">
        <sections>
