@@ -1,6 +1,6 @@
 require "asciidoctor"
 require "metanorma/csand/version"
-require "isodoc/csand/csandconvert"
+require "isodoc/csand/html_convert"
 require "asciidoctor/standoc/converter"
 require "fileutils"
 
