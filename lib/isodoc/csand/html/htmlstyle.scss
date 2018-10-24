@@ -88,6 +88,7 @@ dl {
 }
 
 dt {
+  font-weight: 500;
   grid-column-start: 1;
 }
 
@@ -213,12 +214,12 @@ main {
 }
 
 @media screen {
-  img { 
-      width: 100%;   
+  img {
+      width: 100%;
       height: auto;
   }
 }
-    
+
 
 #toc ul {
   margin: 0;
@@ -405,16 +406,17 @@ p.document-stage {
 
 h1,h2,h3,h4,h5,h6 {
   font-family: $headerfont;
+  line-height: 1.2em;
   color: black;
   font-weight: 600;
-  margin-top: 2em;
+  margin-top: 1.5em;
   margin-bottom: 0.3em;
 }
 
 h1 {
   font-size: 1.8em;
   text-transform: uppercase;
-  margin-top: 2em;
+/*  margin-top: 2em;*/
 }
 
 h1#content {
@@ -509,7 +511,7 @@ a:hover {
 */
 
 ul, ol {
-  margin-left: 0.5em;
+  margin-left: 1em;
   list-style-position: inside;
 }
 
@@ -578,24 +580,33 @@ p.Biblio, p.NormRef {
   background-color: #F5F6F6;
   border-left: solid 5px #B1B6B8;
   color: rgb(91, 94, 95);
-  padding: 1.2em 1.2em 1.2em 2.2em;
-  margin: 2em 0 2em -1em;
+  padding: 0.5em 1em;
+}
+
+.note_label {
+  font-weight: 700;
 }
 
 /*
 3.8 Examples
 */
 
-.example {
+td.example,
+td.example_label {
   background-color: #F5F6F6;
-  border-left: solid 5px #B1B6B8;
   color: rgb(91, 94, 95);
-  padding: 1.2em 1.2em 1.2em 2.2em;
-  margin: 2em 0 2em -1em;;
+  padding: 0;
 }
 
-.example .example-title {
+td > p.example {
+  margin: 0;
+  border-left: solid 5px #B1B6B8;
+  padding: 1em;
+}
+
+td.example_label {
   font-weight: 700;
+  font-size: 1.2em;
   text-transform: uppercase;
   text-align: center;
   margin-top: 0;
@@ -863,6 +874,7 @@ padding: 2em 0;
 
 img.csa-logo {
   height: 50px;
+  width: auto;
   float: right;
   margin-right: 2em;
 }

@@ -12,7 +12,9 @@ module Metanorma
 
       def output_formats
         super.merge(
-          html: "html"
+          html: "html",
+          # doc: "doc",
+          # pdf: "pdf"
         )
       end
 
@@ -28,6 +30,10 @@ module Metanorma
         case format
         when :html
           IsoDoc::Csand::HtmlConvert.new(options).convert(outname, isodoc_node)
+        # when :doc
+        #   IsoDoc::Csand::WordConvert.new(options).convert(outname, isodoc_node)
+        # when :pdf
+        #   IsoDoc::Csand::PdfConvert.new(options).convert(outname, isodoc_node)
         else
           super
         end
