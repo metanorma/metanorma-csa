@@ -20,8 +20,8 @@ module Metanorma
         "Metanorma::Csand #{Metanorma::Csand::VERSION}"
       end
 
-      def input_to_isodoc(file)
-        Metanorma::Input::Asciidoc.new.process(file, @asciidoctor_backend)
+      def input_to_isodoc(file, filename)
+        Metanorma::Input::Asciidoc.new.process(file, filename, @asciidoctor_backend)
       end
 
       def output(isodoc_node, outname, format, options={})
