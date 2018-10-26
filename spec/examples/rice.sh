@@ -1,1 +1,1 @@
-asciidoctor --trace -b csand -r 'asciidoctor-csand' rfc6350.adoc
+asciidoctor --trace -b csand -r 'metanorma-csand' rfc6350.adoc
