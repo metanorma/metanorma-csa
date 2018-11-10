@@ -50,7 +50,16 @@ module Asciidoctor
       end
 
       def metadata_id(node, xml)
-        xml.docidentifier { |i| i << node.attr("docnumber") }
+        docstatus = node.attr("status")
+        dn = node.attr("docnumber")
+        if docstatus
+          abbr = IsoDoc::Csand::Metadata.new("en", "Latn", {}).
+            status_abbr(docstatus)
+          dn = "#{dn}(#{abbr})" unless abbr.empty?
+        end
+        node.attr("copyright-year") and dn += ":#{node.attr("copyright-year")}"
+        xml.docidentifier dn, **{type: "csand"}
+        xml.docnumber { |i| i << node.attr("docnumber") }
       end
 
       def metadata_copyright(node, xml)
