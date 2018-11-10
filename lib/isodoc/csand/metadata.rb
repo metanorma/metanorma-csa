@@ -31,10 +31,6 @@ module IsoDoc
         set(:docnumber, docnumber&.text)
       end
 
-      def status_print(status)
-        status.split(/-/).map{ |w| w.capitalize }.join(" ")
-      end
-
       def status_abbr(status)
         case status
         when "working-draft" then "wd"
