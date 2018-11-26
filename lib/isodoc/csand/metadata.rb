@@ -40,6 +40,10 @@ module IsoDoc
           ""
         end
       end
+
+      def unpublished(status)
+        %w(published withdrawn).include? status.downcase
+      end
     end
   end
 end
