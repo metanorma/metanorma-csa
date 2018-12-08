@@ -303,7 +303,7 @@ RSpec.describe Asciidoctor::Csand do
        <sections>
                 <figure id="id">
          <name>Figure 1</name>
-         <pre>This is a literal
+         <pre id="_">This is a literal
 
        Amen</pre>
        </figure>
