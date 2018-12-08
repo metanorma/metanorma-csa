@@ -16,6 +16,9 @@
     </define>
     <define name="docidentifier">
       <element name="docidentifier">
+        <optional>
+          <attribute name="type"/>
+        </optional>
         <text/>
       </element>
     </define>
@@ -70,28 +73,6 @@
         </choice>
       </element>
     </define>
-    <!-- TextElement |= keyword -->
-    <define name="TextElement">
-      <choice>
-        <text/>
-        <ref name="em"/>
-        <ref name="eref"/>
-        <ref name="strong"/>
-        <ref name="stem"/>
-        <ref name="sub"/>
-        <ref name="sup"/>
-        <ref name="tt"/>
-        <ref name="strike"/>
-        <ref name="smallcap"/>
-        <ref name="xref"/>
-        <ref name="br"/>
-        <ref name="hyperlink"/>
-        <ref name="hr"/>
-        <ref name="pagebreak"/>
-        <ref name="bookmark"/>
-        <ref name="keyword"/>
-      </choice>
-    </define>
     <define name="BibItemType" combine="choice">
       <choice>
         <value>guidance</value>
@@ -105,33 +86,185 @@
         <value>case-study</value>
       </choice>
     </define>
+    <define name="BibliographicItem">
+      <optional>
+        <attribute name="type">
+          <ref name="BibItemType"/>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="fetched"/>
+      </optional>
+      <choice>
+        <oneOrMore>
+          <ref name="btitle"/>
+        </oneOrMore>
+        <ref name="formattedref"/>
+      </choice>
+      <zeroOrMore>
+        <ref name="bsource"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="docidentifier"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="docnumber"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="bdate"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="contributor"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="edition"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="biblionote"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="language"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="script"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="abstract"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="status"/>
+      </optional>
+      <optional>
+        <ref name="copyright"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="docrelation"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="series"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="medium"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="bplace"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="extent"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="accesslocation"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="bclassification"/>
+      </optional>
+      <optional>
+        <ref name="validity"/>
+      </optional>
+      <optional>
+        <ref name="editorialgroup"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="ics"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="allParts"/>
+      </optional>
+    </define>
+    <define name="BibData">
+      <optional>
+        <attribute name="type">
+          <ref name="BibItemType"/>
+        </attribute>
+      </optional>
+      <oneOrMore>
+        <ref name="btitle"/>
+      </oneOrMore>
+      <optional>
+        <ref name="formattedref"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="bsource"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="docidentifier"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="docnumber"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="bdate"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="contributor"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="edition"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="biblionote"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="language"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="script"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="abstract"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="status"/>
+      </optional>
+      <ref name="copyright"/>
+      <zeroOrMore>
+        <ref name="docrelation"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="series"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="medium"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="bplace"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="extent"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="accesslocation"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="bclassification"/>
+      </optional>
+      <optional>
+        <ref name="validity"/>
+      </optional>
+      <ref name="editorialgroup"/>
+      <zeroOrMore>
+        <ref name="ics"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="allParts"/>
+      </optional>
+    </define>
     <define name="editorialgroup">
       <element name="editorialgroup">
-        <ref name="committee"/>
+        <oneOrMore>
+          <ref name="technical-committee"/>
+        </oneOrMore>
+      </element>
+    </define>
+    <define name="technical-committee">
+      <element name="committee">
+        <optional>
+          <attribute name="type"/>
+        </optional>
+        <text/>
       </element>
     </define>
   </include>
-  <define name="committee">
-    <element name="committee">
-      <attribute name="type">
-        <choice>
-          <value>technical</value>
-          <value>provisional</value>
-        </choice>
-      </attribute>
-      <text/>
-    </element>
-  </define>
-  <define name="pre">
-    <element name="pre">
-      <text/>
-    </element>
-  </define>
-  <define name="keyword">
-    <element name="keyword">
-      <text/>
-    </element>
-  </define>
   <define name="csand-standard">
     <element name="csand-standard">
       <ref name="bibdata"/>
