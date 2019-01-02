@@ -1,4 +1,4 @@
-= AsciiCSAND: Asciidoctor processor for Ribose Standard Documents (CSAND)
+= AsciiCSAND: Asciidoctor processor for CSA Normal Documents (CSAND)
 
 image:https://img.shields.io/gem/v/metanorma-csand.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csand"]
 image:https://img.shields.io/travis/riboseinc/metanorma-csand/master.svg["Build Status", link="https://travis-ci.org/riboseinc/metanorma-csand"]
