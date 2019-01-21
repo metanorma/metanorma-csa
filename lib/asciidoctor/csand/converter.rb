@@ -109,6 +109,8 @@ module Asciidoctor
             gsub(%r{^.*/}, "")
           File.open(filename, "w") { |f| f.write(ret) }
           html_converter(node).convert filename unless node.attr("nodoc")
+          pdf_converter(node).convert filename unless node.attr("nodoc")
+          word_converter(node).convert filename unless node.attr("nodoc")
         end
         @files_to_delete.each { |f| FileUtils.rm f }
         ret
@@ -133,6 +135,12 @@ module Asciidoctor
 
       def html_converter(node)
         IsoDoc::Csand::HtmlConvert.new(html_extract_attributes(node))
+      end
+      def pdf_converter(node)
+        IsoDoc::Csand::PdfConvert.new(html_extract_attributes(node))
+      end
+      def word_converter(node)
+        IsoDoc::Csand::WordConvert.new(doc_extract_attributes(node))
       end
     end
   end

@@ -7,11 +7,12 @@ RSpec.describe Asciidoctor::Csand do
   end
 
   it "generates output for the Rice document" do
-    FileUtils.rm_f %w(spec/examples/rfc6350.doc spec/examples/rfc6350.html)
+    FileUtils.rm_f %w(spec/examples/rfc6350.doc spec/examples/rfc6350.html spec/examples/rfc6350.pdf)
     FileUtils.cd "spec/examples"
     Asciidoctor.convert_file "rfc6350.adoc", {:attributes=>{"backend"=>"csand"}, :safe=>0, :header_footer=>true, :requires=>["metanorma-csand"], :failure_level=>4, :mkdirs=>true, :to_file=>nil}
     FileUtils.cd "../.."
-    expect(File.exist?("spec/examples/rfc6350.doc")).to be false
+    expect(File.exist?("spec/examples/rfc6350.doc")).to be true
+    expect(File.exist?("spec/examples/rfc6350.pdf")).to be true
     expect(File.exist?("spec/examples/rfc6350.html")).to be true
   end
 
