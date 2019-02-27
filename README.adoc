@@ -154,7 +154,7 @@ The following markup is specific to this gem:
 == Data Models
 
 The CSAND Standard Document format is an instance of the
-https://github.com/riboseinc/isodoc-models[StandardDocument model]. Details of
+https://github.com/riboseinc/isodoc-models[IsoDoc model]. Details of
 this general model can be found on its page. Details of the CSAND modifications
 to this general model can be found on the https://github.com/riboseinc/csand[CSAND model]
 repository.
