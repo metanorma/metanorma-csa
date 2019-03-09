@@ -136,7 +136,7 @@ guidance, proposal, standard, report, whitepaper, charter, policy, glossary, cas
 `:committee:`:: The name of the relevant CSAND technical committee
 (mandatory)
 
-`:language:` :: The language of the document (only `en` for now)  (mandatory)
+`:language:` :: The language of the document (only `en` for now)  
 
 
 The attribute `:draft:`, if present, includes review notes in the XML output;
