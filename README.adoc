@@ -2,6 +2,7 @@
 
 image:https://img.shields.io/gem/v/metanorma-csand.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csand"]
 image:https://img.shields.io/travis/metanorma/metanorma-csand/master.svg["Build Status", link="https://travis-ci.org/metanorma/metanorma-csand"]
+image:https://ci.appveyor.com/api/projects/status/3hulwj0i2c4uc7n4?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/ribose/metanorma-csand"]
 image:https://codeclimate.com/github/metanorma/metanorma-csand/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/metanorma-csand"]
 
 WARNING: This gem is still under development.
@@ -74,93 +75,8 @@ $ gem install metanorma-csand
 
 ----
 
-== Approach
-=== Document model
+== Documentation
 
-The Ribose Standard Document model is an instance of the
-https://github.com/metanorma/metanorma-model-standoc[StandardDocument model].
-
-The CSAND format ("CSAND XML") intends to introduce rigor into the CSAND
-standards authoring process, and is prescribed in a separate document.
-
-CSAND XML is still under development, but it already contains all the markup
-needed to render a CSAND document into HTML.
-
-WARNING: The current RNG model of CSAND XML is out of sync with the UML.
-
-=== Asciidoctor
-
-Asciidoctor has been selected as the authoring tool to generate the document
-model representation of CSAND standards. It is a document formatting tool like
-Markdown and DocBook, which combines the relative ease of use of the former
-(using relatively lightweight markup), and the rigor and expressively of the
-latter (it has a well-defined syntax, and was in fact initially developed as a
-DocBook document authoring tool). Asciidoctor has built-in capability to output
-Text, DocBook and HTML; so it can be used to preview the file as it is being
-authored.
-
-Generating documents via a document model substantially automated formatting
-associated with the document, including automating numbering of headings, figures,
-tables etc, and automatically generating references and citations.
-
-== Document Attributes
-
-=== Common attributes
-
-The gem relies on Asciidoctor document attributes to provide necessary
-metadata about the document. The https://github.com/metanorma/metanorma-standoc[metanorma-standoc]
-gem documents the Asciidoctor document attributes common to all metanorma gems. These include:
-
-`:edition:`:: The document edition
-
-`:revdate:`:: The date the document was last updated
-
-`:copyright-year:`:: The year which will be claimed as when the copyright for
-the document was issued
-
-`:title:`:: The main component of the English title of the document
-(mandatory). (The first line of the AsciiDoc document, which contains the title
-introduced with `=`, is ignored)
-
-`:doctype:`:: The document type (see CSAND deliverables: The different types of
-CSAND publications) (mandatory). The permitted types are:
-+
---
-guidance, proposal, standard, report, whitepaper, charter, policy, glossary, case-study
---
-
-`:status:``:: The document status. The permitted types are: `proposal`,
-`working-draft`, `committee-draft`, `draft-standard`, `final-draft`,
-`published`, `withdrawn`.
-
-`:committee:`:: The name of the relevant CSAND technical committee
-(mandatory)
-
-`:language:` :: The language of the document (only `en` for now)  
+See https://www.metanorma.com/author/csand/[Author Cloud Security Alliance documents with Metanorma-CSAND].
 
 
-The attribute `:draft:`, if present, includes review notes in the XML output;
-these are otherwise suppressed.
-
-== Asciidoctor features specific to CSAND
-
-The https://github.com/metanorma/metanorma-standoc[metanorma-standoc]
-gem documents the customisations of Asciidoctor markup common to all metanorma gems. 
-The following markup is specific to this gem:
-
-* `+[keyword]#...#+`: encodes keywords, such as "MUST", "MUST NOT". (Encoded as
-`<span class="keyword">...</span>`.
-
-== Data Models
-
-The CSAND Standard Document format is an instance of the
-https://github.com/metanorma/metanorma-model-standoc[IsoDoc model]. Details of
-this general model can be found on its page. Details of the CSAND modifications
-to this general model can be found on the https://github.com/metanorma/metanorma-model-csand[CSAND model]
-repository.
-
-== Examples
-
-* link:spec/examples/rfc6350.adoc[] is an AsciiCSAND version of https://tools.ietf.org/html/rfc6350[RFC 6350].
-* link:spec/examples/rfc6350.html[] is an HTML file generated from the AsciiCSAND.
-* link:spec/examples/rfc6350.doc[] is a Word document generated from the AsciiCSAND.
