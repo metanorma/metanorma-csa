@@ -95,7 +95,10 @@ RSpec.describe Asciidoctor::Csand do
   </contributor>
   <language>en</language>
   <script>Latn</script>
-  <status format="plain">working-draft</status>
+  <status>
+    <stage>working-draft</stage>
+    <iteration>3</iteration>
+  </status>
   <copyright>
     <from>2001</from>
     <owner>
@@ -155,7 +158,10 @@ RSpec.describe Asciidoctor::Csand do
   </contributor>
   <language>en</language>
   <script>Latn</script>
-  <status format="plain">committee-draft</status>
+  <status>
+    <stage>committee-draft</stage>
+    <iteration>3</iteration>
+  </status>
   <copyright>
     <from>#{Date.today.year}</from>
     <owner>
@@ -214,7 +220,10 @@ RSpec.describe Asciidoctor::Csand do
   </contributor>
   <language>en</language>
   <script>Latn</script>
-  <status format="plain">draft-standard</status>
+  <status>
+    <stage>draft-standard</stage>
+    <iteration>3</iteration>
+  </status>
   <copyright>
     <from>#{Date.today.year}</from>
     <owner>
@@ -273,7 +282,10 @@ RSpec.describe Asciidoctor::Csand do
   </contributor>
   <language>en</language>
   <script>Latn</script>
-  <status format="plain">standard</status>
+  <status>
+    <stage>standard</stage>
+    <iteration>3</iteration>
+  </status>
   <copyright>
     <from>2001</from>
     <owner>
