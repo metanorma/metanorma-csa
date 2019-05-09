@@ -76,11 +76,6 @@ RSpec.describe Asciidoctor::Csand do
 <title language="en" format="text/plain">Main Title</title>
 <docidentifier type="csand">1000(wd):2001</docidentifier>
 <docnumber>1000</docnumber>
-  <edition>2</edition>
-<version>
-  <revision-date>2000-01-01</revision-date>
-  <draft>3.4</draft>
-</version>
   <contributor>
     <role type="author"/>
     <organization>
@@ -93,6 +88,11 @@ RSpec.describe Asciidoctor::Csand do
       <name>Ribose</name>
     </organization>
   </contributor>
+    <edition>2</edition>
+<version>
+  <revision-date>2000-01-01</revision-date>
+  <draft>3.4</draft>
+</version>
   <language>en</language>
   <script>Latn</script>
   <status>
@@ -107,10 +107,13 @@ RSpec.describe Asciidoctor::Csand do
       </organization>
     </owner>
   </copyright>
+  <ext>
+  <doctype>standard</standard>
   <editorialgroup>
     <committee type="A">TC</committee>
     <committee type="B">TC1</committee>
   </editorialgroup>
+  </ext>
 </bibdata>
 <sections/>
 </csand-standard>
@@ -126,9 +129,6 @@ RSpec.describe Asciidoctor::Csand do
       :novalid:
       :docnumber: 1000
       :doctype: standard
-      :edition: 2
-      :revdate: 2000-01-01
-      :draft: 3.4
       :status: committee-draft
       :iteration: 3
       :language: en
@@ -139,11 +139,6 @@ RSpec.describe Asciidoctor::Csand do
   <title language="en" format="text/plain">Main Title</title>
   <docidentifier type="csand">1000(cd)</docidentifier>
   <docnumber>1000</docnumber>
-  <edition>2</edition>
-<version>
-  <revision-date>2000-01-01</revision-date>
-  <draft>3.4</draft>
-</version>
   <contributor>
     <role type="author"/>
     <organization>
@@ -170,9 +165,9 @@ RSpec.describe Asciidoctor::Csand do
       </organization>
     </owner>
   </copyright>
-  <editorialgroup>
-    <committee/>
-  </editorialgroup>
+  <ext>
+  <doctype>standard</doctype>
+  </ext>
 </bibdata>
 <sections/>
 </csand-standard>
@@ -188,9 +183,6 @@ RSpec.describe Asciidoctor::Csand do
       :novalid:
       :docnumber: 1000
       :doctype: standard
-      :edition: 2
-      :revdate: 2000-01-01
-      :draft: 3.4
       :status: draft-standard
       :iteration: 3
       :language: en
@@ -201,11 +193,6 @@ RSpec.describe Asciidoctor::Csand do
   <title language="en" format="text/plain">Main Title</title>
   <docidentifier type="csand">1000(d)</docidentifier>
   <docnumber>1000</docnumber>
-  <edition>2</edition>
-<version>
-  <revision-date>2000-01-01</revision-date>
-  <draft>3.4</draft>
-</version>
   <contributor>
     <role type="author"/>
     <organization>
@@ -232,9 +219,9 @@ RSpec.describe Asciidoctor::Csand do
       </organization>
     </owner>
   </copyright>
-  <editorialgroup>
-    <committee/>
-  </editorialgroup>
+  <ext>
+  <doctype>standard</doctype>
+  </ext>
 </bibdata>
 <sections/>
 </csand-standard>
@@ -250,9 +237,6 @@ RSpec.describe Asciidoctor::Csand do
       :novalid:
       :docnumber: 1000
       :doctype: standard
-      :edition: 2
-      :revdate: 2000-01-01
-      :draft: 3.4
       :copyright-year: 2001
       :status: standard
       :iteration: 3
@@ -264,11 +248,7 @@ RSpec.describe Asciidoctor::Csand do
   <title language="en" format="text/plain">Main Title</title>
   <docidentifier type="csand">1000:2001</docidentifier>
   <docnumber>1000</docnumber>
-  <edition>2</edition>
-<version>
-  <revision-date>2000-01-01</revision-date>
-  <draft>3.4</draft>
-</version>  <contributor>
+  <contributor>
     <role type="author"/>
     <organization>
       <name>Ribose</name>
@@ -294,9 +274,9 @@ RSpec.describe Asciidoctor::Csand do
       </organization>
     </owner>
   </copyright>
-  <editorialgroup>
-    <committee/>
-  </editorialgroup>
+  <ext>
+  <doctype>standard</doctype>
+  </ext>
 </bibdata>
 <sections/>
 </csand-standard>
