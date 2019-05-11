@@ -63,13 +63,13 @@ BLANK_HDR = <<~"HDR"
          <contributor>
            <role type="author"/>
            <organization>
-             <name>Ribose</name>
+             <name>Cloud Security Alliance</name>
            </organization>
          </contributor>
          <contributor>
            <role type="publisher"/>
            <organization>
-             <name>Ribose</name>
+             <name>Cloud Security Alliance</name>
            </organization>
          </contributor>
 
@@ -83,7 +83,7 @@ BLANK_HDR = <<~"HDR"
            <from>#{Time.new.year}</from>
            <owner>
              <organization>
-               <name>Ribose</name>
+               <name>Cloud Security Alliance</name>
              </organization>
            </owner>
          </copyright>

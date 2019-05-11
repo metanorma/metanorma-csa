@@ -18,7 +18,7 @@ module Asciidoctor
         xml.contributor do |c|
           c.role **{ type: "author" }
           c.organization do |a|
-            a.name "Ribose"
+            a.name "Cloud Security Alliance"
           end
         end
       end
@@ -27,7 +27,7 @@ module Asciidoctor
         xml.contributor do |c|
           c.role **{ type: "publisher" }
           c.organization do |a|
-            a.name "Ribose"
+            a.name "Cloud Security Alliance"
           end
         end
       end
@@ -65,7 +65,7 @@ module Asciidoctor
           c.from from
           c.owner do |owner|
             owner.organization do |o|
-              o.name "Ribose"
+              o.name "Cloud Security Alliance"
             end
           end
         end

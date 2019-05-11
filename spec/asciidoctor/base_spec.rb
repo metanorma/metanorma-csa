@@ -79,13 +79,13 @@ RSpec.describe Asciidoctor::Csand do
   <contributor>
     <role type="author"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <contributor>
     <role type="publisher"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
     <edition>2</edition>
@@ -103,7 +103,7 @@ RSpec.describe Asciidoctor::Csand do
     <from>2001</from>
     <owner>
       <organization>
-        <name>Ribose</name>
+        <name>Cloud Security Alliance</name>
       </organization>
     </owner>
   </copyright>
@@ -142,13 +142,13 @@ RSpec.describe Asciidoctor::Csand do
   <contributor>
     <role type="author"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <contributor>
     <role type="publisher"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <language>en</language>
@@ -161,7 +161,7 @@ RSpec.describe Asciidoctor::Csand do
     <from>#{Date.today.year}</from>
     <owner>
       <organization>
-        <name>Ribose</name>
+        <name>Cloud Security Alliance</name>
       </organization>
     </owner>
   </copyright>
@@ -196,13 +196,13 @@ RSpec.describe Asciidoctor::Csand do
   <contributor>
     <role type="author"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <contributor>
     <role type="publisher"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <language>en</language>
@@ -215,7 +215,7 @@ RSpec.describe Asciidoctor::Csand do
     <from>#{Date.today.year}</from>
     <owner>
       <organization>
-        <name>Ribose</name>
+        <name>Cloud Security Alliance</name>
       </organization>
     </owner>
   </copyright>
@@ -251,13 +251,13 @@ RSpec.describe Asciidoctor::Csand do
   <contributor>
     <role type="author"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <contributor>
     <role type="publisher"/>
     <organization>
-      <name>Ribose</name>
+      <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
   <language>en</language>
@@ -270,7 +270,7 @@ RSpec.describe Asciidoctor::Csand do
     <from>2001</from>
     <owner>
       <organization>
-        <name>Ribose</name>
+        <name>Cloud Security Alliance</name>
       </organization>
     </owner>
   </copyright>
