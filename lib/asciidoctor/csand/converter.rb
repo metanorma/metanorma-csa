@@ -3,6 +3,7 @@ require "metanorma/csand/version"
 require "isodoc/csand/html_convert"
 require "asciidoctor/standoc/converter"
 require "fileutils"
+require_relative "./validate.rb"
 
 module Asciidoctor
   module Csand
