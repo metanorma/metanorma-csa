@@ -5,7 +5,7 @@ module Metanorma
     class Processor < Metanorma::Processor
 
       def initialize
-        @short = :csand
+        @short = [:csand, :csa]
         @input_format = :asciidoc
         @asciidoctor_backend = :csand
       end
