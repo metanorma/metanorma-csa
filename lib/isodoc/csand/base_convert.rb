@@ -3,7 +3,7 @@ require_relative "metadata"
 
 module IsoDoc
   module Csand
-  	module BaseConvert
+    module BaseConvert
       def metadata_init(lang, script, labels)
         @meta = Metadata.new(lang, script, labels)
       end
@@ -15,14 +15,6 @@ module IsoDoc
           t.b do |b|
             name&.children&.each { |c2| parse(c2, b) }
           end
-        end
-      end
-
-      def term_defs_boilerplate(div, source, term, preface)
-        if source.empty? && term.nil?
-          div << @no_terms_boilerplate
-        else
-          div << term_defs_boilerplate_cont(source, term)
         end
       end
 
@@ -44,6 +36,6 @@ module IsoDoc
         end
         docxml
       end
-  	end
+    end
   end
 end
