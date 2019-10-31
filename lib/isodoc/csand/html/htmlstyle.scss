@@ -567,9 +567,12 @@ p.Biblio, p.NormRef {
 3.6 Source Code + figures
 */
 
-.figure, .Sourcecode {
+.Sourcecode {
   font-family: $monospacefont;
   font-variant-ligatures: none;
+}
+
+.figure, .Sourcecode, .pseudocode {
   background-color: #F5F6F6;
   font-size: 1em;
   line-height: 1.6em;
@@ -654,7 +657,7 @@ margin-top:0;
 margin-left:-1.5em;
 }
 
-.example .Sourcecode {
+.example .Sourcecode, .example .pseudocode {
       background: none;
 }
 
