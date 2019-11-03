@@ -55,7 +55,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes pre" do
-    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to <<~"OUTPUT"
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <preface><foreword>
 <pre>ABC</pre>
@@ -75,7 +75,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes keyword" do
-    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
 <csand-standard xmlns="https://open.ribose.com/standards/csand">
 <preface><foreword>
 <keyword>ABC</keyword>
@@ -95,7 +95,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes simple terms & definitions" do
-    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
                <csand-standard xmlns="http://riboseinc.com/isoxml">
        <sections>
        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -118,7 +118,7 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes section names" do
-    expect(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>")).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
                <csand-standard xmlns="http://riboseinc.com/isoxml">
       <preface>
       <foreword obligation="informative">
@@ -251,7 +251,7 @@ RSpec.describe IsoDoc::Csand do
 
   it "injects JS into blank html" do
     FileUtils.rm_f "test.html"
-    expect(Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true)).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
