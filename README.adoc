@@ -1,11 +1,11 @@
 = AsciiCSAND: Asciidoctor processor for CSA Normal Documents (CSAND)
 
 image:https://img.shields.io/gem/v/metanorma-csand.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csand"]
-image:https://img.shields.io/travis/metanorma/metanorma-csand/master.svg["Build Status", link="https://travis-ci.org/metanorma/metanorma-csand"]
-image:https://ci.appveyor.com/api/projects/status/3hulwj0i2c4uc7n4?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/ribose/metanorma-csand"]
+image:https://travis-ci.com/metanorma/metanorma-csand.svg["Build Status", link="https://travis-ci.com/metanorma/metanorma-csand"]
+image:https://ci.appveyor.com/api/projects/status/gs07fuoo1xhe1spe?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/metanorma/metanorma-csand"]
 image:https://codeclimate.com/github/metanorma/metanorma-csand/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/metanorma-csand"]
-
-WARNING: This gem is still under development.
+image:https://img.shields.io/github/issues-pr-raw/metanorma/metanorma-csand.svg["Pull Requests", link="https://github.com/metanorma/metanorma-csand/pulls"]
+image:https://img.shields.io/github/commits-since/metanorma/metanorma-csand/latest.svg["Commits since latest",link="https://github.com/metanorma/metanorma-csand/releases"]
 
 _Formerly known as_ `asciidoctor-csand`.
 
