@@ -1,1 +1,8 @@
 .DS_Store
+/coverage/
+
+# rspec failure tracking
+.rspec_status
+
+# test data
+/test.*
