@@ -1,5 +1,5 @@
 module Asciidoctor
-  module Csand
+  module Csa
     # Your code goes here...
   end
 end

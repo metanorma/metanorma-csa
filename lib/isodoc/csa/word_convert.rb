@@ -2,8 +2,8 @@ require_relative "base_convert"
 require "isodoc"
 
 module IsoDoc
-  module Csand
-    # A {Converter} implementation that generates CSAND output, and a document
+  module Csa
+    # A {Converter} implementation that generates CSA output, and a document
     # schema encapsulation of the document for validation
     class WordConvert < IsoDoc::WordConvert
       def initialize(options)
@@ -22,10 +22,10 @@ module IsoDoc
       def default_file_locations(options)
         {
           wordstylesheet: html_doc_path("wordstyle.scss"),
-          standardstylesheet: html_doc_path("csand.scss"),
+          standardstylesheet: html_doc_path("csa.scss"),
           header: html_doc_path("header.html"),
-          wordcoverpage: html_doc_path("word_csand_titlepage.html"),
-          wordintropage: html_doc_path("word_csand_intro.html"),
+          wordcoverpage: html_doc_path("word_csa_titlepage.html"),
+          wordintropage: html_doc_path("word_csa_intro.html"),
           ulstyle: "l3",
           olstyle: "l2",
         }

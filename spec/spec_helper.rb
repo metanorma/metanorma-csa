@@ -5,15 +5,14 @@ end
 
 require "bundler/setup"
 require "asciidoctor"
-require "metanorma-csand"
-require "asciidoctor/csand"
-require "isodoc/csand/html_convert"
+require "asciidoctor/csa"
+require "isodoc/csa/html_convert"
 require "asciidoctor/standoc/converter"
 require "rspec/matchers"
 require "equivalent-xml"
 require "htmlentities"
 require "metanorma"
-require "metanorma/csand"
+require "metanorma/csa"
 require "rexml/document"
 
 RSpec.configure do |config|
@@ -65,7 +64,7 @@ HDR
 
 BLANK_HDR = <<~"HDR"
        <?xml version="1.0" encoding="UTF-8"?>
-       <csand-standard xmlns="https://open.ribose.com/standards/csand">
+       <csa-standard xmlns="https://open.ribose.com/standards/csa">
        <bibdata type="standard">
         <title language="en" format="text/plain">Document title</title>
 

@@ -1,19 +1,22 @@
 require "asciidoctor"
-require "metanorma/csand/version"
-require "isodoc/csand/html_convert"
+require "metanorma/csa/version"
+require "isodoc/csa/html_convert"
+require "isodoc/csa/pdf_convert"
+require "isodoc/csa/word_convert"
 require "asciidoctor/standoc/converter"
 require "fileutils"
 require_relative "./validate.rb"
 
 module Asciidoctor
-  module Csand
-        CSAND_NAMESPACE = "https://open.ribose.com/standards/csand"
+  module Csa
+    CSA_NAMESPACE = "https://open.ribose.com/standards/csa"
+    CSA_TYPE = "csa"
 
     # A {Converter} implementation that generates CSD output, and a document
     # schema encapsulation of the document for validation
     class Converter < Standoc::Converter
 
-      register_for "csand"
+      register_for CSA_TYPE
 
       def metadata_author(node, xml)
         xml.contributor do |c|
@@ -51,12 +54,12 @@ module Asciidoctor
         docstatus = node.attr("status")
         dn = node.attr("docnumber")
         if docstatus
-          abbr = IsoDoc::Csand::Metadata.new("en", "Latn", {}).
+          abbr = IsoDoc::Csa::Metadata.new("en", "Latn", {}).
             status_abbr(docstatus)
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
         node.attr("copyright-year") and dn += ":#{node.attr("copyright-year")}"
-        xml.docidentifier dn, **{type: "csand"}
+        xml.docidentifier dn, **{type: CSA_TYPE}
         xml.docnumber { |i| i << node.attr("docnumber") }
       end
 
@@ -77,15 +80,15 @@ module Asciidoctor
       end
 
       def makexml(node)
-        result = ["<?xml version='1.0' encoding='UTF-8'?>\n<csand-standard>"]
+        result = ["<?xml version='1.0' encoding='UTF-8'?>\n<csa-standard>"]
         @draft = node.attributes.has_key?("draft")
         result << noko { |ixml| front node, ixml }
         result << noko { |ixml| middle node, ixml }
-        result << "</csand-standard>"
+        result << "</csa-standard>"
         result = textcleanup(result)
         ret1 = cleanup(Nokogiri::XML(result))
         validate(ret1) unless @novalid
-        ret1.root.add_namespace(nil, CSAND_NAMESPACE)
+        ret1.root.add_namespace(nil, CSA_NAMESPACE)
         ret1
       end
 
@@ -117,7 +120,7 @@ module Asciidoctor
       def validate(doc)
         content_validate(doc)
         schema_validate(formattedstr_strip(doc.dup),
-                        File.join(File.dirname(__FILE__), "csand.rng"))
+                        File.join(File.dirname(__FILE__), "csa.rng"))
       end
 
       def sections_cleanup(x)
@@ -132,13 +135,13 @@ module Asciidoctor
       end
 
       def html_converter(node)
-        IsoDoc::Csand::HtmlConvert.new(html_extract_attributes(node))
+        IsoDoc::Csa::HtmlConvert.new(html_extract_attributes(node))
       end
       def pdf_converter(node)
-        IsoDoc::Csand::PdfConvert.new(html_extract_attributes(node))
+        IsoDoc::Csa::PdfConvert.new(html_extract_attributes(node))
       end
       def word_converter(node)
-        IsoDoc::Csand::WordConvert.new(doc_extract_attributes(node))
+        IsoDoc::Csa::WordConvert.new(doc_extract_attributes(node))
       end
     end
   end

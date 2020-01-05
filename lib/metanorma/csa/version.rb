@@ -1,5 +1,5 @@
 module Metanorma
-  module Csand
+  module Csa
     VERSION = "1.3.9"
   end
 end

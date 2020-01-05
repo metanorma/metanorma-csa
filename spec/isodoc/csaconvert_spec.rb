@@ -1,14 +1,14 @@
 require "spec_helper"
 require "fileutils"
 
-RSpec.describe IsoDoc::Csand do
+RSpec.describe IsoDoc::Csa do
   it "processes default metadata" do
-        csdc = IsoDoc::Csand::HtmlConvert.new({})
+    csdc = IsoDoc::Csa::HtmlConvert.new({})
     docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
-<csand-standard xmlns="https://open.ribose.com/standards/csand">
+<csa-standard xmlns="https://open.ribose.com/standards/csa">
 <bibdata type="standard">
   <title language="en" format="plain">Main Title</title>
-  <docidentifier type="csand">1000(wd)</docidentifier>
+  <docidentifier type="csa">1000(wd)</docidentifier>
   <edition>2</edition>
   <version>
   <revision-date>2000-01-01</revision-date>
@@ -47,7 +47,7 @@ RSpec.describe IsoDoc::Csand do
   </ext>
 </bibdata>
 <sections/>
-</csand-standard>
+</csa-standard>
     INPUT
         expect(htmlencode(Hash[csdc.info(docxml, nil).sort].to_s)).to be_equivalent_to <<~"OUTPUT"
         {:accesseddate=>"XXX", :circulateddate=>"XXX", :confirmeddate=>"XXX", :copieddate=>"XXX", :createddate=>"XXX", :docnumber=>"1000(wd)", :doctitle=>"Main Title", :doctype=>"Standard", :docyear=>"2001", :draft=>"3.4", :draftinfo=>" (draft 3.4, 2000-01-01)", :edition=>"2", :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :publisheddate=>"XXX", :receiveddate=>"XXX", :revdate=>"2000-01-01", :stage=>"Working Draft", :tc=>"TC", :transmitteddate=>"XXX", :unchangeddate=>"XXX", :unpublished=>true, :updateddate=>"XXX"}
@@ -55,12 +55,12 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes pre" do
-    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to <<~"OUTPUT"
-<csand-standard xmlns="https://open.ribose.com/standards/csand">
+    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to <<~"OUTPUT"
+<csa-standard xmlns="https://open.ribose.com/standards/csa">
 <preface><foreword>
 <pre>ABC</pre>
 </foreword></preface>
-</csand-standard>
+</csa-standard>
     INPUT
     #{HTML_HDR}
              <br/>
@@ -75,13 +75,17 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes keyword" do
-    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-<csand-standard xmlns="https://open.ribose.com/standards/csand">
-<preface><foreword>
-<keyword>ABC</keyword>
-</foreword></preface>
-</csand-standard>
+    input = <<~"INPUT"
+      <csa-standard xmlns="https://open.ribose.com/standards/csa">
+        <preface><foreword><keyword>ABC</keyword></foreword></preface>
+      </csa-standard>
     INPUT
+
+    html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
+      .gsub(%r{^.*<body}m, "<body")
+      .gsub(%r{</body>.*}m, "</body>")
+
+    expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
         #{HTML_HDR}
              <br/>
              <div>
@@ -95,16 +99,16 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes simple terms & definitions" do
-    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-               <csand-standard xmlns="http://riboseinc.com/isoxml">
-       <sections>
-       <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
-         <term id="J">
-         <preferred>Term2</preferred>
-       </term>
-        </terms>
-        </sections>
-        </csand-standard>
+    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+      <csa-standard xmlns="http://riboseinc.com/isoxml">
+      <sections>
+      <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
+        <term id="J">
+          <preferred>Term2</preferred>
+        </term>
+      </terms>
+      </sections>
+      </csa-standard>
     INPUT
         #{HTML_HDR}
                <p class="zzSTDTitle1"/>
@@ -118,8 +122,8 @@ RSpec.describe IsoDoc::Csand do
   end
 
   it "processes section names" do
-    expect(xmlpp(IsoDoc::Csand::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-               <csand-standard xmlns="http://riboseinc.com/isoxml">
+    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+               <csa-standard xmlns="http://riboseinc.com/isoxml">
       <preface>
       <foreword obligation="informative">
          <title>Foreword</title>
@@ -177,7 +181,7 @@ RSpec.describe IsoDoc::Csand do
        </references>
        </clause>
        </bibliography>
-       </csand-standard>
+       </csa-standard>
     INPUT
         #{HTML_HDR}
              <br/>
@@ -251,7 +255,7 @@ RSpec.describe IsoDoc::Csand do
 
   it "injects JS into blank html" do
     FileUtils.rm_f "test.html"
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -259,7 +263,7 @@ RSpec.describe IsoDoc::Csand do
     INPUT
     #{BLANK_HDR}
 <sections/>
-</csand-standard>
+</csa-standard>
     OUTPUT
     html = File.read("test.html", encoding: "utf-8")
     expect(html).to match(%r{jquery\.min\.js})

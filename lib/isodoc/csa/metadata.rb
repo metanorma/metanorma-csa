@@ -1,8 +1,8 @@
 require "isodoc"
 
 module IsoDoc
-  module Csand
-    # A {Converter} implementation that generates CSAND output, and a document
+  module Csa
+    # A {Converter} implementation that generates CSA output, and a document
     # schema encapsulation of the document for validation
     class Metadata < IsoDoc::Metadata
             def initialize(lang, script, labels)
@@ -26,7 +26,7 @@ module IsoDoc
 
 
       def docid(isoxml, _out)
-        docnumber = isoxml.at(ns("//bibdata/docidentifier[@type = 'csand']"))
+        docnumber = isoxml.at(ns("//bibdata/docidentifier[@type = 'csa']"))
         set(:docnumber, docnumber&.text)
       end
 

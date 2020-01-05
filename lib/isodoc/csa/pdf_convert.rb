@@ -2,10 +2,10 @@ require_relative "base_convert"
 require "isodoc"
 
 module IsoDoc
-  module Csand
-    # A {Converter} implementation that generates CSAND output, and a document
+  module Csa
+    # A {Converter} implementation that generates CSA output, and a document
     # schema encapsulation of the document for validation
-    class HtmlConvert < IsoDoc::HtmlConvert
+    class PdfConvert < IsoDoc::PdfConvert
       def initialize(options)
         @libdir = File.dirname(__FILE__)
         super
@@ -22,9 +22,9 @@ module IsoDoc
       def default_file_locations(options)
         {
           htmlstylesheet: html_doc_path("htmlstyle.scss"),
-          htmlcoverpage: html_doc_path("html_csand_titlepage.html"),
-          htmlintropage: html_doc_path("html_csand_intro.html"),
-          scripts: html_doc_path("scripts.html"),
+          htmlcoverpage: html_doc_path("html_csa_titlepage.html"),
+          htmlintropage: html_doc_path("html_csa_intro.html"),
+          scripts_pdf: html_doc_path("scripts.pdf.html"),
         }
       end
 
@@ -44,6 +44,10 @@ module IsoDoc
           make_body2(body, docxml)
           make_body3(body, docxml)
         end
+      end
+
+      def html_toc(docxml)
+        docxml
       end
 
       include BaseConvert
