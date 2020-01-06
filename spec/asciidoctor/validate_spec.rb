@@ -2,7 +2,7 @@ require "spec_helper"
 require "fileutils"
 
 RSpec.describe Asciidoctor::Csa do
-  it "Warns of illegal doctype" do
+  it 'Warns of illegal doctype' do
     input = <<~"INPUT"
       = Document title
       Author
@@ -18,7 +18,7 @@ RSpec.describe Asciidoctor::Csa do
       .to output(/pizza is not a legal document type/).to_stderr
   end
 
-  it "Warns of illegal status" do
+  it 'Warns of illegal status' do
     input = <<~"INPUT"
       = Document title
       Author

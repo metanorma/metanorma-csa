@@ -6,39 +6,28 @@ RSpec.describe Asciidoctor::Csa do
     expect(Metanorma::Csa::VERSION).not_to be nil
   end
 
-  #it "generates output for the Rice document" do
-  #  FileUtils.rm_f %w(spec/examples/rfc6350.doc spec/examples/rfc6350.html spec/examples/rfc6350.pdf)
-  #  FileUtils.cd "spec/examples"
-  #  Asciidoctor.convert_file "rfc6350.adoc", {:attributes=>{"backend"=>"csa"}, :safe=>0, :header_footer=>true, :requires=>["metanorma-csand"], :failure_level=>4, :mkdirs=>true, :to_file=>nil}
-  #  FileUtils.cd "../.."
-  #  expect(xmlpp(File.exist?("spec/examples/rfc6350.doc"))).to be true
-  #  expect(xmlpp(File.exist?("spec/examples/rfc6350.pdf"))).to be true
-  #  expect(xmlpp(File.exist?("spec/examples/rfc6350.html"))).to be true
-  #end
-
   it "processes a blank document" do
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-    #{ASCIIDOC_BLANK_HDR}
-    INPUT
-    #{BLANK_HDR}
-<sections/>
-</csa-standard>
+    input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa, header_footer: true)
+    expect(xmlpp(input)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+      #{BLANK_HDR}
+      <sections/>
+      </csa-standard>
     OUTPUT
   end
 
   it "processes a blank document" do
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-    #{ASCIIDOC_BLANK_HDR}
-    INPUT
-    #{BLANK_HDR}
-<sections/>
-</csa-standard>
+    input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa, header_footer: true)
+    expect(xmlpp(input)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+      #{BLANK_HDR}
+      <sections/>
+      </csa-standard>
     OUTPUT
   end
 
   it "converts a blank document" do
     FileUtils.rm_f "test.html"
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -52,7 +41,8 @@ RSpec.describe Asciidoctor::Csa do
   end
 
   it "processes default metadata" do
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to <<~'OUTPUT'
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to <<~'OUTPUT'
       = Document title
       Author
       :docfile: test.adoc
@@ -131,7 +121,8 @@ RSpec.describe Asciidoctor::Csa do
   end
 
   it "processes committee-draft" do
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -144,48 +135,49 @@ RSpec.describe Asciidoctor::Csa do
       :language: en
       :title: Main Title
     INPUT
-    <csa-standard xmlns="https://open.ribose.com/standards/csa">
-<bibdata type="standard">
-  <title language="en" format="text/plain">Main Title</title>
-  <docidentifier type="csa">1000(cd)</docidentifier>
-  <docnumber>1000</docnumber>
-  <contributor>
-    <role type="author"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-    </organization>
-  </contributor>
-  <contributor>
-    <role type="publisher"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-    </organization>
-  </contributor>
-  <language>en</language>
-  <script>Latn</script>
-  <status>
-    <stage>committee-draft</stage>
-    <iteration>3</iteration>
-  </status>
-  <copyright>
-    <from>#{Date.today.year}</from>
-    <owner>
-      <organization>
-        <name>Cloud Security Alliance</name>
-      </organization>
-    </owner>
-  </copyright>
-  <ext>
-  <doctype>standard</doctype>
-  </ext>
-</bibdata>
-<sections/>
-</csa-standard>
+      <csa-standard xmlns="https://open.ribose.com/standards/csa">
+      <bibdata type="standard">
+        <title language="en" format="text/plain">Main Title</title>
+        <docidentifier type="csa">1000(cd)</docidentifier>
+        <docnumber>1000</docnumber>
+        <contributor>
+          <role type="author"/>
+          <organization>
+            <name>Cloud Security Alliance</name>
+          </organization>
+        </contributor>
+        <contributor>
+          <role type="publisher"/>
+          <organization>
+            <name>Cloud Security Alliance</name>
+          </organization>
+        </contributor>
+        <language>en</language>
+        <script>Latn</script>
+        <status>
+          <stage>committee-draft</stage>
+          <iteration>3</iteration>
+        </status>
+        <copyright>
+          <from>#{Date.today.year}</from>
+          <owner>
+            <organization>
+              <name>Cloud Security Alliance</name>
+            </organization>
+          </owner>
+        </copyright>
+        <ext>
+        <doctype>standard</doctype>
+        </ext>
+      </bibdata>
+      <sections/>
+      </csa-standard>
     OUTPUT
   end
 
-    it "processes draft-standard" do
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+  it "processes draft-standard" do
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -198,48 +190,49 @@ RSpec.describe Asciidoctor::Csa do
       :language: en
       :title: Main Title
     INPUT
-    <csa-standard xmlns="https://open.ribose.com/standards/csa">
-<bibdata type="standard">
-  <title language="en" format="text/plain">Main Title</title>
-  <docidentifier type="csa">1000(d)</docidentifier>
-  <docnumber>1000</docnumber>
-  <contributor>
-    <role type="author"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-    </organization>
-  </contributor>
-  <contributor>
-    <role type="publisher"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-    </organization>
-  </contributor>
-  <language>en</language>
-  <script>Latn</script>
-  <status>
-    <stage>draft-standard</stage>
-    <iteration>3</iteration>
-  </status>
-  <copyright>
-    <from>#{Date.today.year}</from>
-    <owner>
-      <organization>
-        <name>Cloud Security Alliance</name>
-      </organization>
-    </owner>
-  </copyright>
-  <ext>
-  <doctype>standard</doctype>
-  </ext>
-</bibdata>
-<sections/>
-</csa-standard>
+      <csa-standard xmlns="https://open.ribose.com/standards/csa">
+      <bibdata type="standard">
+        <title language="en" format="text/plain">Main Title</title>
+        <docidentifier type="csa">1000(d)</docidentifier>
+        <docnumber>1000</docnumber>
+        <contributor>
+          <role type="author"/>
+          <organization>
+            <name>Cloud Security Alliance</name>
+          </organization>
+        </contributor>
+        <contributor>
+          <role type="publisher"/>
+          <organization>
+            <name>Cloud Security Alliance</name>
+          </organization>
+        </contributor>
+        <language>en</language>
+        <script>Latn</script>
+        <status>
+          <stage>draft-standard</stage>
+          <iteration>3</iteration>
+        </status>
+        <copyright>
+          <from>#{Date.today.year}</from>
+          <owner>
+            <organization>
+              <name>Cloud Security Alliance</name>
+            </organization>
+          </owner>
+        </copyright>
+        <ext>
+        <doctype>standard</doctype>
+        </ext>
+      </bibdata>
+      <sections/>
+      </csa-standard>
     OUTPUT
   end
 
   it "ignores unrecognised status" do
-        expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to <<~'OUTPUT'
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to <<~'OUTPUT'
       = Document title
       Author
       :docfile: test.adoc
@@ -253,48 +246,49 @@ RSpec.describe Asciidoctor::Csa do
       :language: en
       :title: Main Title
     INPUT
-    <csa-standard xmlns="https://open.ribose.com/standards/csa">
-<bibdata type="standard">
-  <title language="en" format="text/plain">Main Title</title>
-  <docidentifier type="csa">1000:2001</docidentifier>
-  <docnumber>1000</docnumber>
-  <contributor>
-    <role type="author"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-    </organization>
-  </contributor>
-  <contributor>
-    <role type="publisher"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-    </organization>
-  </contributor>
-  <language>en</language>
-  <script>Latn</script>
-  <status>
-    <stage>standard</stage>
-    <iteration>3</iteration>
-  </status>
-  <copyright>
-    <from>2001</from>
-    <owner>
-      <organization>
-        <name>Cloud Security Alliance</name>
-      </organization>
-    </owner>
-  </copyright>
-  <ext>
-  <doctype>standard</doctype>
-  </ext>
-</bibdata>
-<sections/>
-</csa-standard>
+      <csa-standard xmlns="https://open.ribose.com/standards/csa">
+      <bibdata type="standard">
+        <title language="en" format="text/plain">Main Title</title>
+        <docidentifier type="csa">1000:2001</docidentifier>
+        <docnumber>1000</docnumber>
+        <contributor>
+          <role type="author"/>
+          <organization>
+            <name>Cloud Security Alliance</name>
+          </organization>
+        </contributor>
+        <contributor>
+          <role type="publisher"/>
+          <organization>
+            <name>Cloud Security Alliance</name>
+          </organization>
+        </contributor>
+        <language>en</language>
+        <script>Latn</script>
+        <status>
+          <stage>standard</stage>
+          <iteration>3</iteration>
+        </status>
+        <copyright>
+          <from>2001</from>
+          <owner>
+            <organization>
+              <name>Cloud Security Alliance</name>
+            </organization>
+          </owner>
+        </copyright>
+        <ext>
+        <doctype>standard</doctype>
+        </ext>
+      </bibdata>
+      <sections/>
+      </csa-standard>
     OUTPUT
   end
 
   it "processes figures" do
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       #{ASCIIDOC_BLANK_HDR}
 
       [[id]]
@@ -304,12 +298,12 @@ RSpec.describe Asciidoctor::Csa do
 
       Amen
       ....
-      INPUT
-    #{BLANK_HDR}
-       <sections>
-                <figure id="id">
-         <name>Figure 1</name>
-         <pre id="_">This is a literal
+    INPUT
+      #{BLANK_HDR}
+      <sections>
+        <figure id="id">
+          <name>Figure 1</name>
+          <pre id="_">This is a literal
 
        Amen</pre>
        </figure>
@@ -319,7 +313,8 @@ RSpec.describe Asciidoctor::Csa do
   end
 
   it "strips inline header" do
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       #{ASCIIDOC_BLANK_HDR}
       This is a preamble
 
@@ -385,7 +380,8 @@ RSpec.describe Asciidoctor::Csa do
   end
 
   it "processes inline_quoted formatting" do
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    args = { backend: :csa, header_footer: true }
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       #{ASCIIDOC_BLANK_HDR}
       _emphasis_
       *strong*

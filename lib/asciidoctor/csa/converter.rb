@@ -9,8 +9,8 @@ require_relative "./validate.rb"
 
 module Asciidoctor
   module Csa
-    CSA_NAMESPACE = "https://open.ribose.com/standards/csa"
-    CSA_TYPE = "csa"
+    CSA_NAMESPACE = 'https://open.ribose.com/standards/csa'.freeze
+    CSA_TYPE = 'csa'.freeze
 
     # A {Converter} implementation that generates CSD output, and a document
     # schema encapsulation of the document for validation
@@ -59,7 +59,7 @@ module Asciidoctor
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
         node.attr("copyright-year") and dn += ":#{node.attr("copyright-year")}"
-        xml.docidentifier dn, **{type: CSA_TYPE}
+        xml.docidentifier dn, **{ type: CSA_TYPE }
         xml.docnumber { |i| i << node.attr("docnumber") }
       end
 
@@ -84,7 +84,7 @@ module Asciidoctor
         @draft = node.attributes.has_key?("draft")
         result << noko { |ixml| front node, ixml }
         result << noko { |ixml| middle node, ixml }
-        result << "</csa-standard>"
+        result << '</csa-standard>'
         result = textcleanup(result)
         ret1 = cleanup(Nokogiri::XML(result))
         validate(ret1) unless @novalid
@@ -120,7 +120,7 @@ module Asciidoctor
       def validate(doc)
         content_validate(doc)
         schema_validate(formattedstr_strip(doc.dup),
-                        File.join(File.dirname(__FILE__), "csa.rng"))
+                        File.join(File.dirname(__FILE__), 'csa.rng'))
       end
 
       def sections_cleanup(x)

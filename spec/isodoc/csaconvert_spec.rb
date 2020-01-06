@@ -5,72 +5,101 @@ RSpec.describe IsoDoc::Csa do
   it "processes default metadata" do
     csdc = IsoDoc::Csa::HtmlConvert.new({})
     docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
-<csa-standard xmlns="https://open.ribose.com/standards/csa">
-<bibdata type="standard">
-  <title language="en" format="plain">Main Title</title>
-  <docidentifier type="csa">1000(wd)</docidentifier>
-  <edition>2</edition>
-  <version>
-  <revision-date>2000-01-01</revision-date>
-  <draft>3.4</draft>
-</version>
-  <contributor>
-    <role type="author"/>
-    <organization>
-      <name>Ribose</name>
-    </organization>
-  </contributor>
-  <contributor>
-    <role type="publisher"/>
-    <organization>
-      <name>Ribose</name>
-    </organization>
-  </contributor>
-  <language>en</language>
-  <script>Latn</script>
-  <status>
-    <stage>working-draft</stage>
-  </status>
-  <copyright>
-    <from>2001</from>
-    <owner>
-      <organization>
-        <name>Ribose</name>
-      </organization>
-    </owner>
-  </copyright>
-  <ext>
-  <doctype>standard</doctype>
-  <editorialgroup>
-    <committee type="A">TC</committee>
-  </editorialgroup>
-  </ext>
-</bibdata>
-<sections/>
-</csa-standard>
+      <csa-standard xmlns="https://open.ribose.com/standards/csa">
+      <bibdata type="standard">
+        <title language="en" format="plain">Main Title</title>
+        <docidentifier type="csa">1000(wd)</docidentifier>
+        <edition>2</edition>
+        <version>
+        <revision-date>2000-01-01</revision-date>
+        <draft>3.4</draft>
+      </version>
+        <contributor>
+          <role type="author"/>
+          <organization>
+            <name>Ribose</name>
+          </organization>
+        </contributor>
+        <contributor>
+          <role type="publisher"/>
+          <organization>
+            <name>Ribose</name>
+          </organization>
+        </contributor>
+        <language>en</language>
+        <script>Latn</script>
+        <status>
+          <stage>working-draft</stage>
+        </status>
+        <copyright>
+          <from>2001</from>
+          <owner>
+            <organization>
+              <name>Ribose</name>
+            </organization>
+          </owner>
+        </copyright>
+        <ext>
+        <doctype>standard</doctype>
+        <editorialgroup>
+          <committee type="A">TC</committee>
+        </editorialgroup>
+        </ext>
+      </bibdata>
+      <sections/>
+      </csa-standard>
     INPUT
-        expect(htmlencode(Hash[csdc.info(docxml, nil).sort].to_s)).to be_equivalent_to <<~"OUTPUT"
-        {:accesseddate=>"XXX", :circulateddate=>"XXX", :confirmeddate=>"XXX", :copieddate=>"XXX", :createddate=>"XXX", :docnumber=>"1000(wd)", :doctitle=>"Main Title", :doctype=>"Standard", :docyear=>"2001", :draft=>"3.4", :draftinfo=>" (draft 3.4, 2000-01-01)", :edition=>"2", :implementeddate=>"XXX", :issueddate=>"XXX", :obsoleteddate=>"XXX", :publisheddate=>"XXX", :receiveddate=>"XXX", :revdate=>"2000-01-01", :stage=>"Working Draft", :tc=>"TC", :transmitteddate=>"XXX", :unchangeddate=>"XXX", :unpublished=>true, :updateddate=>"XXX"}
-    OUTPUT
+
+    expect(htmlencode(Hash[csdc.info(docxml, nil).sort])).to be_equivalent_to Hash[
+      accesseddate: 'XXX',
+      circulateddate: 'XXX',
+      confirmeddate: 'XXX',
+      copieddate: 'XXX',
+      createddate: 'XXX',
+      docnumber: '1000(wd)',
+      doctitle: 'Main Title',
+      doctype: 'Standard',
+      docyear: '2001',
+      draft: '3.4',
+      draftinfo: ' (draft 3.4, 2000-01-01)',
+      edition: '2',
+      implementeddate: 'XXX',
+      issueddate: 'XXX',
+      obsoleteddate: 'XXX',
+      publisheddate: 'XXX',
+      receiveddate: 'XXX',
+      revdate: '2000-01-01',
+      stage: 'Working Draft',
+      tc: 'TC',
+      transmitteddate: 'XXX',
+      unchangeddate: 'XXX',
+      unpublished: true,
+      updateddate: 'XXX'
+    ]
   end
 
   it "processes pre" do
-    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to <<~"OUTPUT"
-<csa-standard xmlns="https://open.ribose.com/standards/csa">
-<preface><foreword>
-<pre>ABC</pre>
-</foreword></preface>
-</csa-standard>
+    input = <<~"INPUT"
+      <csa-standard xmlns="https://open.ribose.com/standards/csa">
+      <preface><foreword>
+      <pre>ABC</pre>
+      </foreword></preface>
+      </csa-standard>
     INPUT
-    #{HTML_HDR}
-             <br/>
-             <div>
-               <h1 class="ForewordTitle">Foreword</h1>
-               <pre>ABC</pre>
-             </div>
-             <p class="zzSTDTitle1"/>
-           </div>
-         </body>
+
+    html = IsoDoc::Csa::HtmlConvert.new({}).convert('test', input, true)
+                                   .gsub(/^.*<body/m, '<body')
+                                   .gsub(%r{</body>.*}m, '</body>')
+    expect(xmlpp(html)).to be_equivalent_to <<~"OUTPUT"
+      #{HTML_HDR}
+      <br/>
+      <div>
+        <h1 class="ForewordTitle">Foreword</h1>
+        <pre>ABC</pre>
+      </div>
+      <p class="zzSTDTitle1"/>
+      </div>
+      </body>
     OUTPUT
   end
 
@@ -81,9 +110,9 @@ RSpec.describe IsoDoc::Csa do
       </csa-standard>
     INPUT
 
-    html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
-      .gsub(%r{^.*<body}m, "<body")
-      .gsub(%r{</body>.*}m, "</body>")
+    html = IsoDoc::Csa::HtmlConvert.new({}).convert('test', input, true)
+                                   .gsub(/^.*<body/m, '<body')
+                                   .gsub(%r{</body>.*}m, '</body>')
 
     expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
         #{HTML_HDR}
@@ -99,17 +128,23 @@ RSpec.describe IsoDoc::Csa do
   end
 
   it "processes simple terms & definitions" do
-    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~"INPUT"
       <csa-standard xmlns="http://riboseinc.com/isoxml">
-      <sections>
-      <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
-        <term id="J">
-          <preferred>Term2</preferred>
-        </term>
-      </terms>
-      </sections>
+        <sections>
+          <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
+            <term id="J">
+              <preferred>Term2</preferred>
+            </term>
+          </terms>
+        </sections>
       </csa-standard>
     INPUT
+
+    html = IsoDoc::Csa::HtmlConvert.new({}).convert('test', input, true)
+                                   .gsub(/^.*<body/m, '<body')
+                                   .gsub(%r{</body>.*}m, '</body>')
+
+    expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
         #{HTML_HDR}
                <p class="zzSTDTitle1"/>
                <div id="H"><h1>1.&#160; Terms and definitions</h1>
@@ -122,14 +157,16 @@ RSpec.describe IsoDoc::Csa do
   end
 
   it "processes section names" do
-    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", <<~"INPUT", true).gsub(%r{^.*<body}m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-               <csa-standard xmlns="http://riboseinc.com/isoxml">
+    input = <<~"INPUT"
+      <csa-standard xmlns="http://riboseinc.com/isoxml">
       <preface>
       <foreword obligation="informative">
          <title>Foreword</title>
          <p id="A">This is a preamble</p>
        </foreword>
-        <introduction id="B" obligation="informative"><title>Introduction</title><clause id="C" inline-header="false" obligation="informative">
+        <introduction id="B" obligation="informative">
+         <title>Introduction</title>
+         <clause id="C" inline-header="false" obligation="informative">
          <title>Introduction Subsection</title>
        </clause>
        </introduction></preface><sections>
@@ -138,7 +175,9 @@ RSpec.describe IsoDoc::Csa do
          <p id="E">Text</p>
        </clause>
 
-       <clause id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title><terms id="I" obligation="normative">
+       <clause id="H" obligation="normative">
+         <title>Terms, Definitions, Symbols and Abbreviated Terms</title>
+         <terms id="I" obligation="normative">
          <title>Normal Terms</title>
          <term id="J">
          <preferred>Term2</preferred>
@@ -157,7 +196,9 @@ RSpec.describe IsoDoc::Csa do
          <dd>Definition</dd>
          </dl>
        </definitions>
-       <clause id="M" inline-header="false" obligation="normative"><title>Clause 4</title><clause id="N" inline-header="false" obligation="normative">
+       <clause id="M" inline-header="false" obligation="normative">
+         <title>Clause 4</title>
+         <clause id="N" inline-header="false" obligation="normative">
          <title>Introduction</title>
        </clause>
        <clause id="O" inline-header="false" obligation="normative">
@@ -183,7 +224,13 @@ RSpec.describe IsoDoc::Csa do
        </bibliography>
        </csa-standard>
     INPUT
-        #{HTML_HDR}
+
+    html = IsoDoc::Csa::HtmlConvert.new({}).convert('test', input, true)
+                                   .gsub(/^.*<body/m, '<body')
+                                   .gsub(%r{</body>.*}m, '</body>')
+
+    expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+      #{HTML_HDR}
              <br/>
                <div>
                  <h1 class="ForewordTitle">Foreword</h1>
@@ -255,19 +302,22 @@ RSpec.describe IsoDoc::Csa do
 
   it "injects JS into blank html" do
     FileUtils.rm_f "test.html"
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~"INPUT"
       = Document title
       Author
       :docfile: test.adoc
       :novalid:
     INPUT
-    #{BLANK_HDR}
-<sections/>
-</csa-standard>
+    html = Asciidoctor.convert(input, backend: :csa, header_footer: true)
+    expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+      #{BLANK_HDR}
+      <sections/>
+      </csa-standard>
     OUTPUT
-    html = File.read("test.html", encoding: "utf-8")
-    expect(html).to match(%r{jquery\.min\.js})
-    expect(html).to match(%r{Overpass})
+
+    html = File.read('test.html', encoding: 'utf-8')
+    expect(html).to match(/jquery\.min\.js/)
+    expect(html).to match(/Overpass/)
   end
 
 
