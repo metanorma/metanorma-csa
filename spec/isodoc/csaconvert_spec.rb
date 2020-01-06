@@ -1,5 +1,7 @@
-require "spec_helper"
-require "fileutils"
+# frozen_string_literal: true
+
+require 'spec_helper'
+require 'fileutils'
 
 RSpec.describe IsoDoc::Csa do
   it "processes default metadata" do
@@ -301,7 +303,7 @@ RSpec.describe IsoDoc::Csa do
   end
 
   it "injects JS into blank html" do
-    FileUtils.rm_f "test.html"
+    FileUtils.rm_f 'test.html'
     input = <<~"INPUT"
       = Document title
       Author

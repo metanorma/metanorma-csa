@@ -1,16 +1,18 @@
-require "asciidoctor"
-require "metanorma/csa/version"
-require "isodoc/csa/html_convert"
-require "isodoc/csa/pdf_convert"
-require "isodoc/csa/word_convert"
-require "asciidoctor/standoc/converter"
-require "fileutils"
-require_relative "./validate.rb"
+# frozen_string_literal: true
+
+require 'asciidoctor'
+require 'metanorma/csa/version'
+require 'isodoc/csa/html_convert'
+require 'isodoc/csa/pdf_convert'
+require 'isodoc/csa/word_convert'
+require 'asciidoctor/standoc/converter'
+require 'fileutils'
+require_relative 'validate'
 
 module Asciidoctor
   module Csa
-    CSA_NAMESPACE = 'https://open.ribose.com/standards/csa'.freeze
-    CSA_TYPE = 'csa'.freeze
+    CSA_NAMESPACE = 'https://open.ribose.com/standards/csa'
+    CSA_TYPE = 'csa'
 
     # A {Converter} implementation that generates CSD output, and a document
     # schema encapsulation of the document for validation
@@ -51,25 +53,25 @@ module Asciidoctor
       end
 
       def metadata_id(node, xml)
-        docstatus = node.attr("status")
-        dn = node.attr("docnumber")
+        docstatus = node.attr('status')
+        dn = node.attr('docnumber')
         if docstatus
-          abbr = IsoDoc::Csa::Metadata.new("en", "Latn", {}).
-            status_abbr(docstatus)
+          abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', {})
+                                      .status_abbr(docstatus)
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
-        node.attr("copyright-year") and dn += ":#{node.attr("copyright-year")}"
+        node.attr('copyright-year') && dn += ":#{node.attr('copyright-year')}"
         xml.docidentifier dn, **{ type: CSA_TYPE }
-        xml.docnumber { |i| i << node.attr("docnumber") }
+        xml.docnumber { |i| i << node.attr('docnumber') }
       end
 
       def metadata_copyright(node, xml)
-        from = node.attr("copyright-year") || Date.today.year
+        from = node.attr('copyright-year') || Date.today.year
         xml.copyright do |c|
           c.from from
           c.owner do |owner|
             owner.organization do |o|
-              o.name "Cloud Security Alliance"
+              o.name 'Cloud Security Alliance'
             end
           end
         end
@@ -93,10 +95,10 @@ module Asciidoctor
       end
 
       def doctype(node)
-        d = node.attr("doctype")
+        d = node.attr('doctype')
         unless %w{guidance proposal standard report whitepaper charter policy glossary case-study}.include? d
           warn "#{d} is not a legal document type: reverting to 'standard'"
-          d = "standard"
+          d = 'standard'
         end
         d
       end
@@ -105,13 +107,13 @@ module Asciidoctor
         init(node)
         ret1 = makexml(node)
         ret = ret1.to_xml(indent: 2)
-        unless node.attr("nodoc") || !node.attr("docfile")
-          filename = node.attr("docfile").gsub(/\.adoc/, ".xml").
-            gsub(%r{^.*/}, "")
-          File.open(filename, "w") { |f| f.write(ret) }
-          html_converter(node).convert filename unless node.attr("nodoc")
-          pdf_converter(node).convert filename unless node.attr("nodoc")
-          word_converter(node).convert filename unless node.attr("nodoc")
+        unless node.attr('nodoc') || !node.attr('docfile')
+          filename = node.attr('docfile').gsub(/\.adoc/, '.xml')
+                         .gsub(%r{^.*/}, '')
+          File.open(filename, 'w') { |f| f.write(ret) }
+          html_converter(node).convert filename unless node.attr('nodoc')
+          pdf_converter(node).convert filename unless node.attr('nodoc')
+          word_converter(node).convert filename unless node.attr('nodoc')
         end
         @files_to_delete.each { |f| FileUtils.rm f }
         ret
@@ -126,7 +128,7 @@ module Asciidoctor
       def sections_cleanup(x)
         super
         x.xpath("//*[@inline-header]").each do |h|
-          h.delete("inline-header")
+          h.delete('inline-header')
         end
       end
 

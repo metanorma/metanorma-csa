@@ -1,6 +1,8 @@
-require "spec_helper"
-require "metanorma"
-require "byebug"
+# frozen_string_literal: true
+
+require 'spec_helper'
+require 'metanorma'
+require 'byebug'
 
 RSpec.describe Metanorma::Csa::Processor do
 
@@ -45,9 +47,9 @@ RSpec.describe Metanorma::Csa::Processor do
         </sections>
       </csa-standard>
     INPUT
-    test_html = File.read("test.html", encoding: "utf-8")
-                    .gsub(%r{^.*<main}m, "<main")
-                    .gsub(%r{</main>.*}m, "</main>")
+    test_html = File.read('test.html', encoding: 'utf-8')
+                    .gsub(/^.*<main/m, '<main')
+                    .gsub(%r{</main>.*}m, '</main>')
     expect(xmlpp(test_html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
       <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
         <p class="zzSTDTitle1"></p>

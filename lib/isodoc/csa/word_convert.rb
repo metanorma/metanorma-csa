@@ -1,5 +1,7 @@
-require_relative "base_convert"
-require "isodoc"
+# frozen_string_literal: true
+
+require_relative 'base_convert'
+require 'isodoc'
 
 module IsoDoc
   module Csa
@@ -12,9 +14,11 @@ module IsoDoc
       end
 
       def default_fonts(options)
+        is_hans = options[:script] == 'Hans'
+
         {
-          bodyfont: (options[:script] == 'Hans' ? '"SimSun",serif' : '"Arial",sans-serif'),
-          headerfont: (options[:script] == 'Hans' ? '"SimHei",sans-serif' : '"Arial",sans-serif'),
+          bodyfont: (is_hans ? '"SimSun",serif' : '"Arial",sans-serif'),
+          headerfont: (is_hans ? '"SimHei",sans-serif' : '"Arial",sans-serif'),
           monospacefont: '"Courier New",monospace'
         }
       end
@@ -27,7 +31,7 @@ module IsoDoc
           wordcoverpage: html_doc_path('word_csa_titlepage.html'),
           wordintropage: html_doc_path('word_csa_intro.html'),
           ulstyle: 'l3',
-          olstyle: 'l2',
+          olstyle: 'l2'
         }
       end
 
@@ -35,4 +39,3 @@ module IsoDoc
     end
   end
 end
-

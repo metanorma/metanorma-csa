@@ -1,5 +1,7 @@
-require "metanorma/processor"
-require "asciidoctor/csa/converter"
+# frozen_string_literal: true
+
+require 'metanorma/processor'
+require 'asciidoctor/csa/converter'
 
 module Metanorma
   module Csa
@@ -13,9 +15,9 @@ module Metanorma
 
       def output_formats
         super.merge(
-          html: "html",
-          doc: "doc",
-          pdf: "pdf"
+          html: 'html',
+          doc: 'doc',
+          pdf: 'pdf'
         )
       end
 

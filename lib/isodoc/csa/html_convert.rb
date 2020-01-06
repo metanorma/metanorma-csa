@@ -1,5 +1,7 @@
-require_relative "base_convert"
-require "isodoc"
+# frozen_string_literal: true
+
+require_relative 'base_convert'
+require 'isodoc'
 
 module IsoDoc
   module Csa
@@ -12,9 +14,11 @@ module IsoDoc
       end
 
       def default_fonts(options)
+        is_hans = options[:script] == 'Hans'
         {
-          bodyfont: (options[:script] == 'Hans' ? '"SimSun",serif' : '"Source Sans Pro",sans-serif'),
-          headerfont: (options[:script] == 'Hans' ? '"SimHei",sans-serif' : '"Source Sans Pro",sans-serif'),
+          bodyfont: (is_hans ? '"SimSun",serif' : '"Source Sans Pro",sans-serif'),
+          headerfont: (is_hans ? '"SimHei",sans-serif'
+                              : '"Source Sans Pro",sans-serif'),
           monospacefont: '"Space Mono",monospace'
         }
       end
@@ -24,7 +28,7 @@ module IsoDoc
           htmlstylesheet: html_doc_path('htmlstyle.scss'),
           htmlcoverpage: html_doc_path('html_csa_titlepage.html'),
           htmlintropage: html_doc_path('html_csa_intro.html'),
-          scripts: html_doc_path('scripts.html'),
+          scripts: html_doc_path('scripts.html')
         }
       end
 
@@ -38,7 +42,8 @@ module IsoDoc
       end
 
       def make_body(xml, docxml)
-        body_attr = { lang: 'EN-US', link: 'blue', vlink: '#954F72', 'xml:lang': 'EN-US', class: 'container' }
+        body_attr = { lang: 'EN-US', link: 'blue', vlink: '#954F72',
+                      'xml:lang': 'EN-US', class: 'container' }
         xml.body **body_attr do |body|
           make_body1(body, docxml)
           make_body2(body, docxml)

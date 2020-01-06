@@ -1,4 +1,6 @@
-require "isodoc"
+# frozen_string_literal: true
+
+require 'isodoc'
 
 module IsoDoc
   module Csa

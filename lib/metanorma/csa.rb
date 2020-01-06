@@ -1,4 +1,4 @@
-require_relative "./csa/processor"
+require_relative 'csa/processor'
 
 module Metanorma
   module Csa

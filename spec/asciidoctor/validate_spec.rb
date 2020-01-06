@@ -1,5 +1,7 @@
-require "spec_helper"
-require "fileutils"
+# frozen_string_literal: true
+
+require 'spec_helper'
+require 'fileutils'
 
 RSpec.describe Asciidoctor::Csa do
   it 'Warns of illegal doctype' do
