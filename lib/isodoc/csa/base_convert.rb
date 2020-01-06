@@ -1,8 +1,10 @@
-require "isodoc"
-require_relative "metadata"
+# frozen_string_literal: true
+
+require 'isodoc'
+require_relative 'metadata'
 
 module IsoDoc
-  module Csand
+  module Csa
     module BaseConvert
       def metadata_init(lang, script, labels)
         @meta = Metadata.new(lang, script, labels)

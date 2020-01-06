@@ -1,13 +1,14 @@
-require "spec_helper"
-require "metanorma"
-require "byebug"
+# frozen_string_literal: true
 
-#RSpec.describe Asciidoctor::Csand do
-RSpec.describe Metanorma::Csand::Processor do
+require 'spec_helper'
+require 'metanorma'
+require 'byebug'
+
+RSpec.describe Metanorma::Csa::Processor do
 
   registry = Metanorma::Registry.instance
-  registry.register(Metanorma::Csand::Processor)
-  processor = registry.find_processor(:csand)
+  registry.register(Metanorma::Csa::Processor)
+  processor = registry.find_processor(:csa)
 
   it "registers against metanorma" do
     expect(processor).not_to be nil
@@ -20,7 +21,7 @@ RSpec.describe Metanorma::Csand::Processor do
   end
 
   it "registers version against metanorma" do
-    expect(processor.version.to_s).to match(%r{^Metanorma::Csand })
+    expect(processor.version.to_s).to match(/^Metanorma::Csa /)
   end
 
   it "generates IsoDoc XML from a blank document" do
@@ -29,32 +30,33 @@ RSpec.describe Metanorma::Csand::Processor do
     INPUT
     #{BLANK_HDR}
 <sections/>
-</csand-standard>
+</csa-standard>
     OUTPUT
   end
 
   it "generates HTML from IsoDoc XML" do
     FileUtils.rm_f "test.xml"
     processor.output(<<~"INPUT", "test.html", :html)
-               <csand-standard xmlns="http://riboseinc.com/isoxml">
-       <sections>
-       <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
-         <term id="J">
-         <preferred>Term2</preferred>
-       </term>
+      <csa-standard xmlns="http://riboseinc.com/isoxml">
+        <sections>
+        <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
+          <term id="J">
+          <preferred>Term2</preferred>
+        </term>
         </terms>
         </sections>
-        </csand-standard>
+      </csa-standard>
     INPUT
-    expect(xmlpp(File.read("test.html", encoding: "utf-8").gsub(%r{^.*<main}m, "<main").gsub(%r{</main>.*}m, "</main>"))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-           <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
-             <p class="zzSTDTitle1"></p>
-             <div id="H"><h1>1.&#xA0; Terms and definitions</h1>
-       <h2 class="TermNum" id="J">1.1.&#xA0;<p class="Terms" style="text-align:left;">Term2</p></h2>
-
-       </div>
-           </main>
+    test_html = File.read('test.html', encoding: 'utf-8')
+                    .gsub(/^.*<main/m, '<main')
+                    .gsub(%r{</main>.*}m, '</main>')
+    expect(xmlpp(test_html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+      <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+        <p class="zzSTDTitle1"></p>
+        <div id="H"><h1>1.&#xA0; Terms and definitions</h1>
+        <h2 class="TermNum" id="J">1.1.&#xA0;<p class="Terms" style="text-align:left;">Term2</p></h2>
+        </div>
+      </main>
     OUTPUT
   end
-
 end

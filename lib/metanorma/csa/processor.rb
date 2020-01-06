@@ -1,25 +1,28 @@
-require "metanorma/processor"
+# frozen_string_literal: true
+
+require 'metanorma/processor'
+require 'asciidoctor/csa/converter'
 
 module Metanorma
-  module Csand
+  module Csa
     class Processor < Metanorma::Processor
 
       def initialize
-        @short = [:csand, :csa]
+        @short = :csa
         @input_format = :asciidoc
-        @asciidoctor_backend = :csand
+        @asciidoctor_backend = Asciidoctor::Csa::CSA_TYPE.to_sym
       end
 
       def output_formats
         super.merge(
-          html: "html",
-          doc: "doc",
-          pdf: "pdf"
+          html: 'html',
+          doc: 'doc',
+          pdf: 'pdf'
         )
       end
 
       def version
-        "Metanorma::Csand #{Metanorma::Csand::VERSION}"
+        "Metanorma::Csa #{Metanorma::Csa::VERSION}"
       end
 
       def input_to_isodoc(file, filename)
@@ -29,11 +32,11 @@ module Metanorma
       def output(isodoc_node, outname, format, options={})
         case format
         when :html
-          IsoDoc::Csand::HtmlConvert.new(options).convert(outname, isodoc_node)
+          IsoDoc::Csa::HtmlConvert.new(options).convert(outname, isodoc_node)
         when :doc
-          IsoDoc::Csand::WordConvert.new(options).convert(outname, isodoc_node)
+          IsoDoc::Csa::WordConvert.new(options).convert(outname, isodoc_node)
         when :pdf
-          IsoDoc::Csand::PdfConvert.new(options).convert(outname, isodoc_node)
+          IsoDoc::Csa::PdfConvert.new(options).convert(outname, isodoc_node)
         else
           super
         end

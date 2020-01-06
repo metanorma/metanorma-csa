@@ -1,23 +1,23 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "metanorma/csand/version"
+require "metanorma/csa/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "metanorma-csand"
-  spec.version       = Metanorma::Csand::VERSION
+  spec.name          = "metanorma-csa"
+  spec.version       = Metanorma::Csa::VERSION
   spec.authors       = ["Ribose Inc."]
   spec.email         = ["open.source@ribose.com"]
 
-  spec.summary       = "metanorma-csand lets you write CSA Normal Documents (CSAND) in AsciiDoc."
+  spec.summary       = "metanorma-csa lets you write CSA Normal Documents (CSAND) in AsciiDoc."
   spec.description   = <<~DESCRIPTION
-    metanorma-csand lets you write CSA Normal Documents (CSAND) in AsciiDoc syntax.
+    metanorma-csa lets you write CSA Normal Documents (CSAND) in AsciiDoc syntax.
 
     This gem is in active development.
 
-    Formerly known as asciidoctor-csand.
+    Formerly known as asciidoctor-csa.
   DESCRIPTION
 
-  spec.homepage      = "https://github.com/metanorma/metanorma-csand"
+  spec.homepage      = "https://github.com/metanorma/metanorma-csa"
   spec.license       = "BSD-2-Clause"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|

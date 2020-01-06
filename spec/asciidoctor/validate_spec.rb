@@ -1,31 +1,39 @@
-require "spec_helper"
-require "fileutils"
+# frozen_string_literal: true
 
-RSpec.describe Asciidoctor::Csand do
-    it "Warns of illegal doctype" do
-    expect { Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true) }.to output(/pizza is not a legal document type/).to_stderr
-  = Document title
-  Author
-  :docfile: test.adoc
-  :nodoc:
-  :no-isobib:
-  :doctype: pizza
+require 'spec_helper'
+require 'fileutils'
 
-  text
-  INPUT
-end
+RSpec.describe Asciidoctor::Csa do
+  it 'Warns of illegal doctype' do
+    input = <<~"INPUT"
+      = Document title
+      Author
+      :docfile: test.adoc
+      :nodoc:
+      :no-isobib:
+      :doctype: pizza
 
-it "Warns of illegal status" do
-    expect { Asciidoctor.convert(<<~"INPUT", backend: :csand, header_footer: true) }.to output(/pizza is not a recognised status/).to_stderr
-  = Document title
-  Author
-  :docfile: test.adoc
-  :nodoc:
-  :no-isobib:
-  :status: pizza
+      text
+    INPUT
 
-  text
-  INPUT
-end
+    expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }
+      .to output(/pizza is not a legal document type/).to_stderr
+  end
+
+  it 'Warns of illegal status' do
+    input = <<~"INPUT"
+      = Document title
+      Author
+      :docfile: test.adoc
+      :nodoc:
+      :no-isobib:
+      :status: pizza
+
+      text
+    INPUT
+
+    expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }
+      .to output(/pizza is not a recognised status/).to_stderr
+  end
 
 end

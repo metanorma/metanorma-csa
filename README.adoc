@@ -1,11 +1,12 @@
 = AsciiCSAND: Asciidoctor processor for CSA Normal Documents (CSAND)
 
-image:https://img.shields.io/gem/v/metanorma-csand.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csand"]
-image:https://travis-ci.com/metanorma/metanorma-csand.svg["Build Status", link="https://travis-ci.com/metanorma/metanorma-csand"]
-image:https://ci.appveyor.com/api/projects/status/gs07fuoo1xhe1spe?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/metanorma/metanorma-csand"]
+image:https://img.shields.io/gem/v/metanorma-csa.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csa"]
+image:https://github.com/metanorma/metanorma-csa/workflows/ubuntu/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Aubuntu"]
+image:https://github.com/metanorma/metanorma-csa/workflows/macos/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Amacos"]
+image:https://github.com/metanorma/metanorma-csa/workflows/windows/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Awindows"]
 image:https://codeclimate.com/github/metanorma/metanorma-csand/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/metanorma-csand"]
-image:https://img.shields.io/github/issues-pr-raw/metanorma/metanorma-csand.svg["Pull Requests", link="https://github.com/metanorma/metanorma-csand/pulls"]
-image:https://img.shields.io/github/commits-since/metanorma/metanorma-csand/latest.svg["Commits since latest",link="https://github.com/metanorma/metanorma-csand/releases"]
+image:https://img.shields.io/github/issues-pr-raw/metanorma/metanorma-csa.svg["Pull Requests", link="https://github.com/metanorma/metanorma-csa/pulls"]
+image:https://img.shields.io/github/commits-since/metanorma/metanorma-csa/latest.svg["Commits since latest",link="https://github.com/metanorma/metanorma-csa/releases"]
 
 _Formerly known as_ `asciidoctor-csand`.
 
@@ -41,9 +42,9 @@ The preferred way to invoke this gem is via the `metanorma` script:
 
 [source,console]
 ----
-$ metanorma --type csand a.adoc                   # output just HTML
-$ metanorma --type csand a.adoc --extensions html # output just HTML
-$ metanorma --type csand a.adoc --extensions xml  # output CSAND XML
+$ metanorma --type csa a.adoc                   # output just HTML
+$ metanorma --type csa a.adoc --extensions html # output just HTML
+$ metanorma --type csa a.adoc --extensions xml  # output CSAND XML
 ----
 
 The gem translates the document into CSAND XML format, and then
@@ -59,7 +60,7 @@ The gem can also be invoked directly within asciidoctor, though this is deprecat
 
 [source,console]
 ----
-$ asciidoctor -b csand -r 'asciidoctor-csand' a.adoc  
+$ asciidoctor -b csa -r 'metanorma-csa' a.adoc  
 ----
 
 === Installation
@@ -71,12 +72,12 @@ scripts such as this one. You need only run the following in a Terminal console:
 [source,console]
 ----
 $ bash <(curl -s https://raw.githubusercontent.com/metanorma/metanorma-macos-setup/master/metanorma-setup)
-$ gem install metanorma-csand
+$ gem install metanorma-csa
 
 ----
 
 == Documentation
 
-See https://www.metanorma.com/author/csand/[Author Cloud Security Alliance documents with Metanorma-CSAND].
+See https://www.metanorma.com/author/csa/[Author Cloud Security Alliance documents with Metanorma-CSAND].
 
 

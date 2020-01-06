@@ -1,20 +1,21 @@
-require "simplecov"
+# frozen_string_literal: true
+
+require 'simplecov'
 SimpleCov.start do
-  add_filter "/spec/"
+  add_filter '/spec/'
 end
 
-require "bundler/setup"
-require "asciidoctor"
-require "metanorma-csand"
-require "asciidoctor/csand"
-require "isodoc/csand/html_convert"
-require "asciidoctor/standoc/converter"
-require "rspec/matchers"
-require "equivalent-xml"
-require "htmlentities"
-require "metanorma"
-require "metanorma/csand"
-require "rexml/document"
+require 'bundler/setup'
+require 'asciidoctor'
+require 'asciidoctor/csa'
+require 'isodoc/csa/html_convert'
+require 'asciidoctor/standoc/converter'
+require 'rspec/matchers'
+require 'equivalent-xml'
+require 'htmlentities'
+require 'metanorma'
+require 'metanorma/csa'
+require 'rexml/document'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -39,10 +40,10 @@ def strip_guid(x)
 end
 
 def xmlpp(x)
-  s = ""
+  s = String.new
   f = REXML::Formatters::Pretty.new(2)
   f.compact = true
-  f.write(REXML::Document.new(x),s)
+  f.write(REXML::Document.new(x), s)
   s
 end
 
@@ -65,7 +66,7 @@ HDR
 
 BLANK_HDR = <<~"HDR"
        <?xml version="1.0" encoding="UTF-8"?>
-       <csand-standard xmlns="https://open.ribose.com/standards/csand">
+       <csa-standard xmlns="https://open.ribose.com/standards/csa">
        <bibdata type="standard">
         <title language="en" format="text/plain">Document title</title>
 
