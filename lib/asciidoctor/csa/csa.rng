@@ -5,9 +5,9 @@
     we cannot have a new default namespace: we will end up with a grammar with two different
     namespaces, one for isostandard and one for csand additions. And we do not want that.
   -->
-  <include href="isostandard.rng">
+  <include href="isodoc.rng">
     <start>
-      <ref name="csa-standard"/>
+      <ref name="csand-standard"/>
     </start>
     <define name="figure">
       <element name="figure">
@@ -79,8 +79,8 @@
       </element>
     </define>
   </include>
-  <define name="csa-standard">
-    <element name="csa-standard">
+  <define name="csand-standard">
+    <element name="csand-standard">
       <ref name="bibdata"/>
       <zeroOrMore>
         <ref name="termdocsource"/>

@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'fileutils'
-
 RSpec.describe Asciidoctor::Csa do
   it 'Warns of illegal doctype' do
-    input = <<~"INPUT"
+    expect { Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true) }.to output(/pizza is not a legal document type/).to_stderr
       = Document title
       Author
       :docfile: test.adoc
@@ -16,8 +14,7 @@ RSpec.describe Asciidoctor::Csa do
       text
     INPUT
 
-    expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }
-      .to output(/pizza is not a legal document type/).to_stderr
+    #expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }.to output(/pizza is not a legal document type/).to_stderr
   end
 
   it 'Warns of illegal status' do
@@ -35,5 +32,4 @@ RSpec.describe Asciidoctor::Csa do
     expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }
       .to output(/pizza is not a recognised status/).to_stderr
   end
-
 end
