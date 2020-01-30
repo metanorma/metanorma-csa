@@ -311,7 +311,7 @@ RSpec.describe IsoDoc::Csa do
       :novalid:
     INPUT
     html = Asciidoctor.convert(input, backend: :csa, header_footer: true)
-    expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(xmlpp(strip_guid(html))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       #{BLANK_HDR}
       <sections/>
       </csa-standard>
