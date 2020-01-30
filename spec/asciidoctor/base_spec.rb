@@ -10,16 +10,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "processes a blank document" do
     input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa, header_footer: true)
-    expect(xmlpp(input)).to be_equivalent_to xmlpp(<<~"OUTPUT")
-      #{BLANK_HDR}
-      <sections/>
-      </csa-standard>
-    OUTPUT
-  end
-
-  it "processes a blank document" do
-    input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa, header_footer: true)
-    expect(xmlpp(input)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(xmlpp(strip_guid(input))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       #{BLANK_HDR}
       <sections/>
       </csa-standard>
@@ -29,7 +20,7 @@ RSpec.describe Asciidoctor::Csa do
   it "converts a blank document" do
     FileUtils.rm_f "test.html"
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -44,7 +35,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "processes default metadata" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to <<~'OUTPUT'
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to <<~"OUTPUT"
       = Document title
       Author
       :docfile: test.adoc
@@ -117,6 +108,7 @@ RSpec.describe Asciidoctor::Csa do
   </editorialgroup>
   </ext>
 </bibdata>
+    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, "2001 Cloud Security Alliance")}
 <sections/>
 </csa-standard>
     OUTPUT
@@ -124,7 +116,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "processes committee-draft" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -172,6 +164,7 @@ RSpec.describe Asciidoctor::Csa do
         <doctype>standard</doctype>
         </ext>
       </bibdata>
+    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
       <sections/>
       </csa-standard>
     OUTPUT
@@ -179,7 +172,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "processes draft-standard" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -227,6 +220,7 @@ RSpec.describe Asciidoctor::Csa do
         <doctype>standard</doctype>
         </ext>
       </bibdata>
+    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
       <sections/>
       </csa-standard>
     OUTPUT
@@ -234,7 +228,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "ignores unrecognised status" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(Asciidoctor.convert(<<~"INPUT", args))).to be_equivalent_to <<~'OUTPUT'
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to <<~"OUTPUT"
       = Document title
       Author
       :docfile: test.adoc
@@ -283,6 +277,7 @@ RSpec.describe Asciidoctor::Csa do
         <doctype>standard</doctype>
         </ext>
       </bibdata>
+    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, "2001 Cloud Security Alliance")}
       <sections/>
       </csa-standard>
     OUTPUT
