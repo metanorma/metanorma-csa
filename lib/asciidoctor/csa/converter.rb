@@ -11,12 +11,13 @@ require_relative 'validate'
 
 module Asciidoctor
   module Csa
-    CSA_NAMESPACE = 'https://open.ribose.com/standards/csa'
     CSA_TYPE = 'csa'
 
     # A {Converter} implementation that generates CSD output, and a document
     # schema encapsulation of the document for validation
     class Converter < Standoc::Converter
+      XML_ROOT_TAG = "csa-standard".freeze
+      XML_NAMESPACE = "https://open.ribose.com/standards/csa".freeze
 
       register_for CSA_TYPE
 
@@ -57,7 +58,7 @@ module Asciidoctor
         dn = node.attr('docnumber')
         if docstatus
           abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', {})
-                                      .status_abbr(docstatus)
+            .status_abbr(docstatus)
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
         node.attr('copyright-year') && dn += ":#{node.attr('copyright-year')}"
@@ -81,19 +82,6 @@ module Asciidoctor
         nil
       end
 
-      def makexml(node)
-        result = ["<?xml version='1.0' encoding='UTF-8'?>\n<csa-standard>"]
-        @draft = node.attributes.has_key?("draft")
-        result << noko { |ixml| front node, ixml }
-        result << noko { |ixml| middle node, ixml }
-        result << '</csa-standard>'
-        result = textcleanup(result)
-        ret1 = cleanup(Nokogiri::XML(result))
-        validate(ret1) unless @novalid
-        ret1.root.add_namespace(nil, CSA_NAMESPACE)
-        ret1
-      end
-
       def doctype(node)
         d = node.attr('doctype')
         unless %w{guidance proposal standard report whitepaper charter policy glossary case-study}.include? d
@@ -109,7 +97,7 @@ module Asciidoctor
         ret = ret1.to_xml(indent: 2)
         unless node.attr('nodoc') || !node.attr('docfile')
           filename = node.attr('docfile').gsub(/\.adoc/, '.xml')
-                         .gsub(%r{^.*/}, '')
+            .gsub(%r{^.*/}, '')
           File.open(filename, 'w') { |f| f.write(ret) }
           html_converter(node).convert filename unless node.attr('nodoc')
           pdf_converter(node).convert filename unless node.attr('nodoc')
