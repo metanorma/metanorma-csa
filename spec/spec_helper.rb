@@ -88,7 +88,7 @@ END
 
 BLANK_HDR = <<~"HDR"
        <?xml version="1.0" encoding="UTF-8"?>
-       <csa-standard xmlns="https://open.ribose.com/standards/csa">
+       <csa-standard xmlns="https://www.metanorma.com/ns/csa">
        <bibdata type="standard">
         <title language="en" format="text/plain">Document title</title>
 
