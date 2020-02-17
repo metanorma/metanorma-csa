@@ -17,7 +17,7 @@ module Asciidoctor
     # schema encapsulation of the document for validation
     class Converter < Standoc::Converter
       XML_ROOT_TAG = "csa-standard".freeze
-      XML_NAMESPACE = "https://www.metanorma.com/ns/csa".freeze
+      XML_NAMESPACE = "https://www.metanorma.org/ns/csa".freeze
 
       register_for CSA_TYPE
 

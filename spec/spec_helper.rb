@@ -88,7 +88,7 @@ END
 
 BLANK_HDR = <<~"HDR"
        <?xml version="1.0" encoding="UTF-8"?>
-       <csa-standard xmlns="https://www.metanorma.com/ns/csa">
+       <csa-standard xmlns="https://www.metanorma.org/ns/csa">
        <bibdata type="standard">
         <title language="en" format="text/plain">Document title</title>
 
