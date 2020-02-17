@@ -58,7 +58,7 @@ module Asciidoctor
         dn = node.attr('docnumber')
         if docstatus
           abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', {})
-            .status_abbr(docstatus)
+            .stage_abbr(docstatus)
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
         node.attr('copyright-year') && dn += ":#{node.attr('copyright-year')}"

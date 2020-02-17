@@ -11,6 +11,7 @@ RSpec.describe IsoDoc::Csa do
       <bibdata type="standard">
         <title language="en" format="plain">Main Title</title>
         <docidentifier type="csa">1000(wd)</docidentifier>
+        <docnumber>1000</docnumber>
         <edition>2</edition>
         <version>
         <revision-date>2000-01-01</revision-date>
@@ -59,6 +60,7 @@ RSpec.describe IsoDoc::Csa do
       copieddate: 'XXX',
       createddate: 'XXX',
       docnumber: '1000(wd)',
+      docnumeric: '1000',
       doctitle: 'Main Title',
       doctype: 'Standard',
       docyear: '2001',
@@ -72,6 +74,7 @@ RSpec.describe IsoDoc::Csa do
       receiveddate: 'XXX',
       revdate: '2000-01-01',
       stage: 'Working Draft',
+      stageabbr: "wd",
       tc: 'TC',
       transmitteddate: 'XXX',
       unchangeddate: 'XXX',
