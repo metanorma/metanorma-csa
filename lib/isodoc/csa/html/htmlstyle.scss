@@ -1,153 +1,17 @@
 /*
-0 CSS RESET
+    0 CSS RESET
 */
 
 /* http://meyerweb.com/eric/tools/css/reset/
-v2.0 | 20110126
-License: none (public domain)
+   v2.0 | 20110126
+   License: none (public domain)
 */
 
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-}
-
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  border: 0;
-  font-size: 100%;
-}
-
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, tt, var,
-b, u, i, center,
-dl, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  vertical-align: baseline;
-}
-
-
-html, body, div, span, applet, object, iframe,
-p, blockquote,
-a, abbr, acronym, address, big, cite,
-del, dfn, em, img, ins, q, s,
-small, strike, strong, sub, sup, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  font-family: $bodyfont;
-}
-
-code, pre, tt, kbd, samp {
-  font-family: $monospacefont;
-  font-variant-ligatures: none;
-}
-
-code *, pre *, tt *, kbd *, samp * {
-  font-family: $monospacefont !important;
-  font-variant-ligatures: none;
-}
-
-h1, h2, h3, h4, h5, h6, .h2Annex {
-  font-family: $headerfont;
-}
-
-li {
-  margin-left: 1em;
-  list-style-position: outside;
-}
-
-dl {
-  display: grid;
-  grid-template-columns: max-content auto;
-}
-
-dt {
-  font-weight: 500;
-  grid-column-start: 1;
-}
-
-dd {
-  grid-column-start: 2;
-}
-
-dd p, dt p {
-  margin-top: 0px;
-}
-
-
-/* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
-  display: block;
-}
-body {
-  line-height: 1;
-}
-blockquote, q {
-  quotes: none;
-}
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
-  content: none;
-}
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-
-
-/*
-1. HTML & Body
-*/
+@import 'base_style/all';
 
 body {
-  margin: 0;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 100%;
-  color: #1d1d1d;
-  font-weight: 300;
-  font-size: 15px;
-  line-height: 1.4em;
-  background-color: #ffffff;
+  @include bodyStyle1(15px, 1.4em, #1d1d1d, #ffffff, 300);
+  // @include sidebarNavContainer(323px);
 }
 
 main {
@@ -155,48 +19,52 @@ main {
 }
 
 #toc {
-  font-family: $bodyfont;
-  font-weight: 400;
+  @include toc(#4D7EA5, #4D7EA5, #4D7EA5);
+  @include sidebarToc();
+
+  .toc-active a {
+    color: white;
+  }
+
+  li a {
+    text-transform: none;
+  }
+
+  ul {
+    a:hover {
+      box-shadow: none;
+      color: white;
+    }
+  }
+}
+
+li {
+  margin-left: 1em;
+  list-style-position: outside;
+}
+
+nav {
+  @include sidebarNav(#f7f7f7, 323px, 45px);
+}
+
+#toggle {
+  @include sidebarNavToggle(white, #4D7EA5)
+}
+
+#myBtn {
+  @include toTopBtn(white, #1f8ca0);
+  text-transform: uppercase;
+
+  a.anchorjs-link {
+    @include anchorLink(#4D7EA5)
+  }
 }
 
 /*
-2. Responsive navigation layout
+    2. Responsive navigation layout
 */
 
-
 @media screen and (min-width: 768px) {
-  nav {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 323px;
-    font-size: 0.9em;
-    overflow: auto;
-    padding: 0 0 0 45px;
-    margin-right: 30px;
-    background-color: #f7f7f7;
-  }
-
-  #toggle {
-    position: fixed;
-    height: 100%;
-    width: 30px;
-    background-color: #4D7EA5;
-    color: white!important;
-    cursor: pointer;
-    z-index: 100;
-  }
-
-  #toggle span {
-    text-align: center;
-    width: 100%;
-    position: absolute;
-    top: 50%;
-    transform: translate(0, -50%);
-  }
-
-
   .container {
     padding-left: 360px;
   }
@@ -213,127 +81,33 @@ main {
     padding: 0;
     margin: 0;
   }
-
-}
-
-@media screen and (max-width: 768px) {
-  #toc {
-    padding: 0 1.5em 0 1.5em;
-    overflow: visible;
-  }
-
-}
-
-  div.figure > img {
-    margin-left: auto;
-margin-right: auto;
-display: block;
-max-width: 100%;
-height: auto;
-  }
-
-
-#toc ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-#toc li a {
-  padding: 5px 10px;
-}
-
-#toc a {
-  color: #4D7EA5;
-  text-decoration: none;
-  display: block;
-}
-
-#toc a:hover {
-  box-shadow: none;
-  color: white;
-}
-
-#toc .h2 {
-  padding-left: 30px;
-}
-
-#toc .h3 {
-  padding-left: 50px;
-}
-
-#toc .toc-active a {
-  color: white;
-}
-
-#toc .toc-active, #toc li:hover {
-  background: #4D7EA5;
-  box-shadow: inset -5px 0px 10px -5px #4D7EA5!important;
-}
-
-#toc li:hover a {
-  color: white;
 }
 
 /*
-Document types + stages
+    Document types + stages
 */
 
 .document-type-band {
-  left: 0;
-  top: 180px;
-  height: 100%;
-  position: fixed;
-  display: block;
-  z-index: 99;
-  /*box-shadow: -5px 0px 10px #1d1d1d*/
+  @include docBand(2, 100%, 180px);
+  &> :first-child {
+    height: 120px;
+  }
 }
 
 .document-stage-band {
-  left: 0;
-  top: 0;
-  height: 100%;
-  position: fixed;
-  display: block;
-  z-index: 98;
-  /*box-shadow: -5px 0px 10px #1d1d1d*/
+  @include docBand(1, 160px);
+  &> :first-child {
+    font-weight: 300;
+  }
 }
 
-.document-type {
-  position: relative;
-  width: 25px;
-}
-
-.document-stage {
-  position: relative;
-  width: 25px;
-}
-
-p.document-type, p.document-stage {
-  color: white;
-  text-transform: uppercase;
-  font-size: 0.9em;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  margin: 0;
-  margin-left: 6px;
-  writing-mode: tb-rl;
-  -webkit-transform: rotate(180deg);
-  -moz-transform: rotate(180deg);
-  -o-transform: rotate(180deg);
-  white-space: nowrap;
-  display: block;
-  bottom: 0;
-}
-
-p.document-type {
-  font-weight: 400;
-  height: 120px;
+p.document-type,
+p.document-stage {
+  @include docBandTitle(120px);
 }
 
 #governance-band p.document-type {
-  font-weight: 400;
-  height: 230px!important;
+  height: 230px !important;
 }
 
 p.document-stage {
@@ -341,8 +115,13 @@ p.document-stage {
   height: 160px;
 }
 
+dt {
+  font-weight: 500;
+}
+
 #standard-band {
   color: #0ac442;
+  background: none;
 }
 
 #standard {
@@ -377,8 +156,11 @@ p.document-stage {
   border-bottom: solid 3px #fda706;
 }
 
-#working-draft-band p {
-  color: #fda706;
+#working-draft-band {
+  p {
+    color: #fda706;
+  }
+  background: none;
 }
 
 #committee-draft {
@@ -573,6 +355,7 @@ p.Biblio, p.NormRef {
 }
 
 .figure, .Sourcecode, .pseudocode {
+  @include figureBlock();
   background-color: #F5F6F6;
   font-size: 1em;
   line-height: 1.6em;
@@ -1067,6 +850,10 @@ nav h1:hover a:after {
 
 .document-type-band p {
   color: #4D7EA5!important;
+}
+
+.document-stage-band {
+  box-shadow: none;
 }
 
 @page {
