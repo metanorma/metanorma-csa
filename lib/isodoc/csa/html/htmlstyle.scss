@@ -302,12 +302,12 @@ p.Biblio, p.NormRef {
 3.6 Source Code + figures
 */
 
-.Sourcecode {
+pre {
   @include monospaceBlockStyle()
 }
 
 .figure,
-.Sourcecode,
+pre,
 .pseudocode {
   @include pseudocodeBlock(#F5F6F6, rgb(91, 94, 95));
   font-size: 1em;
@@ -380,7 +380,7 @@ td.example_label {
     font-size: 1.2em;
   }
 
-  .Sourcecode,
+  pre,
   .pseudocode {
     background: none;
   }
