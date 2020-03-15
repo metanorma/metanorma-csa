@@ -54,8 +54,8 @@ module Asciidoctor
       end
 
       def metadata_id(node, xml)
+        dn = node.attr('docnumber') or return
         docstatus = node.attr('status')
-        dn = node.attr('docnumber')
         if docstatus
           abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', {})
             .stage_abbr(docstatus)
