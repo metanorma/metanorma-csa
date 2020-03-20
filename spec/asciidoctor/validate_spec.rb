@@ -3,7 +3,7 @@
 require 'spec_helper'
 RSpec.describe Asciidoctor::Csa do
   it 'Warns of illegal doctype' do
-    expect { Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true) }.to output(/pizza is not a legal document type/).to_stderr
+    Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true) 
       = Document title
       Author
       :docfile: test.adoc
@@ -13,8 +13,8 @@ RSpec.describe Asciidoctor::Csa do
 
       text
     INPUT
+    expect(File.read("test.err")).to include "pizza is not a legal document type"
 
-    #expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }.to output(/pizza is not a legal document type/).to_stderr
   end
 
   it 'Warns of illegal status' do
@@ -29,7 +29,7 @@ RSpec.describe Asciidoctor::Csa do
       text
     INPUT
 
-    expect { Asciidoctor.convert(input, backend: :csa, header_footer: true) }
-      .to output(/pizza is not a recognised status/).to_stderr
+    Asciidoctor.convert(input, backend: :csa, header_footer: true) 
+    expect(File.read("test.err")).to include "pizza is not a recognised status"
   end
 end
