@@ -80,4 +80,6 @@ $ gem install metanorma-csa
 
 See https://www.metanorma.com/author/csa/[Author Cloud Security Alliance documents with Metanorma-CSAND].
 
+== Examples
 
+See https://github.com/metanorma/mn-samples-csa for sample documents.
