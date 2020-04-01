@@ -79,9 +79,10 @@ nav {
 */
 
 .document-type-band {
-  @include docBand(2, 100%, 180px);
-  &> :first-child {
-    height: 120px;
+  @include docBand($order: 2, $offset: 180px);
+
+  .document-type {
+    top: 20px;
   }
 }
 
@@ -92,7 +93,6 @@ nav {
   }
 }
 
-p.document-type,
 p.document-stage {
   @include docBandTitle(120px);
 }
