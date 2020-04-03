@@ -55,6 +55,9 @@ RSpec.describe IsoDoc::Csa do
 
     expect(htmlencode(Hash[csdc.info(docxml, nil).sort])).to be_equivalent_to Hash[
       accesseddate: 'XXX',
+      agency: 'Ribose',
+      authors: [],
+      authors_affiliations: {},
       circulateddate: 'XXX',
       confirmeddate: 'XXX',
       copieddate: 'XXX',
@@ -71,8 +74,10 @@ RSpec.describe IsoDoc::Csa do
       issueddate: 'XXX',
       obsoleteddate: 'XXX',
       publisheddate: 'XXX',
+      publisher: 'Ribose',
       receiveddate: 'XXX',
       revdate: '2000-01-01',
+      revdate_monthyear: 'January 2000',
       stage: 'Working Draft',
       stageabbr: "wd",
       tc: 'TC',

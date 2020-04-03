@@ -7,7 +7,7 @@ module IsoDoc
     # A {Converter} implementation that generates CSA output, and a document
     # schema encapsulation of the document for validation
     class Metadata < IsoDoc::Metadata
-            def initialize(lang, script, labels)
+      def initialize(lang, script, labels)
         super
       end
 
@@ -24,6 +24,7 @@ module IsoDoc
         set(:tc, "XXXX")
         tc = isoxml.at(ns("//bibdata/ext/editorialgroup/committee"))
         set(:tc, tc.text) if tc
+        super
       end
 
 
