@@ -5,6 +5,10 @@ require 'asciidoctor/csa/converter'
 
 module Metanorma
   module Csa
+    def self.pdf_fonts
+      %w(AzoSans AzoSans-Light SourceCodePro-Light)
+    end
+
     class Processor < Metanorma::Processor
 
       def initialize
