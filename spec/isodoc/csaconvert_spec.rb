@@ -84,7 +84,9 @@ RSpec.describe IsoDoc::Csa do
       transmitteddate: 'XXX',
       unchangeddate: 'XXX',
       unpublished: true,
-      updateddate: 'XXX'
+      updateddate: 'XXX',
+      vote_endeddate: 'XXX',
+      vote_starteddate: 'XXX',
     ]
   end
 
@@ -157,7 +159,7 @@ RSpec.describe IsoDoc::Csa do
     expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
         #{HTML_HDR}
                <p class="zzSTDTitle1"/>
-               <div id="H"><h1>1.&#160; Terms and definitions</h1>
+               <div id="H"><h1>1.&#160; Terms, Definitions, Symbols and Abbreviated Terms</h1>
        <p class="TermNum" id="J">1.1.</p>
          <p class="Terms" style="text-align:left;">Term2</p>
        </div>
@@ -261,7 +263,7 @@ RSpec.describe IsoDoc::Csa do
                <div>
                  <h1>2.&#160; Normative references</h1>
                </div>
-               <div id="H"><h1>3.&#160; Terms, definitions, symbols and abbreviated terms</h1>
+               <div id="H"><h1>3.&#160; Terms, Definitions, Symbols and Abbreviated Terms</h1>
        <div id="I">
           <h2>3.1.&#160; Normal Terms</h2>
           <p class="TermNum" id="J">3.1.1.</p>
