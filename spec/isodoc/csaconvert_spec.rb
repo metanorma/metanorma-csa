@@ -329,7 +329,7 @@ RSpec.describe IsoDoc::Csa do
 
     html = File.read('test.html', encoding: 'utf-8')
     expect(html).to match(/jquery\.min\.js/)
-    expect(html).to match(/Overpass/)
+    expect(html).to match(/AzoSans/)
   end
 
 

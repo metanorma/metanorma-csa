@@ -16,10 +16,10 @@ module IsoDoc
       def default_fonts(options)
         is_hans = options[:script] == 'Hans'
         {
-          bodyfont: (is_hans ? '"SimSun",serif' : '"Source Sans Pro",sans-serif'),
+          bodyfont: (is_hans ? '"SimSun",serif' : 'AzoSans,"Source Sans Pro",sans-serif'),
           headerfont: (is_hans ? '"SimHei",sans-serif'
-                              : '"Source Sans Pro",sans-serif'),
-          monospacefont: '"Space Mono",monospace'
+                              : 'AzoSans,"Source Sans Pro",sans-serif'),
+          monospacefont: '"Source Code Pro",monospace'
         }
       end
 
@@ -36,8 +36,8 @@ module IsoDoc
         <<~HEAD.freeze
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i|Space+Mono:400,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,300i,500" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Overpass:100,300,300i,600,900" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300i,400,700,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
         HEAD
       end
 
