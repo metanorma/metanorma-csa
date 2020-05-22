@@ -6,7 +6,11 @@ require 'asciidoctor/csa/converter'
 module Metanorma
   module Csa
     def self.fonts_used
-      %w(AzoSans AzoSans-Light SourceCodePro-Light)
+      {
+        html: %w(AzoSans AzoSans-Light SourceCodePro-Light)
+        doc: %w(AzoSans AzoSans-Light SourceCodePro-Light)
+        pdf: %w(AzoSans AzoSans-Light SourceCodePro-Light)
+      }
     end
 
     class Processor < Metanorma::Processor
