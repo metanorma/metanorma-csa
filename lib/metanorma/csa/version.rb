@@ -2,6 +2,6 @@
 
 module Metanorma
   module Csa
-    VERSION = '1.4.12'
+    VERSION = '1.5.0'
   end
 end
