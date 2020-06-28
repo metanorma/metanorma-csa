@@ -6,10 +6,6 @@ require_relative 'metadata'
 module IsoDoc
   module Csa
     module BaseConvert
-      def metadata_init(lang, script, labels)
-        @meta = Metadata.new(lang, script, labels)
-      end
-
       def annex_name(annex, name, div)
         div.h1 **{ class: "Annex" } do |t|
           t << "#{@xrefs.anchor(annex['id'], :label)} "
