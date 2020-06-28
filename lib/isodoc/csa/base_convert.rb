@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'isodoc'
-require_relative 'metadata'
 
 module IsoDoc
   module Csa
