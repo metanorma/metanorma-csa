@@ -33,10 +33,6 @@ module Metanorma
         "Metanorma::Csa #{Metanorma::Csa::VERSION}"
       end
 
-      def input_to_isodoc(file, filename)
-        Metanorma::Input::Asciidoc.new.process(file, filename, @asciidoctor_backend)
-      end
-
       def output(isodoc_node, inname, outname, format, options={})
         case format
         when :html
