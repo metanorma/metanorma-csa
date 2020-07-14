@@ -58,7 +58,7 @@ module Asciidoctor
         dn = node.attr('docnumber') or return
         docstatus = node.attr('status')
         if docstatus
-          abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', {})
+          abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', @i18n)
             .stage_abbr(docstatus)
           dn = "#{dn}(#{abbr})" unless abbr.empty?
         end
@@ -97,9 +97,12 @@ module Asciidoctor
       def outputs(node, ret)
         File.open(@filename + ".xml", "w:UTF-8") { |f| f.write(ret) }
           presentation_xml_converter(node).convert(@filename + ".xml")
-          html_converter(node).convert(@filename + ".presentation.xml", nil, false, "#{@filename}.html")
-          doc_converter(node).convert(@filename + ".presentation.xml", nil, false, "#{@filename}.doc")
-          pdf_converter(node)&.convert(@filename + ".presentation.xml", nil, false, "#{@filename}.pdf")
+          html_converter(node).convert(@filename + ".presentation.xml", 
+                                       nil, false, "#{@filename}.html")
+          doc_converter(node).convert(@filename + ".presentation.xml", 
+                                      nil, false, "#{@filename}.doc")
+          pdf_converter(node)&.convert(@filename + ".presentation.xml", 
+                                       nil, false, "#{@filename}.pdf")
       end
 
       def validate(doc)
