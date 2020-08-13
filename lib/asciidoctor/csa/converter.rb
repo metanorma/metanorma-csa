@@ -22,22 +22,11 @@ module Asciidoctor
 
       register_for CSA_TYPE
 
-      def metadata_author(node, xml)
-        xml.contributor do |c|
-          c.role **{ type: "author" }
-          c.organization do |a|
-            a.name "Cloud Security Alliance"
-          end
-        end
+      def default_publisher
+        "Cloud Security Alliance"
       end
 
-      def metadata_publisher(node, xml)
-        xml.contributor do |c|
-          c.role **{ type: "publisher" }
-          c.organization do |a|
-            a.name "Cloud Security Alliance"
-          end
-        end
+      def personal_author(node, xml)
       end
 
       def metadata_committee(node, xml)
@@ -65,18 +54,6 @@ module Asciidoctor
         node.attr('copyright-year') && dn += ":#{node.attr('copyright-year')}"
         xml.docidentifier dn, **{ type: CSA_TYPE }
         xml.docnumber { |i| i << node.attr('docnumber') }
-      end
-
-      def metadata_copyright(node, xml)
-        from = node.attr('copyright-year') || Date.today.year
-        xml.copyright do |c|
-          c.from from
-          c.owner do |owner|
-            owner.organization do |o|
-              o.name 'Cloud Security Alliance'
-            end
-          end
-        end
       end
 
       def title_validate(root)
