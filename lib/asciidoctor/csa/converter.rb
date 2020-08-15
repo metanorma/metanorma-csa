@@ -61,7 +61,7 @@ module Asciidoctor
       end
 
       def doctype(node)
-        d = node.attr('doctype')
+        d = super
         unless %w{guidance proposal standard report whitepaper charter policy
           glossary case-study}.include? d
           @log.add("Document Attributes", nil,
