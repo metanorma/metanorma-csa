@@ -26,7 +26,11 @@ module Asciidoctor
         "Cloud Security Alliance"
       end
 
-      def personal_author(node, xml)
+      def personal_role(node, c, suffix)
+        role = node.attr("role#{suffix}")&.downcase || "full author"
+        c.role **{ type: role == "editor" ? "editor" : "author" } do |r|
+          r.description role.strip.gsub(/\s/, "-")
+        end
       end
 
       def metadata_committee(node, xml)

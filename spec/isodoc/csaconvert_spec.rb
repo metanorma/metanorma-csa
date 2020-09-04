@@ -23,6 +23,27 @@ RSpec.describe IsoDoc::Csa do
             <name>Ribose</name>
           </organization>
         </contributor>
+           <contributor>
+             <role type='author'>
+               <description>full-author</description>
+             </role>
+             <person>
+               <name>
+                 <completename>Fred Nerk</completename>
+               </name>
+             </person>
+           </contributor>
+           <contributor>
+             <role type='editor'>
+               <description>contributor</description>
+             </role>
+             <person>
+               <name>
+                 <forename>Julius</forename>
+                 <surname>Caesar</surname>
+               </name>
+             </person>
+           </contributor>
         <contributor>
           <role type="publisher"/>
           <organization>
@@ -56,8 +77,8 @@ RSpec.describe IsoDoc::Csa do
     expect(htmlencode(Hash[csdc.info(docxml, nil).sort]).to_s.gsub(/, :/, ",\n:")).to be_equivalent_to (<<~OUTPUT)
 {:accesseddate=>"XXX",
 :agency=>"Ribose",
-:authors=>[],
-:authors_affiliations=>{},
+:authors=>["Fred Nerk", "Julius Caesar"],
+:authors_affiliations=>{""=>["Fred Nerk", "Julius Caesar"]},
 :circulateddate=>"XXX",
 :confirmeddate=>"XXX",
 :copieddate=>"XXX",
@@ -79,6 +100,7 @@ RSpec.describe IsoDoc::Csa do
 :receiveddate=>"XXX",
 :revdate=>"2000-01-01",
 :revdate_monthyear=>"January 2000",
+:roles_authors_affiliations=>{"editor"=>{""=>["Julius Caesar"]}, "full-author"=>{""=>["Fred Nerk"]}},
 :stage=>"Working Draft",
 :stageabbr=>"wd",
 :tc=>"TC",
