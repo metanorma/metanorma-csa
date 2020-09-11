@@ -75,6 +75,7 @@ BOILERPLATE =
 
 LICENSE_BOILERPLATE = <<~END
 <license-statement>
+<clause>
              <title>Warning for Drafts</title>
              <p id='_'>
                This document is not a CSA Standard. It is distributed for review and
@@ -83,6 +84,7 @@ LICENSE_BOILERPLATE = <<~END
                their comments, notification of any relevant patent rights of which they
                are aware and to provide supporting documentation.
              </p>
+             </clause>
            </license-statement>
 END
 
