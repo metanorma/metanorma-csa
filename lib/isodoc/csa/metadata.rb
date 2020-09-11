@@ -43,6 +43,36 @@ module IsoDoc
         end
       end
 
+      def personal_authors(isoxml)
+        persons = auth_roles(isoxml, nonauth_roles(isoxml, {}))
+        set(:roles_authors_affiliations, persons)
+        super
+      end
+
+      def nonauth_roles(isoxml, persons)
+        roles = isoxml.xpath(ns("//bibdata/contributor[person]/role/@type")).
+          inject([]) { |m, t| m << t.value }.reject { |i| i == "author" }
+        roles.uniq.sort.each do |r|
+          n = isoxml.xpath(ns("//bibdata/contributor[role/@type = '#{r}']"\
+                              "/person"))
+          n.empty? or persons[r] = extract_person_names_affiliations(n)
+        end
+        persons
+      end
+
+      def auth_roles(isoxml, persons)
+        roles = isoxml.xpath(ns("//bibdata/contributor[person]/"\
+                                "role[@type = 'author']/description")).
+        inject([]) { |m, t| m << t.text }
+        roles.uniq.sort.each do |r|
+          n = isoxml.xpath(
+               ns("//bibdata/contributor[role/@type = 'author']"\
+                  "[xmlns:role/description = '#{r}']/person"))
+          n.empty? or persons[r] = extract_person_names_affiliations(n)
+        end
+        persons
+      end
+
       def unpublished(status)
         !%w(published withdrawn).include? status.downcase
       end

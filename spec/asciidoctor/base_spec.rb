@@ -62,6 +62,10 @@ RSpec.describe Asciidoctor::Csa do
       :iteration: 3
       :language: en
       :title: Main Title
+      :fullname: Fred Nerk
+      :surname_2: Caesar
+      :givenname_2: Julius
+      :role_2: contributor
     INPUT
     <?xml version="1.0" encoding="UTF-8"?>
 <csa-standard xmlns="https://www.metanorma.org/ns/csa">
@@ -75,6 +79,27 @@ RSpec.describe Asciidoctor::Csa do
       <name>Cloud Security Alliance</name>
     </organization>
   </contributor>
+           <contributor>
+             <role type='author'>
+               <description>full-author</description>
+             </role>
+             <person>
+               <name>
+                 <completename>Fred Nerk</completename>
+               </name>
+             </person>
+           </contributor>
+           <contributor>
+             <role type='author'>
+               <description>contributor</description>
+             </role>
+             <person>
+               <name>
+                 <forename>Julius</forename>
+                 <surname>Caesar</surname>
+               </name>
+             </person>
+           </contributor>
   <contributor>
     <role type="publisher"/>
     <organization>
