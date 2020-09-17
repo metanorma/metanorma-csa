@@ -176,7 +176,7 @@ RSpec.describe IsoDoc::Csa do
     INPUT
 
     presxml = <<~OUTPUT
-    <csa-standard xmlns='http://riboseinc.com/isoxml'>
+    <csa-standard xmlns='http://riboseinc.com/isoxml' type="presentation">
   <sections>
     <terms id='H' obligation='normative'>
       <title depth='1'>1.<tab/>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -271,7 +271,7 @@ OUTPUT
        </bibliography>
        </csa-standard>
     INPUT
-    <csa-standard xmlns='http://riboseinc.com/isoxml'>
+    <csa-standard xmlns='http://riboseinc.com/isoxml' type="presentation">
          <preface>
            <foreword obligation='informative'>
              <title>Foreword</title>
