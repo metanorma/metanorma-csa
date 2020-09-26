@@ -68,7 +68,7 @@ RSpec.describe Asciidoctor::Csa do
       :role_2: contributor
     INPUT
     <?xml version="1.0" encoding="UTF-8"?>
-<csa-standard xmlns="https://www.metanorma.org/ns/csa">
+<csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
 <bibdata type="standard">
 <title language="en" format="text/plain">Main Title</title>
 <docidentifier type="csa">1000(wd):2001</docidentifier>
@@ -154,7 +154,7 @@ RSpec.describe Asciidoctor::Csa do
       :language: en
       :title: Main Title
     INPUT
-      <csa-standard xmlns="https://www.metanorma.org/ns/csa">
+      <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
         <docidentifier type="csa">1000(cd)</docidentifier>
@@ -210,7 +210,7 @@ RSpec.describe Asciidoctor::Csa do
       :language: en
       :title: Main Title
     INPUT
-      <csa-standard xmlns="https://www.metanorma.org/ns/csa">
+      <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
         <docidentifier type="csa">1000(d)</docidentifier>
@@ -267,7 +267,7 @@ RSpec.describe Asciidoctor::Csa do
       :language: en
       :title: Main Title
     INPUT
-      <csa-standard xmlns="https://www.metanorma.org/ns/csa">
+      <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
         <docidentifier type="csa">1000:2001</docidentifier>
