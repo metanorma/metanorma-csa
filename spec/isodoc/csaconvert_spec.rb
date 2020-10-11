@@ -74,7 +74,7 @@ RSpec.describe IsoDoc::Csa do
       </csa-standard>
     INPUT
 
-    expect(htmlencode(Hash[csdc.info(docxml, nil).sort]).to_s.gsub(/, :/, ",\n:")).to be_equivalent_to (<<~OUTPUT)
+    expect(htmlencode(metadata(csdc.info(docxml, nil)).to_s.gsub(/, :/, ",\n:"))).to be_equivalent_to (<<~OUTPUT)
 {:accesseddate=>"XXX",
 :agency=>"Ribose",
 :authors=>["Fred Nerk", "Julius Caesar"],
@@ -93,7 +93,6 @@ RSpec.describe IsoDoc::Csa do
 :edition=>"2",
 :implementeddate=>"XXX",
 :issueddate=>"XXX",
-:keywords=>[],
 :obsoleteddate=>"XXX",
 :publisheddate=>"XXX",
 :publisher=>"Ribose",
