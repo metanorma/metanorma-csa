@@ -3,9 +3,30 @@ require "fileutils"
 
 require 'spec_helper'
 RSpec.describe Asciidoctor::Csa do
+  context "when xref_error.adoc compilation" do
+    around do |example|
+      FileUtils.rm_f "spec/assets/xref_error.err"
+      example.run
+      Dir["spec/assets/xref_error*"].each do |file|
+        next if file.match?(/adoc$/)
+
+        FileUtils.rm_f(file)
+      end
+    end
+
+    it "generates error file" do
+      expect do
+        Metanorma::Compile
+          .new
+          .compile("spec/assets/xref_error.adoc", type: "csa")
+      end.to(change { File.exist?("spec/assets/xref_error.err") }
+              .from(false).to(true))
+    end
+  end
+
   it 'Warns of illegal doctype' do
     FileUtils.rm_rf "test.err"
-    Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true) 
+    Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)
       = Document title
       Author
       :docfile: test.adoc
@@ -32,7 +53,7 @@ RSpec.describe Asciidoctor::Csa do
     INPUT
 
     FileUtils.rm_rf "test.err"
-    Asciidoctor.convert(input, backend: :csa, header_footer: true) 
+    Asciidoctor.convert(input, backend: :csa, header_footer: true)
     expect(File.read("test.err")).to include "pizza is not a recognised status"
   end
 
