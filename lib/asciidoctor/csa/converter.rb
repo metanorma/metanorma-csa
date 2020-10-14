@@ -106,12 +106,16 @@ module Asciidoctor
       def html_converter(node)
         IsoDoc::Csa::HtmlConvert.new(html_extract_attributes(node))
       end
+
       def pdf_converter(node)
+        return if node.attr("no-pdf")
         IsoDoc::Csa::PdfConvert.new(html_extract_attributes(node))
       end
+
       def doc_converter(node)
         IsoDoc::Csa::WordConvert.new(doc_extract_attributes(node))
       end
+
       def presentation_xml_converter(node)
         IsoDoc::Csa::PresentationXMLConvert.new(doc_extract_attributes(node))
       end
