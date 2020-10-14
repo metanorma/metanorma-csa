@@ -19,6 +19,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "converts a blank document" do
     FileUtils.rm_f "test.html"
+    FileUtils.rm_f "test.pdf"
     args = { backend: :csa, header_footer: true }
     expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
@@ -31,6 +32,7 @@ RSpec.describe Asciidoctor::Csa do
 </csa-standard>
     OUTPUT
     expect(File.exist?("test.html")).to be true
+    expect(File.exist?("test.pdf")).to be true
   end
 
   it "processes default metadata" do
@@ -361,6 +363,7 @@ RSpec.describe Asciidoctor::Csa do
       Author
       :docfile: test.adoc
       :novalid:
+      :no-pdf:
     INPUT
     html = File.read("test.html", encoding: "utf-8")
     expect(html).to match(%r[\bpre[^{]+\{[^}]+font-family: "Source Code Pro", monospace;]m)
@@ -376,6 +379,7 @@ RSpec.describe Asciidoctor::Csa do
       :docfile: test.adoc
       :novalid:
       :script: Hans
+      :no-pdf:
     INPUT
     html = File.read("test.html", encoding: "utf-8")
     expect(html).to match(%r[\bpre[^{]+\{[^}]+font-family: "Source Code Pro", monospace;]m)
@@ -394,6 +398,7 @@ RSpec.describe Asciidoctor::Csa do
       :body-font: Zapf Chancery
       :header-font: Comic Sans
       :monospace-font: Space Mono
+      :no-pdf:
     INPUT
     html = File.read("test.html", encoding: "utf-8")
     expect(html).to match(%r[\bpre[^{]+\{[^}]+font-family: Space Mono;]m)
