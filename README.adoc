@@ -19,24 +19,15 @@ for guidance, including https://github.com/metanorma/metanorma-iso/wiki/Guidance
 
 The following outputs are generated.
 
-* (Optional) An HTML preview generated directly from the Asciidoctor document,
-using native Asciidoctor formatting.
-** http://asciimath.org[AsciiMathML] is to be used for mathematical formatting.
-The gem uses the https://github.com/asciidoctor/asciimath[Ruby AsciiMath parser],
-which is syntactically stricter than the common MathJax processor;
-if you do not get expected results, try bracketing terms your in AsciiMathML
-expressions.
-* an XML representation of the document, intended as a document model for CSAND
-International Standards.
-* The XML representation is processed in turn to generate the following outputs
-as end deliverable CSAND standard drafts.
-** HTML output.
+* Metanorma XML
+* HTML output (from Metanorma XML)
+* PDF output (from Metanorma XML)
 
-This AsciiDoc syntax for writing CSAND standards is hereby named "AsciiCSAND".
+// This AsciiDoc syntax for writing CSAND standards is hereby named "AsciiCSAND".
 
 == Usage
 
-The preferred way to invoke this gem is via the `metanorma` script:
+The preferred way to invoke this gem is via the `metanorma` command:
 
 [source,console]
 ----
@@ -53,13 +44,6 @@ document.
 
 The gem then converts the XML to HTML, and
 outputs that files with the appropriate `.html` suffix.
-
-The gem can also be invoked directly within asciidoctor, though this is deprecated:
-
-[source,console]
-----
-$ asciidoctor -b csa -r 'metanorma-csa' a.adoc  
-----
 
 === Installation
 
