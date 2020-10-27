@@ -1,4 +1,4 @@
-= AsciiCSAND: Asciidoctor processor for CSA Normal Documents (CSAND)
+= Metanorma processor for CSA documents
 
 image:https://img.shields.io/gem/v/metanorma-csa.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csa"]
 image:https://github.com/metanorma/metanorma-csa/workflows/ubuntu/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Aubuntu"]
@@ -8,12 +8,10 @@ image:https://codeclimate.com/github/metanorma/metanorma-csand/badges/gpa.svg["C
 image:https://img.shields.io/github/issues-pr-raw/metanorma/metanorma-csa.svg["Pull Requests", link="https://github.com/metanorma/metanorma-csa/pulls"]
 image:https://img.shields.io/github/commits-since/metanorma/metanorma-csa/latest.svg["Commits since latest",link="https://github.com/metanorma/metanorma-csa/releases"]
 
-_Formerly known as_ `asciidoctor-csand`.
-
 == Functionality
 
-This gem processes http://asciidoctor.org/[Asciidoctor] documents following
-a template for generating CSAND documents.
+This gem processes https://www.metanorma.com/[Metanorma documents] following
+a template for generating CSA documents.
 
 The gem currently inherits from the https://github.com/metanorma/metanorma-standoc
 gem, and aligns closely to it. Refer to the ISO gem documentation
@@ -83,3 +81,7 @@ See https://www.metanorma.com/author/csa/[Author Cloud Security Alliance documen
 == Examples
 
 See https://github.com/metanorma/mn-samples-csa for sample documents.
+
+== Notes
+
+Metanorma-CSA was formerly published as `asciidoctor-csand`.
