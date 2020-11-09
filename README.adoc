@@ -1,19 +1,15 @@
-= AsciiCSAND: Asciidoctor processor for CSA Normal Documents (CSAND)
+= Metanorma processor for CSA documents
 
 image:https://img.shields.io/gem/v/metanorma-csa.svg["Gem Version", link="https://rubygems.org/gems/metanorma-csa"]
-image:https://github.com/metanorma/metanorma-csa/workflows/ubuntu/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Aubuntu"]
-image:https://github.com/metanorma/metanorma-csa/workflows/macos/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Amacos"]
-image:https://github.com/metanorma/metanorma-csa/workflows/windows/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow%3Awindows"]
+image:https://github.com/metanorma/metanorma-csa/workflows/rake/badge.svg["Build Status", link="https://github.com/metanorma/metanorma-csa/actions?query=workflow=rake"]
 image:https://codeclimate.com/github/metanorma/metanorma-csand/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/metanorma-csand"]
 image:https://img.shields.io/github/issues-pr-raw/metanorma/metanorma-csa.svg["Pull Requests", link="https://github.com/metanorma/metanorma-csa/pulls"]
 image:https://img.shields.io/github/commits-since/metanorma/metanorma-csa/latest.svg["Commits since latest",link="https://github.com/metanorma/metanorma-csa/releases"]
 
-_Formerly known as_ `asciidoctor-csand`.
-
 == Functionality
 
-This gem processes https://www.metanorma.com[Metanorma documents] following
-a template for generating CSAND documents.
+This gem processes https://www.metanorma.com/[Metanorma documents] following
+a template for generating CSA documents.
 
 The gem currently inherits from the https://github.com/metanorma/metanorma-standoc
 gem, and aligns closely to it. Refer to the ISO gem documentation
@@ -21,24 +17,15 @@ for guidance, including https://github.com/metanorma/metanorma-iso/wiki/Guidance
 
 The following outputs are generated.
 
-* (Optional) An HTML preview generated directly from the Asciidoctor document,
-using native Asciidoctor formatting.
-** http://asciimath.org[AsciiMathML] is to be used for mathematical formatting.
-The gem uses the https://github.com/asciidoctor/asciimath[Ruby AsciiMath parser],
-which is syntactically stricter than the common MathJax processor;
-if you do not get expected results, try bracketing terms your in AsciiMathML
-expressions.
-* an XML representation of the document, intended as a document model for CSAND
-International Standards.
-* The XML representation is processed in turn to generate the following outputs
-as end deliverable CSAND standard drafts.
-** HTML output.
+* Metanorma XML
+* HTML output (from Metanorma XML)
+* PDF output (from Metanorma XML)
 
-This AsciiDoc syntax for writing CSAND standards is hereby named "AsciiCSAND".
+// This AsciiDoc syntax for writing CSAND standards is hereby named "AsciiCSAND".
 
 == Usage
 
-The preferred way to invoke this gem is via the `metanorma` script:
+The preferred way to invoke this gem is via the `metanorma` command:
 
 [source,console]
 ----
@@ -55,13 +42,6 @@ document.
 
 The gem then converts the XML to HTML, and
 outputs that files with the appropriate `.html` suffix.
-
-The gem can also be invoked directly within asciidoctor, though this is deprecated:
-
-[source,console]
-----
-$ asciidoctor -b csa -r 'metanorma-csa' a.adoc  
-----
 
 === Installation
 
@@ -83,3 +63,7 @@ See https://www.metanorma.com/author/csa/[Author Cloud Security Alliance documen
 == Examples
 
 See https://github.com/metanorma/mn-samples-csa for sample documents.
+
+== Notes
+
+Metanorma-CSA was formerly published as `asciidoctor-csand`.
