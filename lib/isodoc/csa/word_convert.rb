@@ -19,7 +19,11 @@ module IsoDoc
         {
           bodyfont: (is_hans ? '"SimSun",serif' : 'AzoSans,Arial,sans-serif'),
           headerfont: (is_hans ? '"SimHei",sans-serif' : 'AzoSans,Arial,sans-serif'),
-          monospacefont: '"Source Code Pro","Courier New",monospace'
+          monospacefont: '"Source Code Pro","Courier New",monospace',
+          normalfontsize: "10.5pt",
+          footnotefontsize: "10.0pt",
+          monospacefontsize: "10.0pt",
+          smallerfontsize: "10.0pt",
         }
       end
 
