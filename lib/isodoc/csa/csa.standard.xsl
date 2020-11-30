@@ -33,7 +33,7 @@
 	
 	<xsl:template match="/">
 		<xsl:call-template name="namespaceCheck"/>
-		<fo:root font-family="AzoSans, STIX Two Math" font-size="10pt" xml:lang="{$lang}">
+		<fo:root font-family="Azo Sans, STIX Two Math" font-size="10pt" xml:lang="{$lang}">
 			<fo:layout-master-set>
 				<!-- Cover page -->
 				<fo:simple-page-master master-name="cover-page" page-width="{$pageWidth}" page-height="{$pageHeight}">
@@ -519,7 +519,7 @@
 				</fo:basic-link>
 			</fo:inline>
 			<fo:footnote-body>
-				<fo:block font-family="AzoSans-Light" font-size="10pt" margin-bottom="12pt" font-weight="normal" text-indent="0" start-indent="0" color="rgb(168, 170, 173)" text-align="left">
+				<fo:block font-family="Azo Sans Lt" font-size="10pt" margin-bottom="12pt" font-weight="normal" text-indent="0" start-indent="0" color="rgb(168, 170, 173)" text-align="left">
 					<fo:inline id="footnote_{@reference}" keep-with-next.within-line="always" font-size="60%" vertical-align="super">
 						<xsl:value-of select="$number "/><!-- + count(//csa:bibitem/csa:note) -->
 					</fo:inline>
@@ -601,7 +601,7 @@
 				</fo:basic-link>
 			</fo:inline>
 			<fo:footnote-body>
-				<fo:block font-family="AzoSans-Light" font-size="10pt" margin-bottom="12pt" start-indent="0pt" color="rgb(168, 170, 173)">
+				<fo:block font-family="Azo Sans Lt" font-size="10pt" margin-bottom="12pt" start-indent="0pt" color="rgb(168, 170, 173)">
 					<fo:inline id="{generate-id()}" keep-with-next.within-line="always" font-size="60%" vertical-align="super"><!-- baseline-shift="30%" padding-right="9mm"  alignment-baseline="hanging" -->
 						<xsl:value-of select="$number"/><!-- <xsl:text>)</xsl:text> -->
 					</fo:inline>
@@ -856,7 +856,7 @@
 			</fo:block-container>
 		</fo:static-content>
 		<fo:static-content flow-name="footer">
-			<fo:block-container font-family="AzoSans-Light" font-size="10.1pt" height="100%" display-align="after"> <!-- 11.5pt -->
+			<fo:block-container font-family="Azo Sans Lt" font-size="10.1pt" height="100%" display-align="after"> <!-- 11.5pt -->
 				<fo:block padding-bottom="13mm" text-align="right" color="rgb(144, 144, 144)">
 					<fo:inline padding-right="7mm"><xsl:value-of select="$copyright"/></fo:inline>
 					<fo:page-number/>
@@ -1040,7 +1040,7 @@
 		<xsl:attribute name="wrap-option">wrap</xsl:attribute>
 		
 		
-			<xsl:attribute name="font-family">SourceCodePro</xsl:attribute>			
+			<xsl:attribute name="font-family">Source Code Pro</xsl:attribute>			
 			<xsl:attribute name="margin-bottom">6pt</xsl:attribute>
 			<xsl:attribute name="keep-with-next">always</xsl:attribute>
 			<xsl:attribute name="line-height">113%</xsl:attribute>
@@ -1290,6 +1290,7 @@
 		
 	</xsl:attribute-set><xsl:attribute-set name="figure-name-style">
 		
+		
 			<xsl:attribute name="font-size">11pt</xsl:attribute>
 			<xsl:attribute name="font-weight">bold</xsl:attribute>
 			<xsl:attribute name="text-align">center</xsl:attribute>
@@ -1336,7 +1337,7 @@
 
 	</xsl:attribute-set><xsl:attribute-set name="tt-style">
 		
-			<xsl:attribute name="font-family">SourceCodePro</xsl:attribute>			
+			<xsl:attribute name="font-family">Source Code Pro</xsl:attribute>			
 		
 		
 		
@@ -2543,6 +2544,7 @@
 		</fo:inline>
 	</xsl:template><xsl:template match="*[local-name()='strong'] | *[local-name()='b']">
 		<fo:inline font-weight="bold">
+			
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template><xsl:template match="*[local-name()='sup']">
@@ -3163,7 +3165,8 @@
 			</fo:inline>
 		</xsl:if>
 	</xsl:template><xsl:template match="*[local-name() = 'figure']">
-		<fo:block-container id="{@id}">
+		<fo:block-container id="{@id}">			
+			
 			<fo:block>
 				<xsl:apply-templates/>
 			</fo:block>
@@ -3214,7 +3217,7 @@
 		<xsl:apply-templates mode="bookmarks"/>
 	</xsl:template><xsl:template match="*[local-name() = 'stem']" mode="contents">
 		<xsl:apply-templates select="."/>
-	</xsl:template><xsl:template match="*[local-name() = 'stem']" mode="bookmarks">
+	</xsl:template><xsl:template match="*[local-name() = 'references'][@hidden='true']" mode="contents" priority="3"/><xsl:template match="*[local-name() = 'stem']" mode="bookmarks">
 		<xsl:apply-templates mode="bookmarks"/>
 	</xsl:template><xsl:template name="addBookmarks">
 		<xsl:param name="contents"/>
@@ -3947,7 +3950,7 @@
 		<fo:block id="{@id}">
 			<xsl:apply-templates/>
 		</fo:block>
-	</xsl:template><xsl:template match="/*/*[local-name() = 'bibliography']/*[local-name() = 'references'][@normative='true']">
+	</xsl:template><xsl:template match="*[local-name() = 'references'][@hidden='true']" priority="3"/><xsl:template match="*[local-name() = 'bibitem'][@hidden='true']" priority="3"/><xsl:template match="/*/*[local-name() = 'bibliography']/*[local-name() = 'references'][@normative='true']">
 		
 		<fo:block id="{@id}">
 			<xsl:apply-templates/>
