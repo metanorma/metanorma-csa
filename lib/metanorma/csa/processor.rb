@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'metanorma/processor'
-require 'asciidoctor/csa/converter'
 
 module Metanorma
   module Csa
@@ -10,7 +9,7 @@ module Metanorma
       def initialize
         @short = :csa
         @input_format = :asciidoc
-        @asciidoctor_backend = Asciidoctor::Csa::CSA_TYPE.to_sym
+        @asciidoctor_backend = :csa
       end
 
       def output_formats

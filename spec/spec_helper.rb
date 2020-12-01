@@ -6,15 +6,10 @@ SimpleCov.start do
 end
 
 require 'bundler/setup'
-require 'asciidoctor'
-require 'asciidoctor/csa'
-require 'isodoc/csa/html_convert'
-require 'asciidoctor/standoc/converter'
+require 'metanorma-csa'
 require 'rspec/matchers'
 require 'equivalent-xml'
 require 'htmlentities'
-require 'metanorma'
-require 'metanorma/csa'
 require 'rexml/document'
 
 RSpec.configure do |config|
@@ -97,17 +92,19 @@ BLANK_HDR = <<~"HDR"
        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
        <bibdata type="standard">
         <title language="en" format="text/plain">Document title</title>
-
+<docidentifier type='CSA'>:2020</docidentifier>
          <contributor>
            <role type="author"/>
            <organization>
              <name>Cloud Security Alliance</name>
+             <abbreviation>CSA</abbreviation>
            </organization>
          </contributor>
          <contributor>
            <role type="publisher"/>
            <organization>
              <name>Cloud Security Alliance</name>
+             <abbreviation>CSA</abbreviation>
            </organization>
          </contributor>
 
@@ -122,6 +119,7 @@ BLANK_HDR = <<~"HDR"
            <owner>
              <organization>
                <name>Cloud Security Alliance</name>
+               <abbreviation>CSA</abbreviation>
              </organization>
            </owner>
          </copyright>

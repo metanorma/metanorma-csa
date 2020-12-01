@@ -6,9 +6,9 @@ module IsoDoc
   module Csa
     # A {Converter} implementation that generates CSA output, and a document
     # schema encapsulation of the document for validation
-    class Metadata < IsoDoc::Metadata
-      def initialize(lang, script, labels)
-        super
+    class Metadata < IsoDoc::Generic::Metadata
+      def configuration
+        Metanorma::Csa.configuration
       end
 
       def title(isoxml, _out)
@@ -27,20 +27,9 @@ module IsoDoc
         super
       end
 
-
       def docid(isoxml, _out)
         docnumber = isoxml.at(ns("//bibdata/docidentifier[@type = 'csa']"))
         set(:docnumber, docnumber&.text)
-      end
-
-      def stage_abbr(status)
-        case status
-        when "working-draft" then "wd"
-        when "committee-draft" then "cd"
-        when "draft-standard" then "d"
-        else
-          ""
-        end
       end
 
       def personal_authors(isoxml)
@@ -71,10 +60,6 @@ module IsoDoc
           n.empty? or persons[r] = extract_person_names_affiliations(n)
         end
         persons
-      end
-
-      def unpublished(status)
-        !%w(published withdrawn).include? status.downcase
       end
     end
   end

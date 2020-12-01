@@ -1,29 +1,24 @@
 # frozen_string_literal: true
 
 require 'asciidoctor'
-require 'metanorma/csa/version'
+require 'metanorma-generic'
 require 'isodoc/csa/html_convert'
 require 'isodoc/csa/pdf_convert'
 require 'isodoc/csa/word_convert'
 require 'isodoc/csa/presentation_xml_convert'
-require 'asciidoctor/standoc/converter'
+require 'metanorma/csa'
 require 'fileutils'
-require_relative 'validate'
 
 module Asciidoctor
   module Csa
-    CSA_TYPE = 'csa'
-
-    # A {Converter} implementation that generates CSD output, and a document
-    # schema encapsulation of the document for validation
-    class Converter < Standoc::Converter
+    class Converter < ::Asciidoctor::Generic::Converter
       XML_ROOT_TAG = "csa-standard".freeze
       XML_NAMESPACE = "https://www.metanorma.org/ns/csa".freeze
 
-      register_for CSA_TYPE
+      register_for "csa"
 
-      def default_publisher
-        "Cloud Security Alliance"
+      def configuration
+        Metanorma::Csa.configuration
       end
 
       def personal_role(node, c, suffix)
@@ -47,32 +42,8 @@ module Asciidoctor
         end
       end
 
-      def metadata_id(node, xml)
-        dn = node.attr('docnumber') or return
-        docstatus = node.attr('status')
-        if docstatus
-          abbr = IsoDoc::Csa::Metadata.new('en', 'Latn', @i18n)
-            .stage_abbr(docstatus)
-          dn = "#{dn}(#{abbr})" unless abbr.empty?
-        end
-        node.attr('copyright-year') && dn += ":#{node.attr('copyright-year')}"
-        xml.docidentifier dn, **{ type: CSA_TYPE }
-        xml.docnumber { |i| i << node.attr('docnumber') }
-      end
-
       def title_validate(root)
         nil
-      end
-
-      def doctype(node)
-        d = super
-        unless %w{guidance proposal standard report whitepaper charter policy
-          glossary case-study}.include? d
-          @log.add("Document Attributes", nil,
-                   "#{d} is not a legal document type: reverting to 'standard'")
-          d = 'standard'
-        end
-        d
       end
 
       def outputs(node, ret)
@@ -86,16 +57,25 @@ module Asciidoctor
                                        nil, false, "#{@filename}.pdf")
       end
 
-      def validate(doc)
-        content_validate(doc)
-        schema_validate(formattedstr_strip(doc.dup),
-                        File.join(File.dirname(__FILE__), 'csa.rng'))
-      end
-
       def sections_cleanup(x)
         super
         x.xpath("//*[@inline-header]").each do |h|
           h.delete('inline-header')
+        end
+      end
+
+      def bibdata_validate(doc)
+        super
+        role_validate(doc)
+      end
+
+      def role_validate(doc)
+        doc&.xpath("//bibdata/contributor/role[description]")&.each do |r|
+          r["type"] == "author" or next
+          role = r.at("./description").text
+          %w{full-author contributor staff reviewer}.include?(role) or
+        @log.add("Document Attributes", nil,
+                 "#{role} is not a recognised role")
         end
       end
 
