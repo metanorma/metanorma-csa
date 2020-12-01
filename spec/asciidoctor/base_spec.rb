@@ -37,7 +37,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "processes default metadata" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -73,12 +73,13 @@ RSpec.describe Asciidoctor::Csa do
 <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
 <bibdata type="standard">
 <title language="en" format="text/plain">Main Title</title>
-<docidentifier type="csa">1000(wd):2001</docidentifier>
+<docidentifier type="CSA">1000(wd):2001</docidentifier>
 <docnumber>1000</docnumber>
   <contributor>
     <role type="author"/>
     <organization>
       <name>Cloud Security Alliance</name>
+      <abbreviation>CSA</abbreviation>
     </organization>
   </contributor>
            <contributor>
@@ -106,6 +107,7 @@ RSpec.describe Asciidoctor::Csa do
     <role type="publisher"/>
     <organization>
       <name>Cloud Security Alliance</name>
+      <abbreviation>CSA</abbreviation>
     </organization>
   </contributor>
     <edition>2</edition>
@@ -124,11 +126,12 @@ RSpec.describe Asciidoctor::Csa do
     <owner>
       <organization>
         <name>Cloud Security Alliance</name>
+        <abbreviation>CSA</abbreviation>
       </organization>
     </owner>
   </copyright>
   <ext>
-  <doctype>standard</standard>
+  <doctype>standard</doctype>
   <editorialgroup>
     <committee type="A">TC</committee>
     <committee type="B">TC1</committee>
@@ -159,18 +162,20 @@ RSpec.describe Asciidoctor::Csa do
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="csa">1000(cd)</docidentifier>
+        <docidentifier type="CSA">1000(cd):2020</docidentifier>
         <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
           <organization>
             <name>Cloud Security Alliance</name>
+            <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
         <contributor>
           <role type="publisher"/>
           <organization>
             <name>Cloud Security Alliance</name>
+            <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
         <language>en</language>
@@ -184,6 +189,7 @@ RSpec.describe Asciidoctor::Csa do
           <owner>
             <organization>
               <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
             </organization>
           </owner>
         </copyright>
@@ -215,18 +221,20 @@ RSpec.describe Asciidoctor::Csa do
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="csa">1000(d)</docidentifier>
+        <docidentifier type="CSA">1000(d):2020</docidentifier>
         <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
           <organization>
             <name>Cloud Security Alliance</name>
+            <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
         <contributor>
           <role type="publisher"/>
           <organization>
             <name>Cloud Security Alliance</name>
+            <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
         <language>en</language>
@@ -240,6 +248,7 @@ RSpec.describe Asciidoctor::Csa do
           <owner>
             <organization>
               <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
             </organization>
           </owner>
         </copyright>
@@ -255,7 +264,7 @@ RSpec.describe Asciidoctor::Csa do
 
   it "ignores unrecognised status" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to <<~"OUTPUT"
+    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       = Document title
       Author
       :docfile: test.adoc
@@ -272,18 +281,20 @@ RSpec.describe Asciidoctor::Csa do
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="csa">1000:2001</docidentifier>
+        <docidentifier type="CSA">1000:2001</docidentifier>
         <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
           <organization>
             <name>Cloud Security Alliance</name>
+            <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
         <contributor>
           <role type="publisher"/>
           <organization>
             <name>Cloud Security Alliance</name>
+            <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
         <language>en</language>
@@ -297,6 +308,7 @@ RSpec.describe Asciidoctor::Csa do
           <owner>
             <organization>
               <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
             </organization>
           </owner>
         </copyright>
