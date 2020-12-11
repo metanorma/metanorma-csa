@@ -20,6 +20,14 @@ module Metanorma
         )
       end
 
+      def fonts_manifest
+        {
+          "AzoSans" => nil,
+          "STIX Two Math" => nil,
+          "Source Code Pro" => nil,
+        }
+      end
+
       def version
         "Metanorma::Csa #{Metanorma::Csa::VERSION}"
       end
