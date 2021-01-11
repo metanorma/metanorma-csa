@@ -92,7 +92,7 @@ BLANK_HDR = <<~"HDR"
        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
        <bibdata type="standard">
         <title language="en" format="text/plain">Document title</title>
-<docidentifier type='CSA'>:2020</docidentifier>
+<docidentifier type='CSA'>:#{Time.now.year}</docidentifier>
          <contributor>
            <role type="author"/>
            <organization>

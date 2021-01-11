@@ -162,7 +162,7 @@ RSpec.describe Asciidoctor::Csa do
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="CSA">1000(cd):2020</docidentifier>
+        <docidentifier type="CSA">1000(cd):#{Time.now.year}</docidentifier>
         <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
@@ -221,7 +221,7 @@ RSpec.describe Asciidoctor::Csa do
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
         <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="CSA">1000(d):2020</docidentifier>
+        <docidentifier type="CSA">1000(d):#{Time.now.year}</docidentifier>
         <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
