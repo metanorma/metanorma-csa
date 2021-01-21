@@ -379,8 +379,8 @@ RSpec.describe Asciidoctor::Csa do
     INPUT
     html = File.read("test.html", encoding: "utf-8")
     expect(html).to match(%r[\bpre[^{]+\{[^}]+font-family: "Source Code Pro", monospace;]m)
-    expect(html).to match(%r[ div[^{]+\{[^}]+font-family: AzoSans, "Source Sans Pro", sans-serif;]m)
-    expect(html).to match(%r[h1, h2, h3, h4, h5, h6 \{[^}]+font-family: AzoSans, "Source Sans Pro", sans-serif;]m)
+    expect(html).to match(%r[ div[^{]+\{[^}]+font-family: Lato, "Source Sans Pro", sans-serif;]m)
+    expect(html).to match(%r[h1, h2, h3, h4, h5, h6 \{[^}]+font-family: Lato, "Source Sans Pro", sans-serif;]m)
   end
 
   it "uses specified fonts" do
