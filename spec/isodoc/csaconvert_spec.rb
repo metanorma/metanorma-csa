@@ -410,7 +410,7 @@ OUTPUT
 
     html = File.read('test.html', encoding: 'utf-8')
     expect(html).to match(/jquery\.min\.js/)
-    expect(html).to match(/AzoSans/)
+    expect(html).to match(/Lato/)
   end
 
 

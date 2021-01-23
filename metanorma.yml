@@ -3,8 +3,8 @@ organization_name_short: CSA
 organization_name_long: Cloud Security Alliance
 document_namespace: https://www.metanorma.org/ns/csa
 xml_root_tag: csa-standard
-html_bodyfont: 'AzoSans,"Source Sans Pro",sans-serif'
-html_headerfont: 'AzoSans,"Source Sans Pro",sans-serif'
+html_bodyfont: 'Lato,"Source Sans Pro",sans-serif'
+html_headerfont: 'Lato,"Source Sans Pro",sans-serif'
 html_monospacefont: '"Source Code Pro",monospace'
 validate_rng_file: lib/asciidoctor/csa/csa.rng
 htmlcoverpage: lib/isodoc/csa/html/html_csa_titlepage.html
@@ -15,8 +15,8 @@ html_monospacefontsize: "1.0em"
 html_footnotefontsize: "0.9em"
 scripts: lib/isodoc/csa/html/scripts.html
 i18nyaml: lib/isodoc/csa/i18n-en.yaml
-word_bodyfont: 'AzoSans,Arial,sans-serif'
-word_headerfont: 'AzoSans,Arial,sans-serif'
+word_bodyfont: 'Lato,Arial,sans-serif'
+word_headerfont: 'Lato,Arial,sans-serif'
 word_monospacefont: '"Source Code Pro","Courier New",monospace'
 word_normalfontsize: "10.5pt"
 word_smallerfontsize: "10.0pt"
@@ -29,6 +29,7 @@ wordintropage: lib/isodoc/csa/html/word_csa_intro.html
 wordstylesheet: lib/isodoc/csa/html/wordstyle.scss
 webfont:
   - "https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i|Space+Mono:400,700"
+  - "https://fonts.googleapis.com/css?family=Lato:400,400i,700,900"
   - "https://fonts.googleapis.com/css?family=Rubik:300,300i,500"
   - "https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300i,400,700,900"
   - "https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,300;0,600;1,300;1,600&display=swap"

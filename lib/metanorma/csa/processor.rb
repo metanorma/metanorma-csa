@@ -22,7 +22,8 @@ module Metanorma
 
       def fonts_manifest
         {
-          "AzoSans" => nil,
+          #"AzoSans" => nil,
+          "Lato" => nil,
           "STIX Two Math" => nil,
           "Source Code Pro" => nil,
         }
