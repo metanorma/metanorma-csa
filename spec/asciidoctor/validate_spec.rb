@@ -16,6 +16,7 @@ RSpec.describe Asciidoctor::Csa do
 
     it "generates error file" do
       expect do
+        mock_pdf
         Metanorma::Compile
           .new
           .compile("spec/assets/xref_error.adoc", type: "csa", :"agree-to-terms" => true)
