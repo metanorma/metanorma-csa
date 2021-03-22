@@ -6,3 +6,5 @@
 
 # test data
 /test.*
+
+.rubocop-https--*
