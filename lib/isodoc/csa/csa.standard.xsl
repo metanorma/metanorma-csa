@@ -2753,6 +2753,7 @@
 				
 				
 				
+				
 						
 			</xsl:variable>
 			<xsl:variable name="font-size" select="normalize-space($_font-size)"/>		
@@ -3825,6 +3826,7 @@
 					<xsl:variable name="_font-size">
 						10
 												
+						
 						
 						
 						
@@ -5030,6 +5032,7 @@
 	</xsl:template><xsl:template name="namespaceCheck">
 		<xsl:variable name="documentNS" select="namespace-uri(/*)"/>
 		<xsl:variable name="XSLNS">			
+			
 			
 			
 			
