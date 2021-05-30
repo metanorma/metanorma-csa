@@ -1041,6 +1041,7 @@
 		
 		
 		
+		
 			<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
 		
@@ -1193,10 +1194,12 @@
 		
 		
 		
+		
 	</xsl:attribute-set><xsl:attribute-set name="eref-style">
 		
 			<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
+		
 		
 		
 		
@@ -1298,10 +1301,12 @@
 		
 		
 		
+		
 	</xsl:attribute-set><xsl:attribute-set name="origin-style">
 		
 			<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
+		
 		
 		
 		
@@ -3866,6 +3871,7 @@
 	</xsl:template><xsl:template match="*[local-name()='sourcecode']" name="sourcecode">
 	
 		<fo:block-container margin-left="0mm">
+			<xsl:copy-of select="@id"/>
 			<xsl:if test="parent::*[local-name() = 'note']">
 				<xsl:attribute name="margin-left">
 					<xsl:choose>
