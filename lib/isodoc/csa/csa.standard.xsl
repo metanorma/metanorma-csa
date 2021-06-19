@@ -558,10 +558,11 @@
 						<xsl:if test="position() = last()">: </xsl:if>
 					</xsl:for-each>
 						<!-- csa:docidentifier -->
-					<xsl:if test="csa:docidentifier">
+					<!-- <xsl:if test="csa:docidentifier">
 						<xsl:value-of select="csa:docidentifier/@type"/><xsl:text> </xsl:text>
 						<xsl:value-of select="csa:docidentifier"/>
-					</xsl:if>
+					</xsl:if> -->
+					<xsl:value-of select="csa:docidentifier"/>
 					<xsl:apply-templates select="csa:note"/>
 					<xsl:if test="csa:docidentifier">, </xsl:if>
 					<fo:inline font-style="italic">
@@ -763,7 +764,7 @@
 					<xsl:when test="csa:docidentifier/@type = 'ISO' and csa:formattedref"/>
 					<xsl:when test="csa:docidentifier/@type = 'OGC' and csa:formattedref"/>
 					<xsl:otherwise><fo:inline>
-						<xsl:if test="csa:docidentifier/@type = 'OGC'">OGC </xsl:if>
+						<!-- <xsl:if test="csa:docidentifier/@type = 'OGC'">OGC </xsl:if> -->
 						<xsl:value-of select="csa:docidentifier"/><xsl:apply-templates select="csa:note"/>, </fo:inline></xsl:otherwise>
 				</xsl:choose>
 			</xsl:if>
@@ -4781,17 +4782,17 @@
 		<xsl:variable name="_doc_ident" select="*[local-name() = 'docidentifier'][not(@type = 'DOI' or @type = 'metanorma' or @type = 'ISSN' or @type = 'ISBN' or @type = 'rfc-anchor')]"/>
 		<xsl:choose>
 			<xsl:when test="normalize-space($_doc_ident) != ''">
-				<xsl:variable name="type" select="*[local-name() = 'docidentifier'][not(@type = 'DOI' or @type = 'metanorma' or @type = 'ISSN' or @type = 'ISBN' or @type = 'rfc-anchor')]/@type"/>
+				<!-- <xsl:variable name="type" select="*[local-name() = 'docidentifier'][not(@type = 'DOI' or @type = 'metanorma' or @type = 'ISSN' or @type = 'ISBN' or @type = 'rfc-anchor')]/@type"/>
 				<xsl:if test="$type != '' and not(contains($_doc_ident, $type))">
 					<xsl:value-of select="$type"/><xsl:text> </xsl:text>
-				</xsl:if>
+				</xsl:if> -->
 				<xsl:value-of select="$_doc_ident"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:variable name="type" select="*[local-name() = 'docidentifier'][not(@type = 'metanorma')]/@type"/>
+				<!-- <xsl:variable name="type" select="*[local-name() = 'docidentifier'][not(@type = 'metanorma')]/@type"/>
 				<xsl:if test="$type != ''">
 					<xsl:value-of select="$type"/><xsl:text> </xsl:text>
-				</xsl:if>
+				</xsl:if> -->
 				<xsl:value-of select="*[local-name() = 'docidentifier'][not(@type = 'metanorma')]"/>
 			</xsl:otherwise>
 		</xsl:choose>
