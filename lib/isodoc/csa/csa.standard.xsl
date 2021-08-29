@@ -86,12 +86,12 @@
 				<fo:flow flow-name="xsl-region-body">
 					
 					<fo:block-container width="136mm" margin-bottom="12pt">
-						<fo:block font-size="36pt" font-weight="bold" color="rgb(54, 59, 74)">
+						<fo:block font-size="36pt" font-weight="bold" color="rgb(54, 59, 74)" role="H1">
 							<xsl:value-of select="/csa:csa-standard/csa:bibdata/csa:title[@language = 'en']"/>
 						</fo:block>
 					</fo:block-container>
 					
-					<fo:block font-size="26pt" color="rgb(55, 60, 75)">
+					<fo:block font-size="26pt" color="rgb(55, 60, 75)" role="H2">
 						<xsl:value-of select="/csa:csa-standard/csa:bibdata/csa:title[@language = 'en' and @type = 'subtitle']"/>
 					</fo:block>
 					
@@ -145,7 +145,7 @@
 							<xsl:with-param name="name" select="'title-acknowledgements'"/>
 						</xsl:call-template>
 					</xsl:variable>
-					<fo:block font-size="26pt" margin-bottom="18pt"><xsl:value-of select="$title-acknowledgements"/></fo:block>
+					<fo:block font-size="26pt" margin-bottom="18pt" role="H1"><xsl:value-of select="$title-acknowledgements"/></fo:block>
 
 					<xsl:variable name="persons">
 						<xsl:for-each select="/csa:csa-standard/csa:bibdata/csa:contributor[csa:person]">
@@ -206,11 +206,11 @@
 								<xsl:with-param name="name" select="'title-toc'"/>
 							</xsl:call-template>
 						</xsl:variable>
-						<fo:block font-size="26pt" color="black" margin-top="2pt" margin-bottom="30pt"><xsl:value-of select="$title-toc"/></fo:block>
+						<fo:block font-size="26pt" color="black" margin-top="2pt" margin-bottom="30pt" role="H1"><xsl:value-of select="$title-toc"/></fo:block>
 						
-						<fo:block margin-left="-3mm">
+						<fo:block margin-left="-3mm" role="TOC">
 							<xsl:for-each select="xalan:nodeset($contents)//item[@display = 'true']">
-								<fo:block>
+								<fo:block role="TOCI">
 									<fo:list-block>
 										<xsl:attribute name="provisional-distance-between-starts">
 											<xsl:choose>
@@ -315,7 +315,10 @@
 		
 	
 	<xsl:template match="csa:license-statement//csa:title">
-		<fo:block text-align="center" font-weight="bold" margin-top="4pt">
+		<xsl:variable name="level">
+			<xsl:call-template name="getLevel"/>
+		</xsl:variable>
+		<fo:block text-align="center" font-weight="bold" margin-top="4pt" role="H{$level}">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -336,7 +339,10 @@
 	</xsl:template>
 		
 	<xsl:template match="csa:copyright-statement//csa:title">
-		<fo:block font-weight="bold" text-align="center">
+		<xsl:variable name="level">
+			<xsl:call-template name="getLevel"/>
+		</xsl:variable>
+		<fo:block font-weight="bold" text-align="center" role="H{$level}">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -366,7 +372,10 @@
 	</xsl:template>
 	
 	<xsl:template match="csa:legal-statement//csa:title">
-		<fo:block text-align="center" font-weight="bold" padding-top="2mm" margin-bottom="6pt">
+		<xsl:variable name="level">
+			<xsl:call-template name="getLevel"/>
+		</xsl:variable>
+		<fo:block text-align="center" font-weight="bold" padding-top="2mm" margin-bottom="6pt" role="H{$level}">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -402,7 +411,7 @@
 				<xsl:otherwise>black</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
-		<fo:block font-size="12pt" text-align="center" margin-bottom="12pt" keep-with-next="always" color="{$color}">
+		<fo:block font-size="12pt" text-align="center" margin-bottom="12pt" keep-with-next="always" color="{$color}" role="H{$level}">
 			<xsl:apply-templates/>
 			<xsl:apply-templates select="following-sibling::*[1][local-name() = 'variant-title'][@type = 'sub']" mode="subtitle"/>
 		</fo:block>		
@@ -455,6 +464,7 @@
 			<xsl:attribute name="keep-with-next">always</xsl:attribute>		
 			<xsl:attribute name="color"><xsl:value-of select="$color"/></xsl:attribute>
 			<xsl:attribute name="line-height">120%</xsl:attribute>
+			<xsl:attribute name="role">H<xsl:value-of select="$level"/></xsl:attribute>
 			
 			<xsl:if test="$level = 2">
 				<fo:inline padding-right="1mm">							
@@ -720,7 +730,10 @@
 				<xsl:otherwise>12pt</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
-		<fo:block font-size="{$font-size}">
+		<xsl:variable name="levelTerm">
+			<xsl:call-template name="getLevelTermName"/>
+		</xsl:variable>
+		<fo:block font-size="{$font-size}" role="H{$levelTerm}">
 			<fo:block font-weight="bold" keep-with-next="always">
 				<xsl:apply-templates select="ancestor::csa:term/csa:name" mode="presentation"/>	
 			</fo:block>
@@ -1056,6 +1069,7 @@
 	</xsl:attribute-set><xsl:attribute-set name="sourcecode-style">
 		<xsl:attribute name="white-space">pre</xsl:attribute>
 		<xsl:attribute name="wrap-option">wrap</xsl:attribute>
+		<xsl:attribute name="role">Code</xsl:attribute>
 		
 		
 			<xsl:attribute name="font-family">Source Code Pro</xsl:attribute>			
@@ -1295,7 +1309,8 @@
 				
 		
 		
-	</xsl:attribute-set><xsl:attribute-set name="quote-style">		
+	</xsl:attribute-set><xsl:attribute-set name="quote-style">
+		<xsl:attribute name="role">BlockQuote</xsl:attribute>
 		
 			<xsl:attribute name="margin-top">12pt</xsl:attribute>
 			<xsl:attribute name="margin-left">13mm</xsl:attribute>
@@ -3470,7 +3485,10 @@
 		</fo:block>
 		<xsl:apply-templates/>
 	</xsl:template><xsl:template match="*[local-name()='appendix']/*[local-name()='title']"/><xsl:template match="*[local-name()='appendix']/*[local-name()='title']" mode="process">
-		<fo:inline><xsl:apply-templates/></fo:inline>
+		<xsl:variable name="level">
+			<xsl:call-template name="getLevel"/>
+		</xsl:variable>
+		<fo:inline role="H{$level}"><xsl:apply-templates/></fo:inline>
 	</xsl:template><xsl:template match="*[local-name()='appendix']//*[local-name()='example']" priority="2">
 		<fo:block id="{@id}" xsl:use-attribute-sets="appendix-example-style">			
 			<xsl:apply-templates select="*[local-name()='name']" mode="presentation"/>
@@ -3656,7 +3674,10 @@
 		</fo:block>
 	</xsl:template><xsl:template match="*[local-name() = 'term']/*[local-name() = 'name']"/><xsl:template match="*[local-name() = 'term']/*[local-name() = 'name']" mode="presentation">
 		<xsl:if test="normalize-space() != ''">
-			<fo:inline>
+			<xsl:variable name="level">
+				<xsl:call-template name="getLevelTermName"/>
+			</xsl:variable>
+			<fo:inline role="H{$level}">
 				<xsl:apply-templates/>
 				<!-- <xsl:if test="$namespace = 'gb' or $namespace = 'ogc'">
 					<xsl:text>.</xsl:text>
@@ -5585,6 +5606,26 @@
 					</xsl:choose>
 				</xsl:variable>
 				<xsl:value-of select="$level"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template><xsl:template name="getLevelTermName">
+		<xsl:choose>
+			<xsl:when test="normalize-space(../@depth) != ''">
+				<xsl:value-of select="../@depth"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name="title_level_">
+					<xsl:for-each select="../preceding-sibling::*[local-name() = 'title'][1]">
+						<xsl:call-template name="getLevel"/>
+					</xsl:for-each>
+				</xsl:variable>
+				<xsl:variable name="title_level" select="normalize-space($title_level_)"/>
+				<xsl:choose>
+					<xsl:when test="$title_level != ''"><xsl:value-of select="$title_level + 1"/></xsl:when>
+					<xsl:otherwise>
+						<xsl:call-template name="getLevel"/>
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template><xsl:template name="split">
