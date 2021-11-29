@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'metanorma'
-require 'byebug'
+require "spec_helper"
+require "metanorma"
 
 RSpec.describe Metanorma::Csa::Processor do
-
   registry = Metanorma::Registry.instance
   registry.register(Metanorma::Csa::Processor)
   processor = registry.find_processor(:csa)
@@ -16,7 +14,7 @@ RSpec.describe Metanorma::Csa::Processor do
 
   it "registers output formats against metanorma" do
     expect(processor.output_formats.sort.to_s).to be_equivalent_to <<~"OUTPUT"
-        [[:doc, "doc"], [:html, "html"], [:pdf, "pdf"], [:presentation, "presentation.xml"], [:rxl, "rxl"], [:xml, "xml"]]
+      [[:doc, "doc"], [:html, "html"], [:pdf, "pdf"], [:presentation, "presentation.xml"], [:rxl, "rxl"], [:xml, "xml"]]
     OUTPUT
   end
 
@@ -25,13 +23,16 @@ RSpec.describe Metanorma::Csa::Processor do
   end
 
   it "generates IsoDoc XML from a blank document" do
-    expect(xmlpp(strip_guid(processor.input_to_isodoc(<<~"INPUT", nil)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-    #{ASCIIDOC_BLANK_HDR}
+    input = <<~INPUT
+      #{ASCIIDOC_BLANK_HDR}
     INPUT
-    #{BLANK_HDR}
-<sections/>
-</csa-standard>
+    output = <<~OUTPUT
+          #{BLANK_HDR}
+      <sections/>
+      </csa-standard>
     OUTPUT
+    expect(xmlpp(strip_guid(processor.input_to_isodoc(input, nil))))
+      .to be_equivalent_to xmlpp(output)
   end
 
   it "generates HTML from IsoDoc XML" do
@@ -48,14 +49,14 @@ RSpec.describe Metanorma::Csa::Processor do
         </sections>
       </csa-standard>
     INPUT
-    test_html = File.read('test.html', encoding: 'utf-8')
-                    .gsub(/^.*<main/m, '<main')
-                    .gsub(%r{</main>.*}m, '</main>')
+    test_html = File.read("test.html", encoding: "utf-8")
+      .gsub(/^.*<main/m, "<main")
+      .gsub(%r{</main>.*}m, "</main>")
     expect(xmlpp(test_html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
       <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
         <p class="zzSTDTitle1"></p>
         <div id="H"><h1 id="toc0">1.&#xA0; Terms, Definitions, Symbols and Abbreviated Terms</h1>
-        <h2 class="TermNum" id="J">1.1.&#xA0;<p class="Terms" style="text-align:left;">Term2</p></h2>
+        <p class='Terms' style='text-align:left;' id='J'><strong>1.1.</strong>&#xA0;Term2</p>
         </div>
       </main>
     OUTPUT
