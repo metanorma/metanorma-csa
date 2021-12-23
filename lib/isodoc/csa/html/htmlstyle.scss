@@ -186,7 +186,7 @@ dt {
 3.1 Titles
 */
 
-h1,h2,h3,h4,h5,h6 {
+h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6 {
   font-family: $headerfont;
   line-height: 1.2em;
   color: black;
@@ -195,21 +195,21 @@ h1,h2,h3,h4,h5,h6 {
   margin-bottom: 0.3em;
 }
 
-h1 {
+h1,.h1 {
   font-size: 1.8em;
   text-transform: uppercase;
 /*  margin-top: 2em;*/
 }
 
-h1#content {
+h1#content,.h1#content {
   margin-top: 2em;
 }
 
-h2 {
+h2,.h2 {
   font-size: 1.6em;
 }
 
-h3 {
+h3,.h3 {
   font-size: 1.5em;
 }
 /*
@@ -283,7 +283,7 @@ ul, ol {
   @include rule(1px, #00427e)
 }
 /*
-h2 p {
+h2 p,.h2 p {
 display: inline;
 }
 */
@@ -663,7 +663,7 @@ img.csa-logo {
   text-transform: uppercase;
 }
 
-.section-title h1 {
+.section-title h1, .section-title .h1 {
   font-size: 2em;
   font-weight: 800;
   line-height: 1em;
@@ -673,12 +673,12 @@ img.csa-logo {
   text-transform: none;
 }
 
-h2 {
+h2,.h2 {
   border-bottom: solid 1px #4D7EA5;
   color: #4D7EA5;
 }
 
-h3, h4, h5, h6 {
+h3, h4, h5, h6, .h3, .h4, .h5, .h6 {
   color: #EE9C4F;
 }
 
