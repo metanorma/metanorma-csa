@@ -1,5 +1,5 @@
 require 'asciidoctor' unless defined? Asciidoctor::Converter
-require_relative 'asciidoctor/csa/converter'
+require_relative 'metanorma/csa/converter'
 require_relative 'isodoc/csa/html_convert'
 require_relative 'isodoc/csa/pdf_convert'
 require_relative 'isodoc/csa/word_convert'

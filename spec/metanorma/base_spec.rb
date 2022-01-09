@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'fileutils'
 
-RSpec.describe Asciidoctor::Csa do
+RSpec.describe Metanorma::Csa do
   it "has a version number" do
     expect(Metanorma::Csa::VERSION).not_to be nil
   end
