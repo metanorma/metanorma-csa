@@ -6,7 +6,7 @@ xml_root_tag: csa-standard
 html_bodyfont: 'Lato,"Source Sans Pro",sans-serif'
 html_headerfont: 'Lato,"Source Sans Pro",sans-serif'
 html_monospacefont: '"Source Code Pro",monospace'
-validate_rng_file: lib/asciidoctor/csa/csa.rng
+validate_rng_file: lib/metanorma/csa/csa.rng
 htmlcoverpage: lib/isodoc/csa/html/html_csa_titlepage.html
 htmlintropage: lib/isodoc/csa/html/html_csa_intro.html
 htmlstylesheet: lib/isodoc/csa/html/htmlstyle.scss

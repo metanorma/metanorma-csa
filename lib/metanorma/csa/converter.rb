@@ -9,9 +9,9 @@ require "isodoc/csa/presentation_xml_convert"
 require "metanorma/csa"
 require "fileutils"
 
-module Asciidoctor
+module Metanorma
   module Csa
-    class Converter < ::Asciidoctor::Generic::Converter
+    class Converter < ::Metanorma::Generic::Converter
       XML_ROOT_TAG = "csa-standard"
       XML_NAMESPACE = "https://www.metanorma.org/ns/csa"
 

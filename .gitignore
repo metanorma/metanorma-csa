@@ -8,3 +8,6 @@
 /test.*
 
 .rubocop-https--*
+
+/Gemfile.devel
+/Gemfile.lock
