@@ -2,19 +2,8 @@
 
 	<xsl:output version="1.0" method="xml" encoding="UTF-8" indent="yes"/>
 
-	<xsl:param name="svg_images"/>
-	<xsl:param name="external_index"/><!-- path to index xml, generated on 1st pass, based on FOP Intermediate Format -->
-	<xsl:variable name="images" select="document($svg_images)"/>
-	<xsl:param name="basepath"/>
-
 	<xsl:key name="kfn" match="*[local-name() = 'fn'][not(ancestor::*[(local-name() = 'table' or local-name() = 'figure') and not(ancestor::*[local-name() = 'name'])])]" use="@reference"/>
 	
-	<xsl:variable name="marginLeftRight1" select="25"/>
-	<xsl:variable name="marginLeftRight2" select="25"/>
-	<xsl:variable name="marginTop" select="25"/>
-	<xsl:variable name="marginBottom" select="21"/>
-
-
 	
 
 	<xsl:variable name="debug">false</xsl:variable>
@@ -32,10 +21,6 @@
 			<xsl:call-template name="processPrefaceSectionsDefault_Contents"/>
 			<xsl:call-template name="processMainSectionsDefault_Contents"/>
 		</contents>
-	</xsl:variable>
-	
-	<xsl:variable name="lang">
-		<xsl:call-template name="getLang"/>
 	</xsl:variable>
 	
 	<xsl:template match="/">
@@ -445,7 +430,7 @@
 	</xsl:template>
 	
 	
-	<xsl:template match="csa:ul | csa:ol" mode="ul_ol">
+	<xsl:template match="csa:ul | csa:ol" mode="list" priority="2">
 		<xsl:choose>
 			<xsl:when test="not(ancestor::csa:ul) and not(ancestor::csa:ol)">
 				<fo:block-container border-left="0.75mm solid {$color-header-document}" margin-left="1mm" margin-bottom="12pt">
@@ -469,57 +454,11 @@
 	</xsl:template>
 	
 	<xsl:template name="listProcessing">
-		<fo:list-block provisional-distance-between-starts="6.5mm" line-height="145%">
-			<xsl:if test="ancestor::csa:ul | ancestor::csa:ol">
-				<!-- <xsl:attribute name="margin-bottom">0pt</xsl:attribute> -->
-			</xsl:if>
-			<xsl:if test="following-sibling::*[1][local-name() = 'ul' or local-name() = 'ol']">
-				<!-- <xsl:attribute name="margin-bottom">0pt</xsl:attribute> -->
-			</xsl:if>
+		<fo:list-block xsl:use-attribute-sets="list-style">
 			<xsl:apply-templates/>
 		</fo:list-block>
 	</xsl:template>
 	
-	<xsl:template match="csa:li">
-		<fo:list-item>
-			<fo:list-item-label end-indent="label-end()">
-				<fo:block>
-					<xsl:choose>
-						<xsl:when test="local-name(..) = 'ul'">
-							<xsl:call-template name="setULLabel"/>
-						</xsl:when>
-						<!-- <xsl:when test="local-name(..) = 'ul' and (../ancestor::csa:ul or ../ancestor::csa:ol)">-</xsl:when> --> <!-- &#x2014; dash -->
-						<!-- <xsl:when test="local-name(..) = 'ul'">•</xsl:when> --> <!-- &#x2014; dash -->
-						<xsl:otherwise> <!-- for ordered lists -->
-							<xsl:choose>
-								<xsl:when test="../@type = 'arabic'">
-									<xsl:number format="a)" lang="en"/>
-								</xsl:when>
-								<xsl:when test="../@type = 'alphabet'">
-									<xsl:number format="1)"/>
-								</xsl:when>
-								<xsl:when test="../@type = 'alphabet_upper'">
-									<xsl:number format="A)" lang="en"/>
-								</xsl:when>
-								
-								<xsl:when test="../@type = 'roman'">
-									<xsl:number format="i)"/>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:number format="1)"/>
-								</xsl:otherwise>
-							</xsl:choose>
-						</xsl:otherwise>
-					</xsl:choose>
-				</fo:block>
-			</fo:list-item-label>
-			<fo:list-item-body start-indent="body-start()" line-height-shift-adjustment="disregard-shifts">
-				<fo:block>
-					<xsl:apply-templates/>
-				</fo:block>
-			</fo:list-item-body>
-		</fo:list-item>
-	</xsl:template>
 	
 	<xsl:template match="csa:ul/csa:note | csa:ol/csa:note" priority="2">
 		<fo:list-item font-size="10pt">
@@ -533,55 +472,6 @@
 		</fo:list-item>
 	</xsl:template>
 
-	<xsl:template match="csa:preferred">		
-		<xsl:variable name="level">
-			<xsl:call-template name="getLevel"/>
-		</xsl:variable>
-		<xsl:variable name="font-size">
-			<xsl:choose>
-				<xsl:when test="$level &gt;= 2">11pt</xsl:when>
-				<xsl:otherwise>12pt</xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		<xsl:variable name="levelTerm">
-			<xsl:call-template name="getLevelTermName"/>
-		</xsl:variable>
-		<fo:block font-size="{$font-size}" role="H{$levelTerm}">
-			<fo:block font-weight="bold" keep-with-next="always">
-				<xsl:apply-templates select="ancestor::csa:term[1]/csa:name"/>	
-			</fo:block>
-			<fo:block font-weight="bold" keep-with-next="always" line-height="1">
-				<xsl:call-template name="setStyle_preferred"/>
-				<xsl:apply-templates/>
-			</fo:block>
-		</fo:block>
-	</xsl:template>
-
-	
-		
-	<xsl:template match="csa:formula/csa:stem">
-		<fo:block margin-top="6pt" margin-bottom="12pt">
-			<fo:table table-layout="fixed" width="100%">
-				<fo:table-column column-width="95%"/>
-				<fo:table-column column-width="5%"/>
-				<fo:table-body>
-					<fo:table-row>
-						<fo:table-cell display-align="center">
-							<fo:block text-align="left" margin-left="5mm">
-								<xsl:apply-templates/>
-							</fo:block>
-						</fo:table-cell>
-						<fo:table-cell display-align="center">
-							<fo:block text-align="right">
-								<xsl:apply-templates select="../csa:name" mode="formula_number"/>
-							</fo:block>
-						</fo:table-cell>
-					</fo:table-row>
-				</fo:table-body>
-			</fo:table>			
-		</fo:block>
-	</xsl:template>
-	
 		
 	<xsl:template name="insertHeaderFooter">
 		<fo:static-content flow-name="header" role="artifact">
@@ -607,11 +497,21 @@
 		<xsl:text>iVBORw0KGgoAAAANSUhEUgAAASEAAAEhCAYAAAAwHRYbAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDE0IDc5LjE1Njc5NywgMjAxNC8wOC8yMC0wOTo1MzowMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDplYWRhN2RlNC04YzAyLTQ1N2UtYjUwNy0zNGYzY2RjNWE2ZGQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDUyNzBENDc3NjVCMTFFQTlDMDhGMEI2ODhENjUxQkIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDUyNzBENDY3NjVCMTFFQTlDMDhGMEI2ODhENjUxQkIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgSW5EZXNpZ24gMTQuMCAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmZiZjFiODZmLTIzMjMtM2U0OS1hMDMzLTVlOGQxYThlNmI1YiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmlkOjFlMzVjZTE3LWU5NzAtNDQ1OS05ZjI0LTM1NzcwZWYzMjNjMiIvPiA8L3Jk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</xsl:text>
 	</xsl:variable>
 	
-<xsl:variable name="pageWidth_">
+<xsl:param name="svg_images"/><xsl:variable name="images" select="document($svg_images)"/><xsl:param name="basepath"/><xsl:param name="external_index"/><xsl:param name="syntax-highlight">false</xsl:param><xsl:variable name="lang">
+		<xsl:call-template name="getLang"/>
+	</xsl:variable><xsl:variable name="pageWidth_">
 		215.9
 	</xsl:variable><xsl:variable name="pageWidth" select="normalize-space($pageWidth_)"/><xsl:variable name="pageHeight_">
 		279.4
-	</xsl:variable><xsl:variable name="pageHeight" select="normalize-space($pageHeight_)"/><xsl:variable name="titles_">
+	</xsl:variable><xsl:variable name="pageHeight" select="normalize-space($pageHeight_)"/><xsl:variable name="marginLeftRight1_">
+		25
+	</xsl:variable><xsl:variable name="marginLeftRight1" select="normalize-space($marginLeftRight1_)"/><xsl:variable name="marginLeftRight2_">
+		25
+	</xsl:variable><xsl:variable name="marginLeftRight2" select="normalize-space($marginLeftRight2_)"/><xsl:variable name="marginTop_">
+		25
+	</xsl:variable><xsl:variable name="marginTop" select="normalize-space($marginTop_)"/><xsl:variable name="marginBottom_">
+		21
+	</xsl:variable><xsl:variable name="marginBottom" select="normalize-space($marginBottom_)"/><xsl:variable name="titles_">
 				
 		<title-edition lang="en">
 			
@@ -673,7 +573,7 @@
 	</xsl:variable><xsl:variable name="titles" select="xalan:nodeset($titles_)"/><xsl:variable name="bibdata">
 		<xsl:copy-of select="//*[contains(local-name(), '-standard')]/*[local-name() = 'bibdata']"/>
 		<xsl:copy-of select="//*[contains(local-name(), '-standard')]/*[local-name() = 'localized-strings']"/>
-	</xsl:variable><xsl:variable name="tab_zh">　</xsl:variable><xsl:template name="getTitle">
+	</xsl:variable><xsl:variable name="linebreak">&#8232;</xsl:variable><xsl:variable name="tab_zh">　</xsl:variable><xsl:variable name="non_breaking_hyphen">‑</xsl:variable><xsl:variable name="thin_space"> </xsl:variable><xsl:variable name="zero_width_space">​</xsl:variable><xsl:variable name="en_dash">–</xsl:variable><xsl:template name="getTitle">
 		<xsl:param name="name"/>
 		<xsl:param name="lang"/>
 		<xsl:variable name="lang_">
@@ -696,7 +596,7 @@
 				<xsl:value-of select="$titles/*[local-name() = $name][@lang = 'en']"/>
 			</xsl:otherwise>
 		</xsl:choose>
-	</xsl:template><xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable><xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable><xsl:variable name="en_chars" select="concat($lower,$upper,',.`1234567890-=~!@#$%^*()_+[]{}\|?/')"/><xsl:variable name="linebreak" select="'&#8232;'"/><xsl:attribute-set name="root-style">
+	</xsl:template><xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable><xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable><xsl:variable name="en_chars" select="concat($lower,$upper,',.`1234567890-=~!@#$%^*()_+[]{}\|?/')"/><xsl:attribute-set name="root-style">
 		
 		
 		
@@ -863,11 +763,12 @@
 		
 		
 	</xsl:attribute-set><xsl:attribute-set name="example-name-style">
-		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 					
+			<xsl:attribute name="keep-with-next">always</xsl:attribute>
 			<xsl:attribute name="margin-top">12pt</xsl:attribute>
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 			<xsl:attribute name="font-weight">bold</xsl:attribute>
+		
 		
 		
 		
@@ -1225,11 +1126,11 @@
 		
 		
 	</xsl:attribute-set><xsl:attribute-set name="quote-style">
-		<xsl:attribute name="role">BlockQuote</xsl:attribute>
+		<xsl:attribute name="margin-left">12mm</xsl:attribute>
+		<xsl:attribute name="margin-right">12mm</xsl:attribute>
 		
 			<xsl:attribute name="margin-top">12pt</xsl:attribute>
 			<xsl:attribute name="margin-left">13mm</xsl:attribute>
-			<xsl:attribute name="margin-right">12mm</xsl:attribute>
 		
 		
 		
@@ -1238,11 +1139,10 @@
 		
 		
 	</xsl:attribute-set><xsl:attribute-set name="quote-source-style">		
+		<xsl:attribute name="text-align">right</xsl:attribute>
 		
-			<xsl:attribute name="text-align">right</xsl:attribute>
 			<xsl:attribute name="margin-right">25mm</xsl:attribute>
 		
-				
 				
 	</xsl:attribute-set><xsl:attribute-set name="termsource-style">
 		
@@ -1268,6 +1168,9 @@
 		
 	</xsl:attribute-set><xsl:attribute-set name="term-style">
 		
+	</xsl:attribute-set><xsl:attribute-set name="term-name-style">
+		<xsl:attribute name="keep-with-next">always</xsl:attribute>
+		<xsl:attribute name="font-weight">bold</xsl:attribute>
 	</xsl:attribute-set><xsl:attribute-set name="figure-style">
 		
 	</xsl:attribute-set><xsl:attribute-set name="figure-name-style">
@@ -1299,6 +1202,36 @@
 		
 			
 	</xsl:attribute-set><xsl:attribute-set name="formula-style">
+		<xsl:attribute name="margin-top">6pt</xsl:attribute>
+		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
+		
+		
+		
+		
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="formula-stem-block-style">
+		<xsl:attribute name="text-align">center</xsl:attribute>
+		
+		
+			<xsl:attribute name="text-align">left</xsl:attribute>
+			<xsl:attribute name="margin-left">5mm</xsl:attribute>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="formula-stem-number-style">
+		<xsl:attribute name="text-align">right</xsl:attribute>
+		
+		
+		
+		
 		
 	</xsl:attribute-set><xsl:attribute-set name="image-style">
 		<xsl:attribute name="text-align">center</xsl:attribute>
@@ -1334,6 +1267,20 @@
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 		<xsl:attribute name="keep-with-previous">always</xsl:attribute>
 		
+	</xsl:attribute-set><xsl:attribute-set name="preferred-block-style">
+		
+		
+		
+		
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="preferred-term-style">
+		<xsl:attribute name="keep-with-next">always</xsl:attribute>
+		<xsl:attribute name="font-weight">bold</xsl:attribute>
+		
+			<xsl:attribute name="line-height">1</xsl:attribute>
+		
+		
 	</xsl:attribute-set><xsl:attribute-set name="domain-style">
 				
 	</xsl:attribute-set><xsl:attribute-set name="admitted-style">
@@ -1368,6 +1315,38 @@
 		
 		
 	</xsl:attribute-set><xsl:attribute-set name="list-style">
+		
+		
+			<xsl:attribute name="provisional-distance-between-starts">6.5mm</xsl:attribute>
+			<xsl:attribute name="line-height">145%</xsl:attribute>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="list-item-style">
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="list-item-label-style">
+		
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="list-item-body-style">
+		
+			<xsl:attribute name="line-height-shift-adjustment">disregard-shifts</xsl:attribute>
+		
+		
 		
 	</xsl:attribute-set><xsl:attribute-set name="toc-style">
 		<xsl:attribute name="line-height">135%</xsl:attribute>
@@ -1661,6 +1640,111 @@
 			<xsl:attribute name="line-height">145%</xsl:attribute>
 		
 		
+	</xsl:attribute-set><xsl:attribute-set name="hljs-doctag">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-keyword">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-meta_hljs-keyword">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-template-tag">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-template-variable">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-type">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-variable_and_language_">
+		<xsl:attribute name="color">#d73a49</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-title">
+		<xsl:attribute name="color">#6f42c1</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-title_and_class_">
+		<xsl:attribute name="color">#6f42c1</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-title_and_class__and_inherited__">
+		<xsl:attribute name="color">#6f42c1</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-title_and_function_">
+		<xsl:attribute name="color">#6f42c1</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-attr">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-attribute">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-literal">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-meta">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-number">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-operator">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-variable">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-selector-attr">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-selector-class">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-selector-id">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-regexp">
+		<xsl:attribute name="color">#032f62</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-string">
+		<xsl:attribute name="color">#032f62</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-meta_hljs-string">
+		<xsl:attribute name="color">#032f62</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-built_in">
+		<xsl:attribute name="color">#e36209</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-symbol">
+		<xsl:attribute name="color">#e36209</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-comment">
+		<xsl:attribute name="color">#6a737d</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-code">
+		<xsl:attribute name="color">#6a737d</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-formula">
+		<xsl:attribute name="color">#6a737d</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-name">
+		<xsl:attribute name="color">#22863a</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-quote">
+		<xsl:attribute name="color">#22863a</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-selector-tag">
+		<xsl:attribute name="color">#22863a</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-selector-pseudo">
+		<xsl:attribute name="color">#22863a</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-subst">
+		<xsl:attribute name="color">#24292e</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-section">
+		<xsl:attribute name="color">#005cc5</xsl:attribute>
+		<xsl:attribute name="font-weight">bold</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-bullet">
+		<xsl:attribute name="color">#735c0f</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-emphasis">
+		<xsl:attribute name="color">#24292e</xsl:attribute>
+		<xsl:attribute name="font-style">italic</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-strong">
+		<xsl:attribute name="color">#24292e</xsl:attribute>
+		<xsl:attribute name="font-weight">bold</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-addition">
+		<xsl:attribute name="color">#22863a</xsl:attribute>
+		<xsl:attribute name="background-color">#f0fff4</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-deletion">
+		<xsl:attribute name="color">#b31d28</xsl:attribute>
+		<xsl:attribute name="background-color">#ffeef0</xsl:attribute>
+	</xsl:attribute-set><xsl:attribute-set name="hljs-char_and_escape_">
+	</xsl:attribute-set><xsl:attribute-set name="hljs-link">
+	</xsl:attribute-set><xsl:attribute-set name="hljs-params">
+	</xsl:attribute-set><xsl:attribute-set name="hljs-property">
+	</xsl:attribute-set><xsl:attribute-set name="hljs-punctuation">
+	</xsl:attribute-set><xsl:attribute-set name="hljs-tag">
+	</xsl:attribute-set><xsl:attribute-set name="indexsect-title-style">
+		<xsl:attribute name="role">H1</xsl:attribute>
+		
+		
+		
+		
+		
+	</xsl:attribute-set><xsl:attribute-set name="indexsect-clause-title-style">
+		<xsl:attribute name="keep-with-next">always</xsl:attribute>
+		
+		
+		
+		
+		
 	</xsl:attribute-set><xsl:variable name="border-block-added">2.5pt solid rgb(0, 176, 80)</xsl:variable><xsl:variable name="border-block-deleted">2.5pt solid rgb(255, 0, 0)</xsl:variable><xsl:variable name="ace_tag">ace-tag_</xsl:variable><xsl:template name="processPrefaceSectionsDefault_Contents">
 		<xsl:for-each select="/*/*[local-name()='preface']/*">
 			<xsl:sort select="@displayorder" data-type="number"/>
@@ -1747,9 +1831,12 @@
 			
 	
 	</xsl:template><xsl:template match="*[local-name()='legal-statement']//*[local-name()='p']">
+		<xsl:param name="margin"/>
 		
 				<!-- process in the template 'paragraph' -->
-				<xsl:call-template name="paragraph"/>
+				<xsl:call-template name="paragraph">
+					<xsl:with-param name="margin" select="$margin"/>
+				</xsl:call-template>
 			
 	</xsl:template><xsl:template match="*[local-name()='feedback-statement']">
 		<fo:block xsl:use-attribute-sets="feedback-statement-style">
@@ -1761,9 +1848,12 @@
 				<xsl:call-template name="title"/>
 			
 	</xsl:template><xsl:template match="*[local-name()='feedback-statement']//*[local-name()='p']">
+		<xsl:param name="margin"/>
 		
 				<!-- process in the template 'paragraph' -->
-				<xsl:call-template name="paragraph"/>
+				<xsl:call-template name="paragraph">
+					<xsl:with-param name="margin" select="$margin"/>
+				</xsl:call-template>
 			
 	</xsl:template><xsl:template match="*[local-name()='td']//text() | *[local-name()='th']//text() | *[local-name()='dt']//text() | *[local-name()='dd']//text()" priority="1">
 		<!-- <xsl:call-template name="add-zero-spaces"/> -->
@@ -2107,8 +2197,7 @@
 			</xsl:call-template>
 		</xsl:if>
 	</xsl:template><xsl:template match="text()" mode="td_text">
-		<xsl:variable name="zero-space">​</xsl:variable>
-		<xsl:value-of select="translate(., $zero-space, ' ')"/><xsl:text> </xsl:text>
+		<xsl:value-of select="translate(., $zero_width_space, ' ')"/><xsl:text> </xsl:text>
 	</xsl:template><xsl:template match="*[local-name()='termsource']" mode="td_text">
 		<xsl:value-of select="*[local-name()='origin']/@citeas"/>
 	</xsl:template><xsl:template match="*[local-name()='link']" mode="td_text">
@@ -3078,20 +3167,44 @@
 		<fo:inline text-decoration="underline">
 			<xsl:apply-templates/>
 		</fo:inline>
-	</xsl:template><xsl:template match="*[local-name()='add']">
+	</xsl:template><xsl:template match="*[local-name()='add']" name="tag_add">
 		<xsl:param name="skip">true</xsl:param>
+		<xsl:param name="block">false</xsl:param>
+		<xsl:param name="type"/>
+		<xsl:param name="text-align"/>
 		<xsl:choose>
 			<xsl:when test="starts-with(., $ace_tag)"> <!-- examples: ace-tag_A1_start, ace-tag_A2_end, C1_start, AC_start -->
 				<xsl:choose>
-					<xsl:when test="$skip = 'true' and       ((local-name(../..) = 'note' and not(preceding-sibling::node())) or       (local-name(..) = 'title' and preceding-sibling::node()[1][local-name() = 'tab']))      and       ../node()[last()][local-name() = 'add'][starts-with(text(), $ace_tag)]"><!-- start tag displayed in template name="note" and title --></xsl:when>
+					<xsl:when test="$skip = 'true' and       ((local-name(../..) = 'note' and not(preceding-sibling::node())) or       (local-name(..) = 'title' and preceding-sibling::node()[1][local-name() = 'tab']) or      local-name(..) = 'formattedref' and not(preceding-sibling::node()))      and       ../node()[last()][local-name() = 'add'][starts-with(text(), $ace_tag)]"><!-- start tag displayed in template name="note" and title --></xsl:when>
 					<xsl:otherwise>
-						<fo:inline>
+						<xsl:variable name="tag">
 							<xsl:call-template name="insertTag">
-								<xsl:with-param name="type" select="substring-after(substring-after(., $ace_tag), '_')"/> <!-- start or end -->
+								<xsl:with-param name="type">
+									<xsl:choose>
+										<xsl:when test="$type = ''"><xsl:value-of select="substring-after(substring-after(., $ace_tag), '_')"/> <!-- start or end --></xsl:when>
+										<xsl:otherwise><xsl:value-of select="$type"/></xsl:otherwise>
+									</xsl:choose>
+								</xsl:with-param>
 								<xsl:with-param name="kind" select="substring(substring-before(substring-after(., $ace_tag), '_'), 1, 1)"/> <!-- A or C -->
 								<xsl:with-param name="value" select="substring(substring-before(substring-after(., $ace_tag), '_'), 2)"/> <!-- 1, 2, C -->
 							</xsl:call-template>
-						</fo:inline>
+						</xsl:variable>
+						<xsl:choose>
+							<xsl:when test="$block = 'false'">
+								<fo:inline>
+									<xsl:copy-of select="$tag"/>									
+								</fo:inline>
+							</xsl:when>
+							<xsl:otherwise>
+								<fo:block> <!-- for around figures -->
+									<xsl:if test="$text-align != ''">
+										<xsl:attribute name="text-align"><xsl:value-of select="$text-align"/></xsl:attribute>
+									</xsl:if>
+									<xsl:copy-of select="$tag"/>
+								</fo:block>
+							</xsl:otherwise>
+						</xsl:choose>
+						
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
@@ -3450,17 +3563,21 @@
 		</xsl:apply-templates>
 	</xsl:template><xsl:template name="getLang">
 		<xsl:variable name="language_current" select="normalize-space(//*[local-name()='bibdata']//*[local-name()='language'][@current = 'true'])"/>
-		<xsl:variable name="language_current_2" select="normalize-space(xalan:nodeset($bibdata)//*[local-name()='bibdata']//*[local-name()='language'][@current = 'true'])"/>
 		<xsl:variable name="language">
 			<xsl:choose>
 				<xsl:when test="$language_current != ''">
 					<xsl:value-of select="$language_current"/>
 				</xsl:when>
-				<xsl:when test="$language_current_2 != ''">
-					<xsl:value-of select="$language_current_2"/>
-				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of select="//*[local-name()='bibdata']//*[local-name()='language']"/>
+					<xsl:variable name="language_current_2" select="normalize-space(xalan:nodeset($bibdata)//*[local-name()='bibdata']//*[local-name()='language'][@current = 'true'])"/>
+					<xsl:choose>
+						<xsl:when test="$language_current_2 != ''">
+							<xsl:value-of select="$language_current_2"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="//*[local-name()='bibdata']//*[local-name()='language']"/>
+						</xsl:otherwise>
+					</xsl:choose>
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -3677,8 +3794,8 @@
 				
 			</xsl:if>
 			<fo:block-container margin-left="0mm">	
-				<fo:block id="{@id}" xsl:use-attribute-sets="formula-style">
-					<xsl:apply-templates/>
+				<fo:block id="{@id}">
+					<xsl:apply-templates select="node()[not(local-name() = 'name')]"/> <!-- formula's number will be process in 'stem' template -->
 				</fo:block>
 			</fo:block-container>
 		</fo:block-container>
@@ -3690,10 +3807,43 @@
 		<fo:inline>
 			<xsl:apply-templates/>
 		</fo:inline>
-	</xsl:template><xsl:template match="*[local-name() = 'formula']/*[local-name() = 'name']"/><xsl:template match="*[local-name() = 'formula']/*[local-name() = 'name']" mode="formula_number"> <!-- show by demand -->
+	</xsl:template><xsl:template match="*[local-name() = 'formula']/*[local-name() = 'name']"> <!-- show in 'stem' template -->
 		<xsl:if test="normalize-space() != ''">
 			<xsl:text>(</xsl:text><xsl:apply-templates/><xsl:text>)</xsl:text>
 		</xsl:if>
+	</xsl:template><xsl:template match="*[local-name() = 'formula'][*[local-name() = 'name']]/*[local-name() = 'stem']">
+		<fo:block xsl:use-attribute-sets="formula-style">
+		
+			
+		
+			<fo:table table-layout="fixed" width="100%">
+				<fo:table-column column-width="95%"/>
+				<fo:table-column column-width="5%"/>
+				<fo:table-body>
+					<fo:table-row>
+						<fo:table-cell display-align="center">
+							<fo:block xsl:use-attribute-sets="formula-stem-block-style">
+							
+								
+							
+								<xsl:apply-templates/>
+							</fo:block>
+						</fo:table-cell>
+						<fo:table-cell display-align="center">
+							<fo:block xsl:use-attribute-sets="formula-stem-number-style">
+								<xsl:apply-templates select="../*[local-name() = 'name']"/>
+							</fo:block>
+						</fo:table-cell>
+					</fo:table-row>
+				</fo:table-body>
+			</fo:table>
+		</fo:block>
+	</xsl:template><xsl:template match="*[local-name() = 'formula'][not(*[local-name() = 'name'])]/*[local-name() = 'stem']">
+		<fo:block xsl:use-attribute-sets="formula-style">
+			<fo:block xsl:use-attribute-sets="formula-stem-block-style">
+				<xsl:apply-templates/>
+			</fo:block>
+		</fo:block>
 	</xsl:template><xsl:template match="*[local-name() = 'note']" name="note">
 	
 		<fo:block-container id="{@id}" xsl:use-attribute-sets="note-style">
@@ -4643,12 +4793,140 @@
 			</fo:block-container>
 		</fo:block-container>
 	</xsl:template><xsl:template match="*[local-name()='sourcecode']/text()" priority="2">
-		<xsl:variable name="text">
+		<xsl:choose>
+			<xsl:when test="normalize-space($syntax-highlight) = 'true' and normalize-space(../@lang) != ''"> <!-- condition for turn on of highlighting -->
+				<xsl:variable name="syntax" select="java:org.metanorma.fop.Util.syntaxHighlight(., ../@lang)"/>
+				<xsl:choose>
+					<xsl:when test="normalize-space($syntax) != ''"><!-- if there is highlighted result -->
+						<xsl:apply-templates select="xalan:nodeset($syntax)" mode="syntax_highlight"/> <!-- process span tags -->
+					</xsl:when>
+					<xsl:otherwise> <!-- if case of non-succesfull syntax highlight (for instance, unknown lang), process without highlighting -->
+						<xsl:call-template name="add_spaces_to_sourcecode"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="add_spaces_to_sourcecode"/>
+			</xsl:otherwise>
+		</xsl:choose>
+		
+	</xsl:template><xsl:template name="add_spaces_to_sourcecode">
+		<xsl:variable name="text_step1">
 			<xsl:call-template name="add-zero-spaces-equal"/>
 		</xsl:variable>
-		<xsl:call-template name="add-zero-spaces-java">
-			<xsl:with-param name="text" select="$text"/>
-		</xsl:call-template>
+		<xsl:variable name="text_step2">
+			<xsl:call-template name="add-zero-spaces-java">
+				<xsl:with-param name="text" select="$text_step1"/>
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:value-of select="$text_step2"/>
+	</xsl:template><xsl:template match="*" mode="syntax_highlight">
+		<xsl:apply-templates mode="syntax_highlight"/>
+	</xsl:template><xsl:variable name="syntax_highlight_styles_">
+		<style class="hljs-addition" xsl:use-attribute-sets="hljs-addition"/>
+		<style class="hljs-attr" xsl:use-attribute-sets="hljs-attr"/>
+		<style class="hljs-attribute" xsl:use-attribute-sets="hljs-attribute"/>
+		<style class="hljs-built_in" xsl:use-attribute-sets="hljs-built_in"/>
+		<style class="hljs-bullet" xsl:use-attribute-sets="hljs-bullet"/>
+		<style class="hljs-char_and_escape_" xsl:use-attribute-sets="hljs-char_and_escape_"/>
+		<style class="hljs-code" xsl:use-attribute-sets="hljs-code"/>
+		<style class="hljs-comment" xsl:use-attribute-sets="hljs-comment"/>
+		<style class="hljs-deletion" xsl:use-attribute-sets="hljs-deletion"/>
+		<style class="hljs-doctag" xsl:use-attribute-sets="hljs-doctag"/>
+		<style class="hljs-emphasis" xsl:use-attribute-sets="hljs-emphasis"/>
+		<style class="hljs-formula" xsl:use-attribute-sets="hljs-formula"/>
+		<style class="hljs-keyword" xsl:use-attribute-sets="hljs-keyword"/>
+		<style class="hljs-link" xsl:use-attribute-sets="hljs-link"/>
+		<style class="hljs-literal" xsl:use-attribute-sets="hljs-literal"/>
+		<style class="hljs-meta" xsl:use-attribute-sets="hljs-meta"/>
+		<style class="hljs-meta_hljs-string" xsl:use-attribute-sets="hljs-meta_hljs-string"/>
+		<style class="hljs-meta_hljs-keyword" xsl:use-attribute-sets="hljs-meta_hljs-keyword"/>
+		<style class="hljs-name" xsl:use-attribute-sets="hljs-name"/>
+		<style class="hljs-number" xsl:use-attribute-sets="hljs-number"/>
+		<style class="hljs-operator" xsl:use-attribute-sets="hljs-operator"/>
+		<style class="hljs-params" xsl:use-attribute-sets="hljs-params"/>
+		<style class="hljs-property" xsl:use-attribute-sets="hljs-property"/>
+		<style class="hljs-punctuation" xsl:use-attribute-sets="hljs-punctuation"/>
+		<style class="hljs-quote" xsl:use-attribute-sets="hljs-quote"/>
+		<style class="hljs-regexp" xsl:use-attribute-sets="hljs-regexp"/>
+		<style class="hljs-section" xsl:use-attribute-sets="hljs-section"/>
+		<style class="hljs-selector-attr" xsl:use-attribute-sets="hljs-selector-attr"/>
+		<style class="hljs-selector-class" xsl:use-attribute-sets="hljs-selector-class"/>
+		<style class="hljs-selector-id" xsl:use-attribute-sets="hljs-selector-id"/>
+		<style class="hljs-selector-pseudo" xsl:use-attribute-sets="hljs-selector-pseudo"/>
+		<style class="hljs-selector-tag" xsl:use-attribute-sets="hljs-selector-tag"/>
+		<style class="hljs-string" xsl:use-attribute-sets="hljs-string"/>
+		<style class="hljs-strong" xsl:use-attribute-sets="hljs-strong"/>
+		<style class="hljs-subst" xsl:use-attribute-sets="hljs-subst"/>
+		<style class="hljs-symbol" xsl:use-attribute-sets="hljs-symbol"/>		
+		<style class="hljs-tag" xsl:use-attribute-sets="hljs-tag"/>
+		<!-- <style class="hljs-tag_hljs-attr" xsl:use-attribute-sets="hljs-tag_hljs-attr"></style> -->
+		<!-- <style class="hljs-tag_hljs-name" xsl:use-attribute-sets="hljs-tag_hljs-name"></style> -->
+		<style class="hljs-template-tag" xsl:use-attribute-sets="hljs-template-tag"/>
+		<style class="hljs-template-variable" xsl:use-attribute-sets="hljs-template-variable"/>
+		<style class="hljs-title" xsl:use-attribute-sets="hljs-title"/>
+		<style class="hljs-title_and_class_" xsl:use-attribute-sets="hljs-title_and_class_"/>
+		<style class="hljs-title_and_class__and_inherited__" xsl:use-attribute-sets="hljs-title_and_class__and_inherited__"/>
+		<style class="hljs-title_and_function_" xsl:use-attribute-sets="hljs-title_and_function_"/>
+		<style class="hljs-type" xsl:use-attribute-sets="hljs-type"/>
+		<style class="hljs-variable" xsl:use-attribute-sets="hljs-variable"/>
+		<style class="hljs-variable_and_language_" xsl:use-attribute-sets="hljs-variable_and_language_"/>
+	</xsl:variable><xsl:variable name="syntax_highlight_styles" select="xalan:nodeset($syntax_highlight_styles_)"/><xsl:template match="span" mode="syntax_highlight" priority="2">
+		<!-- <fo:inline color="green" font-style="italic"><xsl:apply-templates mode="syntax_highlight"/></fo:inline> -->
+		<fo:inline>
+			<xsl:variable name="classes_">
+				<xsl:call-template name="split">
+					<xsl:with-param name="pText" select="@class"/>
+					<xsl:with-param name="sep" select="' '"/>
+				</xsl:call-template>
+				<!-- a few classes together (_and_ suffix) -->
+				<xsl:if test="contains(@class, 'hljs-char') and contains(@class, 'escape_')">
+					<item>hljs-char_and_escape_</item>
+				</xsl:if>
+				<xsl:if test="contains(@class, 'hljs-title') and contains(@class, 'class_')">
+					<item>hljs-title_and_class_</item>
+				</xsl:if>
+				<xsl:if test="contains(@class, 'hljs-title') and contains(@class, 'class_') and contains(@class, 'inherited__')">
+					<item>hljs-title_and_class__and_inherited__</item>
+				</xsl:if>
+				<xsl:if test="contains(@class, 'hljs-title') and contains(@class, 'function_')">
+					<item>hljs-title_and_function_</item>
+				</xsl:if>
+				<xsl:if test="contains(@class, 'hljs-variable') and contains(@class, 'language_')">
+					<item>hljs-variable_and_language_</item>
+				</xsl:if>
+				<!-- with parent classes (_ suffix) -->
+				<xsl:if test="contains(@class, 'hljs-keyword') and contains(ancestor::*/@class, 'hljs-meta')">
+					<item>hljs-meta_hljs-keyword</item>
+				</xsl:if>
+				<xsl:if test="contains(@class, 'hljs-string') and contains(ancestor::*/@class, 'hljs-meta')">
+					<item>hljs-meta_hljs-string</item>
+				</xsl:if>
+			</xsl:variable>
+			<xsl:variable name="classes" select="xalan:nodeset($classes_)"/>
+			
+			<xsl:for-each select="$classes/item">
+				<xsl:variable name="class_name" select="."/>
+				<xsl:for-each select="$syntax_highlight_styles/style[@class = $class_name]/@*[not(local-name() = 'class')]">
+					<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>
+				</xsl:for-each>
+			</xsl:for-each>
+			
+			<!-- <xsl:variable name="class_name">
+				<xsl:choose>
+					<xsl:when test="@class = 'hljs-attr' and ancestor::*/@class = 'hljs-tag'">hljs-tag_hljs-attr</xsl:when>
+					<xsl:when test="@class = 'hljs-name' and ancestor::*/@class = 'hljs-tag'">hljs-tag_hljs-name</xsl:when>
+					<xsl:when test="@class = 'hljs-string' and ancestor::*/@class = 'hljs-meta'">hljs-meta_hljs-string</xsl:when>
+					<xsl:otherwise><xsl:value-of select="@class"/></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:for-each select="$syntax_highlight_styles/style[@class = $class_name]/@*[not(local-name() = 'class')]">
+				<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>
+			</xsl:for-each> -->
+			
+		<xsl:apply-templates mode="syntax_highlight"/></fo:inline>
+	</xsl:template><xsl:template match="text()" mode="syntax_highlight" priority="2">
+		<xsl:call-template name="add_spaces_to_sourcecode"/>
 	</xsl:template><xsl:template match="*[local-name() = 'sourcecode']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">		
 			<fo:block xsl:use-attribute-sets="sourcecode-name-style">				
@@ -5019,11 +5297,14 @@
 			
 			
 			<fo:block-container margin-left="0mm">
-		
-				<fo:block xsl:use-attribute-sets="quote-style">
+				<fo:block-container xsl:use-attribute-sets="quote-style">
 					
-					<xsl:apply-templates select="./node()[not(local-name() = 'author') and not(local-name() = 'source')]"/> <!-- process all nested nodes, except author and source -->
-				</fo:block>
+					<fo:block-container margin-left="0mm" margin-right="0mm">
+						<fo:block role="BlockQuote">
+							<xsl:apply-templates select="./node()[not(local-name() = 'author') and not(local-name() = 'source')]"/> <!-- process all nested nodes, except author and source -->
+						</fo:block>
+					</fo:block-container>
+				</fo:block-container>
 				<xsl:if test="*[local-name() = 'author'] or *[local-name() = 'source']">
 					<fo:block xsl:use-attribute-sets="quote-source-style">
 						<!-- — ISO, ISO 7301:2011, Clause 1 -->
@@ -5163,6 +5444,36 @@
 				<xsl:with-param name="count" select="$count - 1"/>
 			</xsl:call-template>
 		</xsl:if>
+	</xsl:template><xsl:template match="*[local-name() = 'preferred']">
+		<xsl:variable name="level">
+			<xsl:call-template name="getLevel"/>
+		</xsl:variable>
+		<xsl:variable name="font-size">
+			
+					<xsl:choose>
+						<xsl:when test="$level &gt;= 2">11pt</xsl:when>
+						<xsl:otherwise>12pt</xsl:otherwise>
+					</xsl:choose>
+				
+		</xsl:variable>
+		<xsl:variable name="levelTerm">
+			<xsl:call-template name="getLevelTermName"/>
+		</xsl:variable>
+		<fo:block font-size="{normalize-space($font-size)}" role="H{$levelTerm}" xsl:use-attribute-sets="preferred-block-style">
+		
+			
+			
+			<xsl:if test="parent::*[local-name() = 'term'] and not(preceding-sibling::*[local-name() = 'preferred'])"> <!-- if first preffered in term, then display term's name -->
+				<fo:block xsl:use-attribute-sets="term-name-style">
+					<xsl:apply-templates select="ancestor::*[local-name() = 'term'][1]/*[local-name() = 'name']"/>
+				</fo:block>
+			</xsl:if>
+			
+			<fo:block xsl:use-attribute-sets="preferred-term-style">
+				<xsl:call-template name="setStyle_preferred"/>
+				<xsl:apply-templates/>
+			</fo:block>
+		</fo:block>
 	</xsl:template><xsl:template match="*[local-name() = 'domain']">
 		<fo:inline xsl:use-attribute-sets="domain-style">&lt;<xsl:apply-templates/>&gt;</fo:inline>
 		<xsl:text> </xsl:text>
@@ -5251,26 +5562,10 @@
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),' ',' ')"/>
 	</xsl:template><xsl:variable name="ul_labels_">
 		
-		
-		
-			<label level="1">•</label>
-			<label level="2">-</label><!-- minus -->
-			<label level="3" font-size="75%">o</label> <!-- white circle -->
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+				<label level="1">•</label>
+				<label level="2">-</label><!-- minus -->
+				<label level="3" font-size="75%">o</label> <!-- white circle -->
+			
 	</xsl:variable><xsl:variable name="ul_labels" select="xalan:nodeset($ul_labels_)"/><xsl:template name="setULLabel">
 		<xsl:variable name="list_level_" select="count(ancestor::*[local-name() = 'ul']) + count(ancestor::*[local-name() = 'ol'])"/>
 		<xsl:variable name="list_level">
@@ -5296,6 +5591,91 @@
 	</xsl:template><xsl:template match="label" mode="ul_labels">
 		<xsl:copy-of select="@*[not(local-name() = 'level')]"/>
 		<xsl:value-of select="."/>
+	</xsl:template><xsl:template name="getListItemFormat">
+		<!-- Example: for BSI <?list-type loweralpha?> -->
+		<xsl:variable name="processing_instruction_type" select="normalize-space(../preceding-sibling::*[1]/processing-instruction('list-type'))"/>
+		<xsl:choose>
+			<xsl:when test="local-name(..) = 'ul'">
+				<xsl:choose>
+					<xsl:when test="normalize-space($processing_instruction_type) = 'simple'"/>
+					<xsl:otherwise><xsl:call-template name="setULLabel"/></xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
+			<xsl:otherwise> <!-- for ordered lists 'ol' -->
+			
+				<!-- Example: for BSI <?list-start 2?> -->
+				<xsl:variable name="processing_instruction_start" select="normalize-space(../preceding-sibling::*[1]/processing-instruction('list-start'))"/>
+
+				<xsl:variable name="start_value">
+					<xsl:choose>
+						<xsl:when test="normalize-space($processing_instruction_start) != ''">
+							<xsl:value-of select="number($processing_instruction_start) - 1"/><!-- if start="3" then start_value=2 + xsl:number(1) = 3 -->
+						</xsl:when>
+						<xsl:when test="normalize-space(../@start) != ''">
+							<xsl:value-of select="number(../@start) - 1"/><!-- if start="3" then start_value=2 + xsl:number(1) = 3 -->
+						</xsl:when>
+						<xsl:otherwise>0</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				
+				<xsl:variable name="curr_value"><xsl:number/></xsl:variable>
+				
+				<xsl:variable name="type">
+					<xsl:choose>
+						<xsl:when test="normalize-space($processing_instruction_type) != ''"><xsl:value-of select="$processing_instruction_type"/></xsl:when>
+						<xsl:when test="normalize-space(../@type) != ''"><xsl:value-of select="../@type"/></xsl:when>
+						
+						<xsl:otherwise> <!-- if no @type or @class = 'steps' -->
+							
+							<xsl:variable name="list_level_" select="count(ancestor::*[local-name() = 'ul']) + count(ancestor::*[local-name() = 'ol'])"/>
+							<xsl:variable name="list_level">
+								<xsl:choose>
+									<xsl:when test="$list_level_ &lt;= 5"><xsl:value-of select="$list_level_"/></xsl:when>
+									<xsl:otherwise><xsl:value-of select="$list_level_ mod 5"/></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							
+							<xsl:choose>
+								<xsl:when test="$list_level mod 5 = 0">roman_upper</xsl:when> <!-- level 5 -->
+								<xsl:when test="$list_level mod 4 = 0">alphabet_upper</xsl:when> <!-- level 4 -->
+								<xsl:when test="$list_level mod 3 = 0">roman</xsl:when> <!-- level 3 -->
+								<xsl:when test="$list_level mod 2 = 0 and ancestor::*/@class = 'steps'">alphabet</xsl:when> <!-- level 2 and @class = 'steps'-->
+								<xsl:when test="$list_level mod 2 = 0">arabic</xsl:when> <!-- level 2 -->
+								<xsl:otherwise> <!-- level 1 -->
+									<xsl:choose>
+										<xsl:when test="ancestor::*/@class = 'steps'">arabic</xsl:when>
+										<xsl:otherwise>alphabet</xsl:otherwise>
+									</xsl:choose>
+								</xsl:otherwise>
+							</xsl:choose>
+							
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				
+				<xsl:variable name="format">
+					<xsl:choose>
+						<xsl:when test="$type = 'arabic'">
+							1)
+						</xsl:when>
+						<xsl:when test="$type = 'alphabet'">
+							a)
+						</xsl:when>
+						<xsl:when test="$type = 'alphabet_upper'">
+							A)
+						</xsl:when>
+						<xsl:when test="$type = 'roman'">
+							i)
+						</xsl:when>
+						<xsl:when test="$type = 'roman_upper'">I.</xsl:when>
+						<xsl:otherwise>1.</xsl:otherwise> <!-- for any case, if $type has non-determined value, not using -->
+					</xsl:choose>
+				</xsl:variable>
+				
+				<xsl:number value="$start_value + $curr_value" format="{normalize-space($format)}" lang="en"/>
+				
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template><xsl:template match="*[local-name() = 'ul'] | *[local-name() = 'ol']">
 		<xsl:choose>
 			<xsl:when test="parent::*[local-name() = 'note'] or parent::*[local-name() = 'termnote']">
@@ -5311,18 +5691,66 @@
 					
 					<fo:block-container margin-left="0mm">
 						<fo:block>
-							<xsl:apply-templates select="." mode="ul_ol"/>
+							<xsl:apply-templates select="." mode="list"/>
 						</fo:block>
 					</fo:block-container>
 				</fo:block-container>
 			</xsl:when>
 			<xsl:otherwise>
 				<fo:block>
-					<xsl:apply-templates select="." mode="ul_ol"/>
+					<xsl:apply-templates select="." mode="list"/>
 				</fo:block>
 			</xsl:otherwise>
 		</xsl:choose>
-	</xsl:template><xsl:variable name="index" select="document($external_index)"/><xsl:variable name="dash" select="'–'"/><xsl:variable name="bookmark_in_fn">
+	</xsl:template><xsl:template match="*[local-name()='ul'] | *[local-name()='ol']" mode="list" name="list">
+		<fo:list-block xsl:use-attribute-sets="list-style">
+		
+			
+			
+			
+			
+			
+
+			
+					
+			<xsl:apply-templates select="node()[not(local-name() = 'note')]"/>
+		</fo:list-block>
+		<!-- <xsl:for-each select="./iho:note">
+			<xsl:call-template name="note"/>
+		</xsl:for-each> -->
+		<xsl:apply-templates select="./*[local-name() = 'note']"/>
+	</xsl:template><xsl:template match="*[local-name()='li']">
+		<fo:list-item xsl:use-attribute-sets="list-item-style">
+			<xsl:copy-of select="@id"/>
+			
+			
+			
+			<fo:list-item-label end-indent="label-end()">
+				<fo:block xsl:use-attribute-sets="list-item-label-style">
+				
+					
+				
+					<xsl:call-template name="getListItemFormat"/>
+				</fo:block>
+			</fo:list-item-label>
+			<fo:list-item-body start-indent="body-start()" xsl:use-attribute-sets="list-item-body-style">
+				<fo:block>
+				
+					
+				
+					
+				
+					<xsl:apply-templates/>
+				
+					<!-- <xsl:apply-templates select="node()[not(local-name() = 'note')]" />
+					
+					<xsl:for-each select="./bsi:note">
+						<xsl:call-template name="note"/>
+					</xsl:for-each> -->
+				</fo:block>
+			</fo:list-item-body>
+		</fo:list-item>
+	</xsl:template><xsl:variable name="index" select="document($external_index)"/><xsl:variable name="bookmark_in_fn">
 		<xsl:for-each select="//*[local-name() = 'bookmark'][ancestor::*[local-name() = 'fn']]">
 			<bookmark><xsl:value-of select="@id"/></bookmark>
 		</xsl:for-each>
@@ -5344,7 +5772,7 @@
 		<!-- split <xref target="bm1" to="End" pagenumber="true"> to two xref:
 		<xref target="bm1" pagenumber="true"> and <xref target="End" pagenumber="true"> -->
 		<xsl:if test="@to">
-			<xsl:value-of select="$dash"/>
+			<xsl:value-of select="$en_dash"/>
 			<xsl:copy>
 				<xsl:copy-of select="@*"/>
 				<xsl:attribute name="target"><xsl:value-of select="@to"/></xsl:attribute>
@@ -5369,7 +5797,7 @@
 		<xsl:param name="target"/>
 		<!-- <node></node> -->
 		<xsl:choose>
-			<xsl:when test="self::text()  and (normalize-space(.) = ',' or normalize-space(.) = $dash) and $remove = 'true'">
+			<xsl:when test="self::text()  and (normalize-space(.) = ',' or normalize-space(.) = $en_dash) and $remove = 'true'">
 				<!-- skip text (i.e. remove it) and process next element -->
 				<!-- [removed_<xsl:value-of select="."/>] -->
 				<xsl:apply-templates select="following-sibling::node()[1]" mode="process_li_element">
@@ -5453,12 +5881,22 @@
 		</xsl:variable>
 		<xsl:variable name="xref_number"><xsl:number count="*[local-name() = 'xref']"/></xsl:variable>
 		<xsl:value-of select="concat($docid, '_', $item_number, '_', $xref_number)"/> <!-- $level, '_',  -->
+	</xsl:template><xsl:template match="*[local-name() = 'indexsect']/*[local-name() = 'title']" priority="4">
+		<fo:block xsl:use-attribute-sets="indexsect-title-style">
+			<!-- Index -->
+			<xsl:apply-templates/>
+		</fo:block>
+	</xsl:template><xsl:template match="*[local-name() = 'indexsect']/*[local-name() = 'clause']/*[local-name() = 'title']" priority="4">
+		<!-- Letter A, B, C, ... -->
+		<fo:block xsl:use-attribute-sets="indexsect-clause-title-style">
+			<xsl:apply-templates/>
+		</fo:block>
 	</xsl:template><xsl:template match="*[local-name() = 'indexsect']/*[local-name() = 'clause']" priority="4">
 		<xsl:apply-templates/>
 		<fo:block>
-		<xsl:if test="following-sibling::*[local-name() = 'clause']">
-			<fo:block> </fo:block>
-		</xsl:if>
+			<xsl:if test="following-sibling::*[local-name() = 'clause']">
+				<fo:block> </fo:block>
+			</xsl:if>
 		</fo:block>
 	</xsl:template><xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'ul']" priority="4">
 		<xsl:apply-templates/>
@@ -5468,6 +5906,9 @@
 			
 			<xsl:apply-templates/>
 		</fo:block>
+	</xsl:template><xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'li']/text()">
+		<!-- to split by '_' and other chars -->
+		<xsl:call-template name="add-zero-spaces-java"/>
 	</xsl:template><xsl:template match="*[local-name() = 'bookmark']" name="bookmark">
 		<fo:inline id="{@id}" font-size="1pt"/>
 	</xsl:template><xsl:template match="*[local-name() = 'errata']">
@@ -5855,7 +6296,7 @@
 				</fo:table-body>
 			</fo:table>
 		</fo:block>
-	</xsl:template><xsl:template match="*[local-name() = 'toc']//*[local-name() = 'li']">
+	</xsl:template><xsl:template match="*[local-name() = 'toc']//*[local-name() = 'li']" priority="2">
 		<fo:table-row min-height="5mm">
 			<xsl:apply-templates/>
 		</fo:table-row>
@@ -6082,9 +6523,6 @@
 			<xsl:otherwise><xsl:value-of select="$charAtEnd"/></xsl:otherwise>
 		</xsl:choose>
 	</xsl:template><xsl:template name="addPDFUAmeta">
-		<xsl:variable name="lang">
-			<xsl:call-template name="getLang"/>
-		</xsl:variable>
 		<pdf:catalog xmlns:pdf="http://xmlgraphics.apache.org/fop/extensions/pdf">
 				<pdf:dictionary type="normal" key="ViewerPreferences">
 					<pdf:boolean key="DisplayDocTitle">true</pdf:boolean>
@@ -6312,10 +6750,12 @@
 		<xsl:param name="key"/>
 		<xsl:param name="formatted">false</xsl:param>
 		<xsl:param name="lang"/>
+		<xsl:param name="returnEmptyIfNotFound">false</xsl:param>
 		
 		<xsl:variable name="curr_lang">
 			<xsl:choose>
 				<xsl:when test="$lang != ''"><xsl:value-of select="$lang"/></xsl:when>
+				<xsl:when test="$returnEmptyIfNotFound = 'true'"/>
 				<xsl:otherwise>
 					<xsl:call-template name="getLang"/>
 				</xsl:otherwise>
@@ -6350,6 +6790,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
+			<xsl:when test="$returnEmptyIfNotFound = 'true'"/>
 			<xsl:otherwise>
 				<xsl:variable name="key_">
 					<xsl:call-template name="capitalize">
