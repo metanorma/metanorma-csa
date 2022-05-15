@@ -454,6 +454,7 @@
 	
 	<xsl:template match="csa:p" name="paragraph">
 		<xsl:param name="inline" select="'false'"/>
+		<xsl:param name="split_keep-within-line"/>
 		<xsl:variable name="previous-element" select="local-name(preceding-sibling::*[1])"/>
 		<xsl:variable name="element-name">
 			<xsl:choose>
@@ -481,7 +482,9 @@
 				</xsl:choose>
 			</xsl:attribute>
 			<xsl:attribute name="line-height">155%</xsl:attribute>
-			<xsl:apply-templates/>
+			<xsl:apply-templates>
+				<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+			</xsl:apply-templates>
 		</xsl:element>
 		<xsl:if test="$element-name = 'fo:inline' and not($inline = 'true') and not(local-name(..) = 'admonition')">
 			<fo:block margin-bottom="12pt">
@@ -571,7 +574,9 @@
 		<xsl:text>iVBORw0KGgoAAAANSUhEUgAAASEAAAEhCAYAAAAwHRYbAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDE0IDc5LjE1Njc5NywgMjAxNC8wOC8yMC0wOTo1MzowMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDplYWRhN2RlNC04YzAyLTQ1N2UtYjUwNy0zNGYzY2RjNWE2ZGQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDUyNzBENDc3NjVCMTFFQTlDMDhGMEI2ODhENjUxQkIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDUyNzBENDY3NjVCMTFFQTlDMDhGMEI2ODhENjUxQkIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgSW5EZXNpZ24gMTQuMCAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmZiZjFiODZmLTIzMjMtM2U0OS1hMDMzLTVlOGQxYThlNmI1YiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmlkOjFlMzVjZTE3LWU5NzAtNDQ1OS05ZjI0LTM1NzcwZWYzMjNjMiIvPiA8L3Jk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</xsl:text>
 	</xsl:variable>
 	
-<xsl:param name="svg_images"/><xsl:variable name="images" select="document($svg_images)"/><xsl:param name="basepath"/><xsl:param name="external_index"/><xsl:param name="syntax-highlight">false</xsl:param><xsl:param name="add_math_as_text">true</xsl:param><xsl:variable name="lang">
+<xsl:param name="svg_images"/><xsl:variable name="images" select="document($svg_images)"/><xsl:param name="basepath"/><xsl:param name="external_index"/><xsl:param name="syntax-highlight">false</xsl:param><xsl:param name="add_math_as_text">true</xsl:param><xsl:param name="table_if">false</xsl:param><xsl:param name="table_widths"/><xsl:variable name="table_widths_from_if" select="xalan:nodeset($table_widths)"/><xsl:param name="table_if_debug">false</xsl:param><xsl:variable name="isGenerateTableIF_">
+		false
+	</xsl:variable><xsl:variable name="isGenerateTableIF" select="normalize-space($isGenerateTableIF_)"/><xsl:variable name="lang">
 		<xsl:call-template name="getLang"/>
 	</xsl:variable><xsl:variable name="pageWidth_">
 		215.9
@@ -1027,6 +1032,7 @@
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 		<xsl:attribute name="border">solid black 1pt</xsl:attribute>
 		<xsl:attribute name="padding-left">1mm</xsl:attribute>
+		<xsl:attribute name="padding-right">1mm</xsl:attribute>
 		<xsl:attribute name="display-align">center</xsl:attribute>
 		
 		
@@ -1045,6 +1051,7 @@
 		<xsl:attribute name="display-align">center</xsl:attribute>
 		<xsl:attribute name="border">solid black 1pt</xsl:attribute>
 		<xsl:attribute name="padding-left">1mm</xsl:attribute>
+		<xsl:attribute name="padding-right">1mm</xsl:attribute>
 		
 		
 		
@@ -1127,7 +1134,8 @@
 	</xsl:attribute-set><xsl:attribute-set name="dt-row-style">
 		
 		
-	</xsl:attribute-set><xsl:attribute-set name="dt-style">
+	</xsl:attribute-set><xsl:attribute-set name="dt-cell-style">
+	</xsl:attribute-set><xsl:attribute-set name="dt-block-style">
 		<xsl:attribute name="margin-top">6pt</xsl:attribute>
 		
 		
@@ -1139,6 +1147,8 @@
 		
 		
 		
+	</xsl:attribute-set><xsl:attribute-set name="dd-cell-style">
+		<xsl:attribute name="padding-left">2mm</xsl:attribute>
 	</xsl:attribute-set><xsl:attribute-set name="appendix-style">
 		
 		
@@ -1996,7 +2006,38 @@
 	</xsl:template><xsl:template match="*[local-name()='br']">
 		<xsl:value-of select="$linebreak"/>
 	</xsl:template><xsl:template match="*[local-name() = 'keep-together_within-line']">
-		<fo:inline keep-together.within-line="always"><xsl:apply-templates/></fo:inline>
+		<xsl:param name="split_keep-within-line"/>
+		
+		<!-- <fo:inline>split_keep-within-line='<xsl:value-of select="$split_keep-within-line"/>'</fo:inline> -->
+		<xsl:choose>
+		
+			<xsl:when test="normalize-space($split_keep-within-line) = 'true'">
+				<xsl:variable name="sep">_</xsl:variable>
+				<xsl:variable name="items">
+					<xsl:call-template name="split">
+						<xsl:with-param name="pText" select="."/>
+						<xsl:with-param name="sep" select="$sep"/>
+						<xsl:with-param name="normalize-space">false</xsl:with-param>
+						<xsl:with-param name="keep_sep">true</xsl:with-param>
+					</xsl:call-template>
+				</xsl:variable>
+				<xsl:for-each select="xalan:nodeset($items)/item">
+					<xsl:choose>
+						<xsl:when test=". = $sep">
+							<xsl:value-of select="$sep"/><xsl:value-of select="$zero_width_space"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<fo:inline keep-together.within-line="always"><xsl:apply-templates/></fo:inline>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:for-each>
+			</xsl:when>
+			
+			<xsl:otherwise>
+				<fo:inline keep-together.within-line="always"><xsl:apply-templates/></fo:inline>
+			</xsl:otherwise>
+			
+		</xsl:choose>
 	</xsl:template><xsl:template match="*[local-name()='copyright-statement']">
 		<fo:block xsl:use-attribute-sets="copyright-statement-style">
 			<xsl:apply-templates/>
@@ -2088,9 +2129,14 @@
 		
 		<xsl:variable name="table">
 	
-			<xsl:variable name="simple-table">	
-				<xsl:call-template name="getSimpleTable"/>
+			<xsl:variable name="simple-table">
+				<xsl:call-template name="getSimpleTable">
+					<xsl:with-param name="id" select="@id"/>
+				</xsl:call-template>
 			</xsl:variable>
+			<!-- <xsl:variable name="simple-table" select="xalan:nodeset($simple-table_)"/> -->
+		
+			<!-- simple-table=<xsl:copy-of select="$simple-table"/> -->
 		
 			
 			<!-- Display table's name before table as standalone block -->
@@ -2111,7 +2157,23 @@
 					</xsl:call-template>
 				</xsl:if>
 			</xsl:variable>
-			<!-- DEBUG colwidths=<xsl:copy-of select="$colwidths"/> -->
+			<!-- <xsl:variable name="colwidths" select="xalan:nodeset($colwidths_)"/> -->
+			
+			<!-- DEBUG -->
+			<xsl:if test="$table_if_debug = 'true'">
+				<fo:block font-size="60%">
+					<xsl:apply-templates select="xalan:nodeset($colwidths)" mode="print_as_xml"/>
+				</fo:block>
+			</xsl:if>
+			
+			
+			<!-- <xsl:copy-of select="$colwidths"/> -->
+			
+			<!-- <xsl:text disable-output-escaping="yes">&lt;!- -</xsl:text>
+			DEBUG
+			colwidths=<xsl:copy-of select="$colwidths"/>
+		<xsl:text disable-output-escaping="yes">- -&gt;</xsl:text> -->
+			
 			
 			
 			<xsl:variable name="margin-side">
@@ -2178,8 +2240,16 @@
 					</xsl:element>
 				</xsl:variable>
 				
+				<xsl:if test="$isGenerateTableIF = 'true'">
+					<!-- to determine start of table -->
+					<fo:block id="{concat('table_if_start_',@id)}" keep-with-next="always" font-size="1pt">Start table '<xsl:value-of select="@id"/>'.</fo:block>
+				</xsl:if>
 				
 				<fo:table id="{@id}">
+					
+					<xsl:if test="$isGenerateTableIF = 'true'">
+						<xsl:attribute name="wrap-option">no-wrap</xsl:attribute>
+					</xsl:if>
 					
 					<xsl:for-each select="xalan:nodeset($table_attributes)/table_attributes/@*">					
 						<xsl:attribute name="{local-name()}">
@@ -2194,24 +2264,47 @@
 					
 					
 					<xsl:choose>
-						<xsl:when test="*[local-name()='colgroup']/*[local-name()='col']">
-							<xsl:for-each select="*[local-name()='colgroup']/*[local-name()='col']">
-								<fo:table-column column-width="{@width}"/>
-							</xsl:for-each>
+						<xsl:when test="$isGenerateTableIF = 'true'">
+							<!-- generate IF for table widths -->
+							<!-- example:
+								<tr>
+									<td valign="top" align="left" id="tab-symdu_1_1">
+										<p>Symbol</p>
+										<word id="tab-symdu_1_1_word_1">Symbol</word>
+									</td>
+									<td valign="top" align="left" id="tab-symdu_1_2">
+										<p>Description</p>
+										<word id="tab-symdu_1_2_word_1">Description</word>
+									</td>
+								</tr>
+							-->
+							<xsl:apply-templates select="xalan:nodeset($simple-table)" mode="process_table-if"/>
+							
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:call-template name="insertTableColumnWidth">
-								<xsl:with-param name="colwidths" select="$colwidths"/>
-							</xsl:call-template>
-						</xsl:otherwise>
-					</xsl:choose>
 					
-					<xsl:choose>
-						<xsl:when test="not(*[local-name()='tbody']) and *[local-name()='thead']">
-							<xsl:apply-templates select="*[local-name()='thead']" mode="process_tbody"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:apply-templates select="node()[not(local-name() = 'name') and not(local-name() = 'note')        and not(local-name() = 'thead') and not(local-name() = 'tfoot')]"/> <!-- process all table' elements, except name, header, footer and note that renders separaterely -->
+							<xsl:choose>
+								<xsl:when test="*[local-name()='colgroup']/*[local-name()='col']">
+									<xsl:for-each select="*[local-name()='colgroup']/*[local-name()='col']">
+										<fo:table-column column-width="{@width}"/>
+									</xsl:for-each>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:call-template name="insertTableColumnWidth">
+										<xsl:with-param name="colwidths" select="$colwidths"/>
+									</xsl:call-template>
+								</xsl:otherwise>
+							</xsl:choose>
+							
+							<xsl:choose>
+								<xsl:when test="not(*[local-name()='tbody']) and *[local-name()='thead']">
+									<xsl:apply-templates select="*[local-name()='thead']" mode="process_tbody"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:apply-templates select="node()[not(local-name() = 'name') and not(local-name() = 'note')          and not(local-name() = 'thead') and not(local-name() = 'tfoot')]"/> <!-- process all table' elements, except name, header, footer and note that renders separaterely -->
+								</xsl:otherwise>
+							</xsl:choose>
+					
 						</xsl:otherwise>
 					</xsl:choose>
 					
@@ -2316,8 +2409,19 @@
 	</xsl:template><xsl:template name="calculate-column-widths">
 		<xsl:param name="table"/>
 		<xsl:param name="cols-count"/>
+		
+				<xsl:call-template name="calculate-column-widths-proportional">
+					<xsl:with-param name="cols-count" select="$cols-count"/>
+					<xsl:with-param name="table" select="$table"/>
+				</xsl:call-template>
+			
+	</xsl:template><xsl:template name="calculate-column-widths-proportional">
+		<xsl:param name="table"/>
+		<xsl:param name="cols-count"/>
 		<xsl:param name="curr-col" select="1"/>
 		<xsl:param name="width" select="0"/>
+		
+		<!-- table=<xsl:copy-of select="$table"/> -->
 		
 		<xsl:if test="$curr-col &lt;= $cols-count">
 			<xsl:variable name="widths">
@@ -2356,10 +2460,15 @@
 						</xsl:for-each>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:for-each select="xalan:nodeset($table)/*/tr">
+						<!-- <curr_col><xsl:value-of select="$curr-col"/></curr_col> -->
+						
+						<!-- <table><xsl:copy-of select="$table"/></table>
+						 -->
+						<xsl:for-each select="xalan:nodeset($table)/*/*[local-name()='tr']">
 							<xsl:variable name="td_text">
 								<xsl:apply-templates select="td[$curr-col]" mode="td_text"/>
 							</xsl:variable>
+							<!-- <td_text><xsl:value-of select="$td_text"/></td_text> -->
 							<xsl:variable name="words">
 								<xsl:variable name="string_with_added_zerospaces">
 									<xsl:call-template name="add-zero-spaces-java">
@@ -2374,6 +2483,7 @@
 									<xsl:with-param name="text" select="normalize-space(translate($string_with_added_zerospaces, '​­', '  '))"/> <!-- replace zero-width-space and soft-hyphen to space -->
 								</xsl:call-template>
 							</xsl:variable>
+							<!-- words=<xsl:copy-of select="$words"/> -->
 							<xsl:variable name="max_length">
 								<xsl:call-template name="max_length">
 									<xsl:with-param name="words" select="xalan:nodeset($words)"/>
@@ -2398,6 +2508,8 @@
 				</xsl:choose>
 			</xsl:variable>
 			
+			<!-- widths=<xsl:copy-of select="$widths"/> -->
+			
 			<column>
 				<xsl:for-each select="xalan:nodeset($widths)//width">
 					<xsl:sort select="." data-type="number" order="descending"/>
@@ -2406,33 +2518,327 @@
 					</xsl:if>
 				</xsl:for-each>
 			</column>
-			<xsl:call-template name="calculate-column-widths">
+			<xsl:call-template name="calculate-column-widths-proportional">
 				<xsl:with-param name="cols-count" select="$cols-count"/>
 				<xsl:with-param name="curr-col" select="$curr-col +1"/>
 				<xsl:with-param name="table" select="$table"/>
 			</xsl:call-template>
 		</xsl:if>
-	</xsl:template><xsl:template match="*[@keep-together.within-line]/text()" priority="2" mode="td_text">
+	</xsl:template><xsl:template match="*[@keep-together.within-line or local-name() = 'keep-together_within-line']/text()" priority="2" mode="td_text">
 		<!-- <xsl:message>DEBUG t1=<xsl:value-of select="."/></xsl:message>
 		<xsl:message>DEBUG t2=<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),'.','X')"/></xsl:message> -->
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),'.','X')"/>
+		
+		<!-- if all capitals english letters or digits -->
+		<xsl:if test="normalize-space(translate(., concat($upper,'0123456789'), '')) = ''">
+			<xsl:call-template name="repeat">
+				<xsl:with-param name="char" select="'X'"/>
+				<xsl:with-param name="count" select="string-length(normalize-space(.)) * 0.5"/>
+			</xsl:call-template>
+		</xsl:if>
 	</xsl:template><xsl:template match="text()" mode="td_text">
 		<xsl:value-of select="translate(., $zero_width_space, ' ')"/><xsl:text> </xsl:text>
 	</xsl:template><xsl:template match="*[local-name()='termsource']" mode="td_text">
 		<xsl:value-of select="*[local-name()='origin']/@citeas"/>
 	</xsl:template><xsl:template match="*[local-name()='link']" mode="td_text">
 		<xsl:value-of select="@target"/>
-	</xsl:template><xsl:template match="*[local-name()='math']" mode="td_text">
-		<xsl:variable name="mathml">
-			<xsl:for-each select="*">
-				<xsl:if test="local-name() != 'unit' and local-name() != 'prefix' and local-name() != 'dimension' and local-name() != 'quantity'">
-					<xsl:copy-of select="."/>
-				</xsl:if>
+	</xsl:template><xsl:template match="*[local-name()='math']" mode="td_text" name="math_length">
+		<xsl:if test="$isGenerateTableIF = 'false'">
+			<xsl:variable name="mathml_">
+				<xsl:for-each select="*">
+					<xsl:if test="local-name() != 'unit' and local-name() != 'prefix' and local-name() != 'dimension' and local-name() != 'quantity'">
+						<xsl:copy-of select="."/>
+					</xsl:if>
+				</xsl:for-each>
+			</xsl:variable>
+			<xsl:variable name="mathml" select="xalan:nodeset($mathml_)"/>
+
+			<xsl:variable name="math_text">
+				<xsl:value-of select="normalize-space($mathml)"/>
+				<xsl:for-each select="$mathml//@open"><xsl:value-of select="."/></xsl:for-each>
+				<xsl:for-each select="$mathml//@close"><xsl:value-of select="."/></xsl:for-each>
+			</xsl:variable>
+			<xsl:value-of select="translate($math_text, ' ', '#')"/><!-- mathml images as one 'word' without spaces -->
+		</xsl:if>
+	</xsl:template><xsl:template name="calculate-column-widths-autolayout-algorithm">
+		<xsl:param name="table"/>
+		<xsl:param name="if">false</xsl:param> <!-- via intermediate format -->
+
+		<!-- The algorithm uses two passes through the table data and scales linearly with the size of the table -->
+	 
+		<!-- In the first pass, line wrapping is disabled, and the user agent keeps track of the minimum and maximum width of each cell. -->
+	 
+		<!-- Since line wrap has been disabled, paragraphs are treated as long lines unless broken by BR elements. -->
+		 
+		<!-- get current table id -->
+		<xsl:variable name="table_id" select="@id"/>
+		<!-- find table by id in the file 'table_widths' -->
+		<xsl:variable name="table-if_" select="$table_widths_from_if//table[@id = $table_id]"/>
+		<xsl:variable name="table-if" select="xalan:nodeset($table-if_)"/>
+		
+		
+		<!-- table='<xsl:copy-of select="$table"/>' -->
+		<!-- table_id='<xsl:value-of select="$table_id"/>\ -->
+		<!-- table-if='<xsl:copy-of select="$table-if"/>' -->
+		<!-- table_widths_from_if='<xsl:copy-of select="$table_widths_from_if"/>' -->
+		
+		<xsl:variable name="table_with_cell_widths_">
+			<xsl:choose>
+				<xsl:when test="$if = 'true' and normalize-space($table-if) != ''"> <!-- if we read column's width from IF and there is table in IF -->
+				
+					<!-- Example: <column>10</column>
+							<column>11</column> 
+					-->
+					<xsl:apply-templates select="$table-if" mode="determine_cell_widths-if"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates select="xalan:nodeset($table)" mode="determine_cell_widths"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:variable name="table_with_cell_widths" select="xalan:nodeset($table_with_cell_widths_)"/>
+		
+		<xsl:if test="$table_if_debug = 'true'">
+			<xsl:copy-of select="$table_with_cell_widths"/>
+		</xsl:if>
+		
+		
+		<!-- The minimum and maximum cell widths are then used to determine the corresponding minimum and maximum widths for the columns. -->
+		
+		<xsl:variable name="column_widths_">
+			<!-- iteration of columns -->
+			<xsl:for-each select="$table_with_cell_widths//tr[1]/td">
+				<xsl:variable name="pos" select="position()"/>
+				<column>
+					<xsl:attribute name="width_max">
+						<xsl:for-each select="ancestor::tbody//tr/td[$pos]/@width_max">
+							<xsl:sort select="." data-type="number" order="descending"/>
+							<xsl:if test="position() = 1"><xsl:value-of select="."/></xsl:if>
+						</xsl:for-each>
+					</xsl:attribute>
+					<xsl:attribute name="width_min">
+						<xsl:for-each select="ancestor::tbody//tr/td[$pos]/@width_min">
+							<xsl:sort select="." data-type="number" order="descending"/>
+							<xsl:if test="position() = 1"><xsl:value-of select="."/></xsl:if>
+						</xsl:for-each>
+					</xsl:attribute>
+				</column>
 			</xsl:for-each>
 		</xsl:variable>
+		<xsl:variable name="column_widths" select="xalan:nodeset($column_widths_)"/>
 		
-		<xsl:variable name="math_text" select="normalize-space(xalan:nodeset($mathml))"/>
-		<xsl:value-of select="translate($math_text, ' ', '#')"/><!-- mathml images as one 'word' without spaces -->
+		<!-- <column_widths>
+			<xsl:copy-of select="$column_widths"/>
+		</column_widths> -->
+		
+		<!-- These in turn, are used to find the minimum and maximum width for the table. -->
+		<xsl:variable name="table_widths_">
+			<table>
+				<xsl:attribute name="width_max">
+					<xsl:value-of select="sum($column_widths/column/@width_max)"/>
+				</xsl:attribute>
+				<xsl:attribute name="width_min">
+					<xsl:value-of select="sum($column_widths/column/@width_min)"/>
+				</xsl:attribute>
+			</table>
+		</xsl:variable>
+		<xsl:variable name="table_widths" select="xalan:nodeset($table_widths_)"/>
+		
+		<xsl:variable name="page_width">
+			<xsl:choose>
+				<xsl:when test="$if = 'true'"><xsl:value-of select="$table-if/@page-width"/></xsl:when>
+				<xsl:otherwise>75</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<xsl:if test="$table_if_debug = 'true'">
+			<table_width>
+				<xsl:copy-of select="$table_widths"/>
+			</table_width>
+			<!-- <debug>$table_widths/@width_min=<xsl:value-of select="$table_widths/table/@width_min"/></debug>
+			<debug>$table_widths/@width_max=<xsl:value-of select="$table_widths/table/@width_max"/></debug>
+			 -->
+			<debug>$page_width=<xsl:value-of select="$page_width"/></debug>
+		</xsl:if>
+		
+		
+		<!-- There are three cases: -->
+		<xsl:choose>
+			<!-- 1. The minimum table width is equal to or wider than the available space -->
+			<xsl:when test="$table_widths/table/@width_min &gt;= $page_width and 1 = 2"> <!-- this condition isn't working see case 3 below -->
+				<!-- call old algorithm -->
+				<case1/>
+				<xsl:variable name="cols-count" select="count(xalan:nodeset($table)/*/tr[1]/td)"/>
+				<xsl:call-template name="calculate-column-widths-proportional">
+					<xsl:with-param name="cols-count" select="$cols-count"/>
+					<xsl:with-param name="table" select="$table"/>
+				</xsl:call-template>
+			</xsl:when>
+			<!-- 2. The maximum table width fits within the available space. In this case, set the columns to their maximum widths. -->
+			<xsl:when test="$table_widths/table/@width_max &lt;= $page_width">
+				<case2/>
+				<autolayout/>
+				<xsl:for-each select="$column_widths/column/@width_max">
+					<column divider="100"><xsl:value-of select="."/></column>
+				</xsl:for-each>
+			</xsl:when>
+			<!-- 3. The maximum width of the table is greater than the available space, but the minimum table width is smaller. 
+			In this case, find the difference between the available space and the minimum table width, lets call it W. 
+			Lets also call D the difference between maximum and minimum width of the table. 
+			For each column, let d be the difference between maximum and minimum width of that column. 
+			Now set the column's width to the minimum width plus d times W over D. 
+			This makes columns with large differences between minimum and maximum widths wider than columns with smaller differences. -->
+			<xsl:when test="($table_widths/table/@width_max &gt; $page_width and $table_widths/table/@width_min &lt; $page_width) or ($table_widths/table/@width_min &gt;= $page_width)">
+				<!-- difference between the available space and the minimum table width -->
+				<xsl:variable name="W" select="$page_width - $table_widths/table/@width_min"/>
+				<W><xsl:value-of select="$W"/></W>
+				<!-- difference between maximum and minimum width of the table -->
+				<xsl:variable name="D" select="$table_widths/table/@width_max - $table_widths/table/@width_min"/>
+				<D><xsl:value-of select="$D"/></D>
+				<case3/>
+				<autolayout/>
+				<xsl:if test="$table_widths/table/@width_min &gt;= $page_width">
+					<split_keep-within-line>true</split_keep-within-line>
+				</xsl:if>
+				<xsl:for-each select="$column_widths/column">
+					<!-- difference between maximum and minimum width of that column.  -->
+					<xsl:variable name="d" select="@width_max - @width_min"/>
+					<d><xsl:value-of select="$d"/></d>
+					<width_min><xsl:value-of select="@width_min"/></width_min>
+					<e><xsl:value-of select="$d * $W div $D"/></e>
+					<!-- set the column's width to the minimum width plus d times W over D.  -->
+					<column divider="100">
+						<xsl:value-of select="round(@width_min + $d * $W div $D)"/> <!--  * 10 -->
+					</column>
+				</xsl:for-each>
+				
+			</xsl:when>
+			<xsl:otherwise><unknown_case/></xsl:otherwise>
+		</xsl:choose>
+		
+		
+	</xsl:template><xsl:template match="@*|node()" mode="determine_cell_widths">
+		<xsl:copy>
+				<xsl:apply-templates select="@*|node()" mode="determine_cell_widths"/>
+		</xsl:copy>
+	</xsl:template><xsl:template match="td | th" mode="determine_cell_widths">
+		<xsl:copy>
+			<xsl:copy-of select="@*"/>
+			
+			 <!-- The maximum width is given by the widest line.  -->
+			<xsl:variable name="widths_max">
+				<xsl:for-each select=".//*[local-name() = 'p']">
+					<xsl:call-template name="add_width"/>
+				</xsl:for-each>
+				<xsl:if test="not(*[local-name() = 'p'])">
+					<xsl:call-template name="add_width"/>
+				</xsl:if>
+			</xsl:variable>
+			<xsl:variable name="width_max">
+				<xsl:for-each select="xalan:nodeset($widths_max)//width">
+					<xsl:sort select="." data-type="number" order="descending"/>
+					<xsl:if test="position() = 1"><xsl:value-of select="."/></xsl:if>
+				</xsl:for-each>
+			</xsl:variable>
+			<xsl:attribute name="width_max">
+				<xsl:value-of select="$width_max"/>
+			</xsl:attribute>
+			
+			<!-- The minimum width is given by the widest text element (word, image, etc.) -->
+			<!-- To do: image width -->
+			<xsl:variable name="td_text">
+				<xsl:apply-templates select="." mode="td_text"/>
+			</xsl:variable>
+			<xsl:variable name="words">
+				<xsl:variable name="string_with_added_zerospaces">
+					<xsl:call-template name="add-zero-spaces-java">
+						<xsl:with-param name="text" select="$td_text"/>
+					</xsl:call-template>
+				</xsl:variable>
+				<xsl:call-template name="tokenize">
+					<xsl:with-param name="text" select="normalize-space(translate($string_with_added_zerospaces, '​­', '  '))"/> <!-- replace zero-width-space and soft-hyphen to space -->
+				</xsl:call-template>
+			</xsl:variable>
+			
+			<xsl:variable name="max_word_length">
+				<xsl:call-template name="max_length">
+					<xsl:with-param name="words" select="xalan:nodeset($words)"/>
+				</xsl:call-template>
+			</xsl:variable>
+			<xsl:variable name="width_min">
+				<xsl:value-of select="$max_word_length"/>
+			</xsl:variable>
+			<xsl:attribute name="width_min">
+				<xsl:value-of select="$width_min"/>
+			</xsl:attribute>
+			<!-- width_max="1" width_min="1.5"> --> <!-- see 'tokenize' template, multiply 1.5 for all latin capitals -->
+			<xsl:if test="$width_min &gt; $width_max">
+				<xsl:attribute name="width_max">
+					<xsl:value-of select="$width_min"/>
+				</xsl:attribute>
+			</xsl:if>
+			<xsl:if test="$width_min = 0">
+				<xsl:attribute name="width_min">1</xsl:attribute>
+			</xsl:if>
+			
+			<xsl:apply-templates select="node()" mode="determine_cell_widths"/>
+			
+		</xsl:copy>
+	</xsl:template><xsl:template name="add_width">
+		<xsl:variable name="p_text"><xsl:apply-templates select="." mode="td_text"/></xsl:variable>
+		<xsl:variable name="p_text_len_" select="string-length(normalize-space($p_text))"/>
+		
+		<xsl:variable name="p_text_len">
+			<xsl:choose>
+				<xsl:when test="normalize-space(translate($p_text, concat($upper,'0123456789'), '')) = ''"> <!-- english word in CAPITAL letters -->
+					<xsl:value-of select="$p_text_len_ * 1.5"/>
+				</xsl:when>
+				<xsl:otherwise><xsl:value-of select="$p_text_len_"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<xsl:variable name="math_addon_text">
+			<xsl:for-each select=".//*[local-name() = 'math']">
+				<xsl:apply-templates mode="td_text"/>
+			</xsl:for-each>
+		</xsl:variable>
+		<xsl:variable name="math_addon_length" select="string-length(normalize-space($math_addon_text)) * 0.2"/> <!-- plus 20% -->
+		
+		<width><xsl:value-of select="$p_text_len + $math_addon_length"/></width>
+	</xsl:template><xsl:template match="@*|node()" mode="determine_cell_widths-if">
+		<xsl:copy>
+				<xsl:apply-templates select="@*|node()" mode="determine_cell_widths-if"/>
+		</xsl:copy>
+	</xsl:template><xsl:template match="td | th" mode="determine_cell_widths-if">
+		<xsl:copy>
+			<xsl:copy-of select="@*"/>
+			
+			 <!-- The maximum width is given by the widest line.  -->
+			<xsl:attribute name="width_max">
+				<xsl:for-each select="p_len">
+					<xsl:sort select="." data-type="number" order="descending"/>
+					<xsl:if test="position() = 1"><xsl:value-of select="."/></xsl:if>
+				</xsl:for-each>
+			</xsl:attribute>
+			
+			<!-- The minimum width is given by the widest text element (word, image, etc.) -->
+			<xsl:variable name="width_min">
+				<xsl:for-each select="word_len">
+					<xsl:sort select="." data-type="number" order="descending"/>
+					<xsl:if test="position() = 1"><xsl:value-of select="."/></xsl:if>
+				</xsl:for-each>
+			</xsl:variable>
+			<xsl:attribute name="width_min">
+				<xsl:value-of select="$width_min"/>
+			</xsl:attribute>
+			
+			<xsl:if test="$width_min = 0">
+				<xsl:attribute name="width_min">1</xsl:attribute>
+			</xsl:if>
+			
+			<xsl:apply-templates select="node()" mode="determine_cell_widths-if"/>
+			
+		</xsl:copy>
 	</xsl:template><xsl:template match="*[local-name()='thead']">
 		<xsl:param name="cols-count"/>
 		<fo:table-header>
@@ -2517,6 +2923,7 @@
 						</xsl:for-each>
 					</xsl:when>
 					<xsl:otherwise>
+						<!-- $colwidths=<xsl:copy-of select="$colwidths"/> -->
 						<xsl:call-template name="insertTableColumnWidth">
 							<xsl:with-param name="colwidths" select="$colwidths"/>
 						</xsl:call-template>
@@ -2596,6 +3003,52 @@
 			
 		</fo:table-body>
 		
+	</xsl:template><xsl:template match="/" mode="process_table-if">
+		<xsl:param name="table_or_dl">table</xsl:param>
+		<xsl:apply-templates mode="process_table-if">
+			<xsl:with-param name="table_or_dl" select="$table_or_dl"/>
+		</xsl:apply-templates>
+	</xsl:template><xsl:template match="*[local-name()='tbody']" mode="process_table-if">
+		<xsl:param name="table_or_dl">table</xsl:param>
+		
+		<fo:table-body>
+			<xsl:for-each select="*[local-name() = 'tr']">
+				<xsl:variable name="col_count" select="count(*)"/>
+
+				<!-- iteration for each tr/td -->
+				
+				<xsl:choose>
+					<xsl:when test="$table_or_dl = 'table'">
+						<xsl:for-each select="*[local-name() = 'td' or local-name() = 'th']/*">
+							<fo:table-row number-columns-spanned="{$col_count}">
+								<!-- <test_table><xsl:copy-of select="."/></test_table> -->
+								<xsl:call-template name="td"/>
+							</fo:table-row>
+						</xsl:for-each>
+					</xsl:when>
+					<xsl:otherwise> <!-- $table_or_dl = 'dl' -->
+						<xsl:for-each select="*[local-name() = 'td' or local-name() = 'th']">
+							<xsl:variable name="is_dt" select="position() = 1"/>
+							
+							<xsl:for-each select="*">
+								<!-- <test><xsl:copy-of select="."/></test> -->
+								<fo:table-row number-columns-spanned="{$col_count}">
+									<xsl:choose>
+										<xsl:when test="$is_dt">
+											<xsl:call-template name="insert_dt_cell"/>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:call-template name="insert_dd_cell"/>
+										</xsl:otherwise>
+									</xsl:choose>
+								</fo:table-row>
+							</xsl:for-each>
+						</xsl:for-each>
+					</xsl:otherwise>
+				</xsl:choose>
+				
+			</xsl:for-each>
+		</fo:table-body>
 	</xsl:template><xsl:template match="*[local-name()='thead']/*[local-name()='tr']" priority="2">
 		<fo:table-row xsl:use-attribute-sets="table-header-row-style">
 		
@@ -2682,7 +3135,7 @@
 				</xsl:choose>					
 			</xsl:attribute>
 		</xsl:if>
-	</xsl:template><xsl:template match="*[local-name()='td']">
+	</xsl:template><xsl:template match="*[local-name()='td']" name="td">
 		<fo:table-cell xsl:use-attribute-sets="table-cell-style"> <!-- text-align="{@align}" -->
 			<xsl:call-template name="setTextAlignment">
 				<xsl:with-param name="default">left</xsl:with-param>
@@ -2716,11 +3169,24 @@
 			
 			<xsl:call-template name="setTableCellAttributes"/>
 			
+			<xsl:if test="$isGenerateTableIF = 'true'">
+				<xsl:attribute name="border">1pt solid black</xsl:attribute> <!-- border is mandatory, to determine page width -->
+				<xsl:attribute name="text-align">left</xsl:attribute>
+			</xsl:if>
+			
 			<fo:block>
+			
+				<xsl:if test="$isGenerateTableIF = 'true'">
+					<xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
+				</xsl:if>
+			
 			
 				
 				
 				<xsl:apply-templates/>
+				
+				<xsl:if test="$isGenerateTableIF = 'true'"><fo:inline id="{@id}_end">end</fo:inline></xsl:if> <!-- to determine width of text --> <!-- <xsl:value-of select="$hair_space"/> -->
+
 			</fo:block>			
 		</fo:table-cell>
 	</xsl:template><xsl:template match="*[local-name()='table']/*[local-name()='note']" priority="2">
@@ -2917,9 +3383,9 @@
 			<!-- current hierarchy is 'figure' element -->
 			<xsl:variable name="following_dl_colwidths">
 				<xsl:if test="*[local-name() = 'dl']"><!-- if there is a 'dl', then set the same columns width as for 'dl' -->
-					<xsl:variable name="html-table">
-						<xsl:variable name="doc_ns">
-							
+					<xsl:variable name="simple-table">
+						<!-- <xsl:variable name="doc_ns">
+							<xsl:if test="$namespace = 'bipm'">bipm</xsl:if>
 						</xsl:variable>
 						<xsl:variable name="ns">
 							<xsl:choose>
@@ -2930,7 +3396,7 @@
 									<xsl:value-of select="substring-before(name(/*), '-')"/>
 								</xsl:otherwise>
 							</xsl:choose>
-						</xsl:variable>
+						</xsl:variable> -->
 						
 						<xsl:for-each select="*[local-name() = 'dl'][1]">
 							<tbody>
@@ -2941,7 +3407,7 @@
 					
 					<xsl:call-template name="calculate-column-widths">
 						<xsl:with-param name="cols-count" select="2"/>
-						<xsl:with-param name="table" select="$html-table"/>
+						<xsl:with-param name="table" select="$simple-table"/>
 					</xsl:call-template>
 					
 				</xsl:if>
@@ -3121,7 +3587,18 @@
 							
 							
 							
+							
+							<xsl:if test="$isGenerateTableIF = 'true'">
+								<!-- to determine start of table -->
+								<fo:block id="{concat('table_if_start_',@id)}" keep-with-next="always" font-size="1pt">Start table '<xsl:value-of select="@id"/>'.</fo:block>
+							</xsl:if>
+							
 							<fo:table width="95%" table-layout="fixed">
+							
+								<xsl:if test="$isGenerateTableIF = 'true'">
+									<xsl:attribute name="wrap-option">no-wrap</xsl:attribute>
+								</xsl:if>
+							
 								
 								<xsl:choose>
 									<xsl:when test="normalize-space($key_iso) = 'true' and $parent = 'formula'"/>
@@ -3130,52 +3607,130 @@
 										
 									</xsl:when>
 								</xsl:choose>
-								<!-- create virtual html table for dl/[dt and dd] -->
-								<xsl:variable name="html-table">
-									<xsl:variable name="doc_ns">
-										
-									</xsl:variable>
-									<xsl:variable name="ns">
-										<xsl:choose>
-											<xsl:when test="normalize-space($doc_ns)  != ''">
-												<xsl:value-of select="normalize-space($doc_ns)"/>
-											</xsl:when>
-											<xsl:otherwise>
-												<xsl:value-of select="substring-before(name(/*), '-')"/>
-											</xsl:otherwise>
-										</xsl:choose>
-									</xsl:variable>
-									<tbody>
-										<xsl:apply-templates mode="dl"/>
-									</tbody>
-								</xsl:variable>
-								<!-- DEBUG: html-table<xsl:copy-of select="$html-table"/> -->
-								<xsl:variable name="colwidths">
-									<xsl:call-template name="calculate-column-widths">
-										<xsl:with-param name="cols-count" select="2"/>
-										<xsl:with-param name="table" select="$html-table"/>
-									</xsl:call-template>
-								</xsl:variable>
-								<!-- DEBUG: colwidths=<xsl:copy-of select="$colwidths"/> -->
-								<xsl:variable name="maxlength_dt">							
-									<xsl:call-template name="getMaxLength_dt"/>							
-								</xsl:variable>
-								<xsl:variable name="isContainsKeepTogetherTag_">
-									false
-								</xsl:variable>
-								<xsl:variable name="isContainsKeepTogetherTag" select="normalize-space($isContainsKeepTogetherTag_)"/>
-								<!-- isContainsExpressReference=<xsl:value-of select="$isContainsExpressReference"/> -->
-								<xsl:call-template name="setColumnWidth_dl">
-									<xsl:with-param name="colwidths" select="$colwidths"/>							
-									<xsl:with-param name="maxlength_dt" select="$maxlength_dt"/>
-									<xsl:with-param name="isContainsKeepTogetherTag" select="$isContainsKeepTogetherTag"/>
-								</xsl:call-template>
 								
-								<fo:table-body>
-									<xsl:apply-templates>
-										<xsl:with-param name="key_iso" select="normalize-space($key_iso)"/>
-									</xsl:apply-templates>
-								</fo:table-body>
+								
+								<xsl:choose>
+									<xsl:when test="$isGenerateTableIF = 'true'">
+										<!-- generate IF for table widths -->
+										<!-- example:
+											<tr>
+												<td valign="top" align="left" id="tab-symdu_1_1">
+													<p>Symbol</p>
+													<word id="tab-symdu_1_1_word_1">Symbol</word>
+												</td>
+												<td valign="top" align="left" id="tab-symdu_1_2">
+													<p>Description</p>
+													<word id="tab-symdu_1_2_word_1">Description</word>
+												</td>
+											</tr>
+										-->
+										
+										<!-- create virtual html table for dl/[dt and dd] -->
+										<xsl:variable name="simple-table">
+											
+											<xsl:variable name="dl_table">
+												<tbody>
+													<xsl:apply-templates mode="dl_if">
+														<xsl:with-param name="id" select="@id"/>
+													</xsl:apply-templates>
+												</tbody>
+											</xsl:variable>
+											
+											<!-- dl_table='<xsl:copy-of select="$dl_table"/>' -->
+											
+											<!-- Step: replace <br/> to <p>...</p> -->
+											<xsl:variable name="table_without_br">
+												<xsl:apply-templates select="xalan:nodeset($dl_table)" mode="table-without-br"/>
+											</xsl:variable>
+											
+											<!-- table_without_br='<xsl:copy-of select="$table_without_br"/>' -->
+											
+											<!-- Step: add id to each cell -->
+											<!-- add <word>...</word> for each word, image, math -->
+											<xsl:variable name="simple-table-id">
+												<xsl:apply-templates select="xalan:nodeset($table_without_br)" mode="simple-table-id">
+													<xsl:with-param name="id" select="@id"/>
+												</xsl:apply-templates>
+											</xsl:variable>
+											
+											<!-- simple-table-id='<xsl:copy-of select="$simple-table-id"/>' -->
+											
+											<xsl:copy-of select="xalan:nodeset($simple-table-id)"/>
+											
+										</xsl:variable>
+										
+										<!-- DEBUG: simple-table<xsl:copy-of select="$simple-table"/> -->
+										
+										<xsl:apply-templates select="xalan:nodeset($simple-table)" mode="process_table-if">
+											<xsl:with-param name="table_or_dl">dl</xsl:with-param>
+										</xsl:apply-templates>
+										
+									</xsl:when>
+									<xsl:otherwise>
+								
+										<xsl:variable name="simple-table">
+										
+											<xsl:variable name="dl_table">
+												<tbody>
+													<xsl:apply-templates mode="dl">
+														<xsl:with-param name="id" select="@id"/>
+													</xsl:apply-templates>
+												</tbody>
+											</xsl:variable>
+											
+											<xsl:copy-of select="$dl_table"/>
+										</xsl:variable>
+								
+										<xsl:variable name="colwidths">
+											<xsl:call-template name="calculate-column-widths">
+												<xsl:with-param name="cols-count" select="2"/>
+												<xsl:with-param name="table" select="$simple-table"/>
+											</xsl:call-template>
+										</xsl:variable>
+										
+										<!-- <xsl:text disable-output-escaping="yes">&lt;!- -</xsl:text>
+											DEBUG
+											colwidths=<xsl:copy-of select="$colwidths"/>
+										<xsl:text disable-output-escaping="yes">- -&gt;</xsl:text> -->
+										
+										<!-- colwidths=<xsl:copy-of select="$colwidths"/> -->
+										
+										<xsl:variable name="maxlength_dt">
+											<xsl:call-template name="getMaxLength_dt"/>							
+										</xsl:variable>
+										
+										<xsl:variable name="isContainsKeepTogetherTag_">
+											false
+										</xsl:variable>
+										<xsl:variable name="isContainsKeepTogetherTag" select="normalize-space($isContainsKeepTogetherTag_)"/>
+										<!-- isContainsExpressReference=<xsl:value-of select="$isContainsExpressReference"/> -->
+										
+										
+										<xsl:call-template name="setColumnWidth_dl">
+											<xsl:with-param name="colwidths" select="$colwidths"/>							
+											<xsl:with-param name="maxlength_dt" select="$maxlength_dt"/>
+											<xsl:with-param name="isContainsKeepTogetherTag" select="$isContainsKeepTogetherTag"/>
+										</xsl:call-template>
+										
+										<fo:table-body>
+											
+											<!-- DEBUG -->
+											<xsl:if test="$table_if_debug = 'true'">
+												<fo:table-row>
+													<fo:table-cell number-columns-spanned="2" font-size="60%">
+														<xsl:apply-templates select="xalan:nodeset($colwidths)" mode="print_as_xml"/>
+													</fo:table-cell>
+												</fo:table-row>
+											</xsl:if>
+
+											<xsl:apply-templates>
+												<xsl:with-param name="key_iso" select="normalize-space($key_iso)"/>
+												<xsl:with-param name="split_keep-within-line" select="xalan:nodeset($colwidths)/split_keep-within-line"/>
+											</xsl:apply-templates>
+											
+										</fo:table-body>
+									</xsl:otherwise>
+								</xsl:choose>
 							</fo:table>
 						</fo:block>
 					</fo:block>
@@ -3186,6 +3741,9 @@
 		<xsl:param name="colwidths"/>		
 		<xsl:param name="maxlength_dt"/>
 		<xsl:param name="isContainsKeepTogetherTag"/>
+		
+		<!-- <colwidths><xsl:copy-of select="$colwidths"/></colwidths> -->
+		
 		<xsl:choose>
 			<xsl:when test="ancestor::*[local-name()='dl']"><!-- second level, i.e. inlined table -->
 				<fo:table-column column-width="50%"/>
@@ -3193,6 +3751,11 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:choose>
+					<xsl:when test="xalan:nodeset($colwidths)/autolayout">
+						<xsl:call-template name="insertTableColumnWidth">
+							<xsl:with-param name="colwidths" select="$colwidths"/>
+						</xsl:call-template>
+					</xsl:when>
 					<xsl:when test="$isContainsKeepTogetherTag">
 						<xsl:call-template name="insertTableColumnWidth">
 							<xsl:with-param name="colwidths" select="$colwidths"/>
@@ -3237,13 +3800,19 @@
 		</xsl:choose>
 	</xsl:template><xsl:template name="insertTableColumnWidth">
 		<xsl:param name="colwidths"/>
+		
 		<xsl:for-each select="xalan:nodeset($colwidths)//column">
 			<xsl:choose>
 				<xsl:when test=". = 1 or . = 0">
 					<fo:table-column column-width="proportional-column-width(2)"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<fo:table-column column-width="proportional-column-width({.})"/>
+					<!-- <fo:table-column column-width="proportional-column-width({.})"/> -->
+					<xsl:variable name="divider">
+						<xsl:value-of select="@divider"/>
+						<xsl:if test="not(@divider)">1</xsl:if>
+					</xsl:variable>
+					<fo:table-column column-width="proportional-column-width({round(. div $divider)})"/>
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:for-each>
@@ -3305,11 +3874,19 @@
 			</fo:table-cell>
 		</fo:table-row>
 	</xsl:template><xsl:template match="*[local-name()='dt']" mode="dl">
+		<xsl:param name="id"/>
+		<xsl:variable name="row_number" select="count(preceding-sibling::*[local-name()='dt']) + 1"/>
 		<tr>
 			<td>
+				<xsl:attribute name="id">
+					<xsl:value-of select="concat($id,'_',$row_number,'_1')"/>
+				</xsl:attribute>
 				<xsl:apply-templates/>
 			</td>
 			<td>
+				<xsl:attribute name="id">
+					<xsl:value-of select="concat($id,'_',$row_number,'_2')"/>
+				</xsl:attribute>
 				
 						<xsl:apply-templates select="following-sibling::*[local-name()='dd'][1]">
 							<xsl:with-param name="process">true</xsl:with-param>
@@ -3320,50 +3897,122 @@
 		
 	</xsl:template><xsl:template match="*[local-name()='dt']">
 		<xsl:param name="key_iso"/>
+		<xsl:param name="split_keep-within-line"/>
 		
 		<fo:table-row xsl:use-attribute-sets="dt-row-style">
-			<fo:table-cell>
-				
-				<fo:block xsl:use-attribute-sets="dt-style">
-					<xsl:copy-of select="@id"/>
-					
-					<xsl:if test="normalize-space($key_iso) = 'true'">
-						<xsl:attribute name="margin-top">0</xsl:attribute>
-					</xsl:if>
-					
-					
-					
-					<xsl:apply-templates/>
-				</fo:block>
-			</fo:table-cell>
-			<fo:table-cell>
-				<fo:block>
-					
-
-					<xsl:apply-templates select="following-sibling::*[local-name()='dd'][1]">
-						<xsl:with-param name="process">true</xsl:with-param>
-					</xsl:apply-templates>
-				</fo:block>
-			</fo:table-cell>
+			<xsl:call-template name="insert_dt_cell">
+				<xsl:with-param name="key_iso" select="$key_iso"/>
+				<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+			</xsl:call-template>
+			<xsl:for-each select="following-sibling::*[local-name()='dd'][1]">
+				<xsl:call-template name="insert_dd_cell">
+					<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+				</xsl:call-template>
+			</xsl:for-each>
 		</fo:table-row>
+	</xsl:template><xsl:template name="insert_dt_cell">
+		<xsl:param name="key_iso"/>
+		<xsl:param name="split_keep-within-line"/>
+		<fo:table-cell xsl:use-attribute-sets="dt-cell-style">
+		
+			<xsl:if test="$isGenerateTableIF = 'true'">
+				<!-- border is mandatory, to calculate real width -->
+				<xsl:attribute name="border">0.1pt solid black</xsl:attribute>
+				<xsl:attribute name="text-align">left</xsl:attribute>
+			</xsl:if>
+			
+			
+			<fo:block xsl:use-attribute-sets="dt-block-style">
+				<xsl:copy-of select="@id"/>
+				
+				<xsl:if test="normalize-space($key_iso) = 'true'">
+					<xsl:attribute name="margin-top">0</xsl:attribute>
+				</xsl:if>
+				
+				
+				
+				<xsl:apply-templates>
+					<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+				</xsl:apply-templates>
+				
+				<xsl:if test="$isGenerateTableIF = 'true'"><fo:inline id="{@id}_end">end</fo:inline></xsl:if> <!-- to determine width of text --> <!-- <xsl:value-of select="$hair_space"/> -->
+				
+			</fo:block>
+		</fo:table-cell>
+	</xsl:template><xsl:template name="insert_dd_cell">
+		<xsl:param name="split_keep-within-line"/>
+		<fo:table-cell xsl:use-attribute-sets="dd-cell-style">
+		
+			<xsl:if test="$isGenerateTableIF = 'true'">
+				<!-- border is mandatory, to calculate real width -->
+				<xsl:attribute name="border">0.1pt solid black</xsl:attribute>
+			</xsl:if>
+		
+			<fo:block>
+			
+				<xsl:if test="$isGenerateTableIF = 'true'">
+					<xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
+				</xsl:if>
+			
+				
+
+				<xsl:choose>
+					<xsl:when test="$isGenerateTableIF = 'true'">
+						<xsl:apply-templates> <!-- following-sibling::*[local-name()='dd'][1] -->
+							<xsl:with-param name="process">true</xsl:with-param>
+						</xsl:apply-templates>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:apply-templates select="."> <!-- following-sibling::*[local-name()='dd'][1] -->
+							<xsl:with-param name="process">true</xsl:with-param>
+							<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+						</xsl:apply-templates>
+					</xsl:otherwise>
+				
+				</xsl:choose>
+				
+				<xsl:if test="$isGenerateTableIF = 'true'"><fo:inline id="{@id}_end">end</fo:inline></xsl:if> <!-- to determine width of text --> <!-- <xsl:value-of select="$hair_space"/> -->
+				
+			</fo:block>
+		</fo:table-cell>
 	</xsl:template><xsl:template match="*[local-name()='dd']" mode="dl"/><xsl:template match="*[local-name()='dd']" mode="dl_process">
 		<xsl:apply-templates/>
 	</xsl:template><xsl:template match="*[local-name()='dd']">
 		<xsl:param name="process">false</xsl:param>
+		<xsl:param name="split_keep-within-line"/>
 		<xsl:if test="$process = 'true'">
 			<xsl:apply-templates select="@language"/>
-			<xsl:apply-templates/>
+			<xsl:apply-templates>
+				<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+			</xsl:apply-templates>
 		</xsl:if>
 	</xsl:template><xsl:template match="*[local-name()='dd']/*[local-name()='p']" mode="inline">
 		<fo:inline><xsl:text> </xsl:text><xsl:apply-templates/></fo:inline>
-	</xsl:template><xsl:template match="*[local-name()='em']">
+	</xsl:template><xsl:template match="*[local-name()='dt']" mode="dl_if">
+		<xsl:param name="id"/>
+		<xsl:variable name="row_number" select="count(preceding-sibling::*[local-name()='dt']) + 1"/>
+		<tr>
+			<td>
+				<xsl:copy-of select="node()"/>
+			</td>
+			<td>
+				
+						<xsl:copy-of select="following-sibling::*[local-name()='dd'][1]/node()"/>
+					
+			</td>
+		</tr>
+		
+	</xsl:template><xsl:template match="*[local-name()='dd']" mode="dl_if"/><xsl:template match="*[local-name()='em']">
 		<fo:inline font-style="italic">
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template><xsl:template match="*[local-name()='strong'] | *[local-name()='b']">
+		<xsl:param name="split_keep-within-line"/>
 		<fo:inline font-weight="bold">
 			
-			<xsl:apply-templates/>
+			<xsl:apply-templates>
+				<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
+			</xsl:apply-templates>
 		</fo:inline>
 	</xsl:template><xsl:template match="*[local-name()='padding']">
 		<fo:inline padding-right="{@value}"> </fo:inline>
@@ -3564,6 +4213,10 @@
 		<xsl:param name="text"/>
 		<xsl:param name="separator" select="' '"/>
 		<xsl:choose>
+		
+			<xsl:when test="$isGenerateTableIF = 'true' and not(contains($text, $separator))">
+				<word><xsl:value-of select="normalize-space($text)"/></word>
+			</xsl:when>
 			<xsl:when test="not(contains($text, $separator))">
 				<word>
 					<xsl:variable name="len_str_tmp" select="string-length(normalize-space($text))"/>
@@ -3608,11 +4261,64 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<word>
-					<xsl:value-of select="string-length(normalize-space(substring-before($text, $separator)))"/>
+					<xsl:variable name="word" select="normalize-space(substring-before($text, $separator))"/>
+					<xsl:choose>
+						<xsl:when test="$isGenerateTableIF = 'true'">
+							<xsl:value-of select="$word"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="string-length($word)"/>
+						</xsl:otherwise>
+					</xsl:choose>
 				</word>
 				<xsl:call-template name="tokenize">
 					<xsl:with-param name="text" select="substring-after($text, $separator)"/>
 				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template><xsl:template name="tokenize_with_tags">
+		<xsl:param name="tags"/>
+		<xsl:param name="text"/>
+		<xsl:param name="separator" select="' '"/>
+		<xsl:choose>
+		
+			<xsl:when test="not(contains($text, $separator))">
+				<word>
+					<xsl:call-template name="enclose_text_in_tags">
+						<xsl:with-param name="text" select="normalize-space($text)"/>
+						<xsl:with-param name="tags" select="$tags"/>
+					</xsl:call-template>
+				</word>
+			</xsl:when>
+			<xsl:otherwise>
+				<word>
+					<xsl:call-template name="enclose_text_in_tags">
+						<xsl:with-param name="text" select="normalize-space(substring-before($text, $separator))"/>
+						<xsl:with-param name="tags" select="$tags"/>
+					</xsl:call-template>
+				</word>
+				<xsl:call-template name="tokenize_with_tags">
+					<xsl:with-param name="text" select="substring-after($text, $separator)"/>
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template><xsl:template name="enclose_text_in_tags">
+		<xsl:param name="text"/>
+		<xsl:param name="tags"/>
+		<xsl:param name="num">1</xsl:param> <!-- default (start) value -->
+		
+		<xsl:variable name="tag_name" select="normalize-space(xalan:nodeset($tags)//tag[$num])"/>
+		
+		<xsl:choose>
+			<xsl:when test="$tag_name = ''"><xsl:value-of select="$text"/></xsl:when>
+			<xsl:otherwise>
+				<xsl:element name="{$tag_name}">
+					<xsl:call-template name="enclose_text_in_tags">
+						<xsl:with-param name="text" select="$text"/>
+						<xsl:with-param name="tags" select="$tags"/>
+						<xsl:with-param name="num" select="$num + 1"/>
+					</xsl:call-template>
+				</xsl:element>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template><xsl:template name="max_length">
@@ -3715,12 +4421,19 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template><xsl:template name="getSimpleTable">
+		<xsl:param name="id"/>
+		
 		<xsl:variable name="simple-table">
+		
+			<!-- Step 0. replace <br/> to <p>...</p> -->
+			<xsl:variable name="table_without_br">
+				<xsl:apply-templates mode="table-without-br"/>
+			</xsl:variable>
 		
 			<!-- Step 1. colspan processing -->
 			<xsl:variable name="simple-table-colspan">
 				<tbody>
-					<xsl:apply-templates mode="simple-table-colspan"/>
+					<xsl:apply-templates select="xalan:nodeset($table_without_br)" mode="simple-table-colspan"/>
 				</tbody>
 			</xsl:variable>
 			
@@ -3729,10 +4442,67 @@
 				<xsl:apply-templates select="xalan:nodeset($simple-table-colspan)" mode="simple-table-rowspan"/>
 			</xsl:variable>
 			
-			<xsl:copy-of select="xalan:nodeset($simple-table-rowspan)"/>
-					
+			<!-- Step 3: add id to each cell -->
+			<!-- add <word>...</word> for each word, image, math -->
+			<xsl:variable name="simple-table-id">
+				<xsl:apply-templates select="xalan:nodeset($simple-table-rowspan)" mode="simple-table-id">
+					<xsl:with-param name="id" select="$id"/>
+				</xsl:apply-templates>
+			</xsl:variable>
+			
+			<xsl:copy-of select="xalan:nodeset($simple-table-id)"/>
+
 		</xsl:variable>
 		<xsl:copy-of select="$simple-table"/>
+	</xsl:template><xsl:template match="@*|node()" mode="table-without-br">
+		<xsl:copy>
+				<xsl:apply-templates select="@*|node()" mode="table-without-br"/>
+		</xsl:copy>
+	</xsl:template><xsl:template match="*[local-name()='th' or local-name() = 'td'][not(*[local-name()='br']) and not(*[local-name()='p'])]" mode="table-without-br">
+		<xsl:copy>
+			<xsl:copy-of select="@*"/>
+			<p>
+				<xsl:copy-of select="node()"/>
+			</p>
+		</xsl:copy>
+	</xsl:template><xsl:template match="*[local-name()='th' or local-name()='td'][*[local-name()='br']]" mode="table-without-br">
+		<xsl:copy>
+			<xsl:copy-of select="@*"/>
+			<xsl:for-each select="*[local-name()='br']">
+				<xsl:variable name="current_id" select="generate-id()"/>
+				<p>
+					<xsl:for-each select="preceding-sibling::node()[following-sibling::*[local-name() = 'br'][1][generate-id() = $current_id]][not(local-name() = 'br')]">
+						<xsl:copy-of select="."/>
+					</xsl:for-each>
+				</p>
+				<xsl:if test="not(following-sibling::*[local-name() = 'br'])">
+					<p>
+						<xsl:for-each select="following-sibling::node()">
+							<xsl:copy-of select="."/>
+						</xsl:for-each>
+					</p>
+				</xsl:if>
+			</xsl:for-each>
+		</xsl:copy>
+	</xsl:template><xsl:template match="*[local-name()='th' or local-name()='td']/*[local-name() = 'p'][*[local-name()='br']]" mode="table-without-br">
+		<xsl:for-each select="*[local-name()='br']">
+			<xsl:variable name="current_id" select="generate-id()"/>
+			<p>
+				<xsl:for-each select="preceding-sibling::node()[following-sibling::*[local-name() = 'br'][1][generate-id() = $current_id]][not(local-name() = 'br')]">
+					<xsl:copy-of select="."/>
+				</xsl:for-each>
+			</p>
+			<xsl:if test="not(following-sibling::*[local-name() = 'br'])">
+				<p>
+					<xsl:for-each select="following-sibling::node()">
+						<xsl:copy-of select="."/>
+					</xsl:for-each>
+				</p>
+			</xsl:if>
+		</xsl:for-each>
+	</xsl:template><xsl:template match="text()[not(ancestor::*[local-name() = 'sourcecode'])]" mode="table-without-br">
+		<xsl:variable name="text" select="translate(.,'&#9;&#10;&#13;','')"/>
+		<xsl:value-of select="java:replaceAll(java:java.lang.String.new($text),' {2,}',' ')"/>
 	</xsl:template><xsl:template match="*[local-name()='thead'] | *[local-name()='tbody']" mode="simple-table-colspan">
 		<xsl:apply-templates mode="simple-table-colspan"/>
 	</xsl:template><xsl:template match="*[local-name()='fn']" mode="simple-table-colspan"/><xsl:template match="*[local-name()='th'] | *[local-name()='td']" mode="simple-table-colspan">
@@ -3822,6 +4592,126 @@
 		<xsl:apply-templates select="following-sibling::tr[1]" mode="simple-table-rowspan">
 				<xsl:with-param name="previousRow" select="$newRow"/>
 		</xsl:apply-templates>
+	</xsl:template><xsl:template match="/" mode="simple-table-id">
+		<xsl:param name="id"/>
+		<xsl:variable name="id_prefixed" select="concat('table_if_',$id)"/> <!-- table id prefixed by 'table_if_' to simple search in IF  -->
+		<xsl:apply-templates select="@*|node()" mode="simple-table-id">
+			<xsl:with-param name="id" select="$id_prefixed"/>
+		</xsl:apply-templates>
+	</xsl:template><xsl:template match="@*|node()" mode="simple-table-id">
+		<xsl:param name="id"/>
+		<xsl:copy>
+				<xsl:apply-templates select="@*|node()" mode="simple-table-id">
+					<xsl:with-param name="id" select="$id"/>
+				</xsl:apply-templates>
+		</xsl:copy>
+	</xsl:template><xsl:template match="*[local-name()='tbody']" mode="simple-table-id">
+		<xsl:param name="id"/>
+		<xsl:copy>
+			<xsl:copy-of select="@*"/>
+			<xsl:attribute name="id"><xsl:value-of select="$id"/></xsl:attribute>
+			<xsl:apply-templates select="node()" mode="simple-table-id">
+				<xsl:with-param name="id" select="$id"/>
+			</xsl:apply-templates>
+		</xsl:copy>
+	</xsl:template><xsl:template match="*[local-name()='th' or local-name()='td']" mode="simple-table-id">
+		<xsl:param name="id"/>
+		<xsl:copy>
+			<xsl:copy-of select="@*"/>
+			<xsl:variable name="row_number" select="count(../preceding-sibling::*) + 1"/>
+			<xsl:variable name="col_number" select="count(preceding-sibling::*) + 1"/>
+			<xsl:attribute name="id">
+				<xsl:value-of select="concat($id,'_',$row_number,'_',$col_number)"/>
+			</xsl:attribute>
+			
+			<xsl:for-each select="*[local-name() = 'p']">
+				<xsl:copy>
+					<xsl:copy-of select="@*"/>
+					<xsl:variable name="p_num" select="count(preceding-sibling::*[local-name() = 'p']) + 1"/>
+					<xsl:attribute name="id">
+						<xsl:value-of select="concat($id,'_',$row_number,'_',$col_number,'_p_',$p_num)"/>
+					</xsl:attribute>
+					
+					<xsl:copy-of select="node()"/>
+				</xsl:copy>
+			</xsl:for-each>
+			
+			
+			<xsl:if test="$isGenerateTableIF = 'true'"> <!-- split each paragraph to words, image, math -->
+			
+				<xsl:variable name="td_text">
+					<xsl:apply-templates select="." mode="td_text_with_formatting"/>
+				</xsl:variable>
+				
+				<!-- td_text='<xsl:copy-of select="$td_text"/>' -->
+			
+				<xsl:variable name="words">
+					<xsl:for-each select=".//*[local-name() = 'image' or local-name() = 'stem']">
+						<word>
+							<xsl:copy-of select="."/>
+						</word>
+					</xsl:for-each>
+					
+					<xsl:for-each select="xalan:nodeset($td_text)//*[local-name() = 'word'][normalize-space() != '']">
+						<xsl:copy-of select="."/>
+					</xsl:for-each>
+					
+				</xsl:variable>
+				
+				<xsl:for-each select="xalan:nodeset($words)/word">
+					<xsl:variable name="num" select="count(preceding-sibling::word) + 1"/>
+					<xsl:copy>
+						<xsl:attribute name="id">
+							<xsl:value-of select="concat($id,'_',$row_number,'_',$col_number,'_word_',$num)"/>
+						</xsl:attribute>
+						<xsl:copy-of select="node()"/>
+					</xsl:copy>
+				</xsl:for-each>
+			</xsl:if>
+		</xsl:copy>
+		
+	</xsl:template><xsl:template match="@*|node()" mode="td_text_with_formatting">
+		<xsl:copy>
+				<xsl:apply-templates select="@*|node()" mode="td_text_with_formatting"/>
+		</xsl:copy>
+	</xsl:template><xsl:template match="*[local-name() = 'stem' or local-name() = 'image']" mode="td_text_with_formatting"/><xsl:template match="*[local-name() = 'keep-together_within-line']/text()" mode="td_text_with_formatting">
+		<xsl:variable name="formatting_tags">
+			<xsl:call-template name="getFormattingTags"/>
+		</xsl:variable>
+		<word>
+			<xsl:call-template name="enclose_text_in_tags">
+				<xsl:with-param name="text" select="normalize-space(.)"/>
+				<xsl:with-param name="tags" select="$formatting_tags"/>
+			</xsl:call-template>
+		</word>
+	</xsl:template><xsl:template match="*[local-name() != 'keep-together_within-line']/text()" mode="td_text_with_formatting">
+		
+		<xsl:variable name="td_text" select="."/>
+		
+		<xsl:variable name="string_with_added_zerospaces">
+			<xsl:call-template name="add-zero-spaces-java">
+				<xsl:with-param name="text" select="$td_text"/>
+			</xsl:call-template>
+		</xsl:variable>
+		
+		<xsl:variable name="formatting_tags">
+			<xsl:call-template name="getFormattingTags"/>
+		</xsl:variable>
+		
+		<!-- <word>text</word> -->
+		<xsl:call-template name="tokenize_with_tags">
+			<xsl:with-param name="tags" select="$formatting_tags"/>
+			<xsl:with-param name="text" select="normalize-space(translate($string_with_added_zerospaces, '​­', '  '))"/> <!-- replace zero-width-space and soft-hyphen to space -->
+		</xsl:call-template>
+	</xsl:template><xsl:template name="getFormattingTags">
+		<tags>
+			<xsl:if test="ancestor::*[local-name() = 'strong']"><tag>strong</tag></xsl:if>
+			<xsl:if test="ancestor::*[local-name() = 'em']"><tag>em</tag></xsl:if>
+			<xsl:if test="ancestor::*[local-name() = 'sub']"><tag>sub</tag></xsl:if>
+			<xsl:if test="ancestor::*[local-name() = 'sup']"><tag>sup</tag></xsl:if>
+			<xsl:if test="ancestor::*[local-name() = 'tt']"><tag>tt</tag></xsl:if>
+			<xsl:if test="ancestor::*[local-name() = 'keep-together_within-line']"><tag>keep-together_within-line</tag></xsl:if>
+		</tags>
 	</xsl:template><xsl:template name="getLang">
 		<xsl:variable name="language_current" select="normalize-space(//*[local-name()='bibdata']//*[local-name()='language'][@current = 'true'])"/>
 		<xsl:variable name="language">
@@ -5513,7 +6403,9 @@
 						<!-- <xsl:attribute name="border">0.5pt solid black</xsl:attribute> -->
 					</xsl:if>
 					<xsl:variable name="simple-table">	
-						<xsl:call-template name="getSimpleTable"/>			
+						<xsl:call-template name="getSimpleTable">
+							<xsl:with-param name="id" select="@id"/>
+						</xsl:call-template>
 					</xsl:variable>					
 					<xsl:variable name="cols-count" select="count(xalan:nodeset($simple-table)//tr[1]/td)"/>
 					<xsl:if test="$cols-count = 2 and not(ancestor::*[local-name()='table'])">
@@ -6464,7 +7356,7 @@
 		<!-- <fo:inline id="{@id}" font-size="1pt"/> -->
 		<fo:inline id="{@id}" font-size="1pt"><xsl:value-of select="$hair_space"/></fo:inline>
 		<!-- we need to add zero-width space, otherwise this fo:inline is missing in IF xml -->
-		<xsl:if test="not(following-sibling::node()[normalize-space() != ''])"> </xsl:if>
+		<xsl:if test="not(following-sibling::node()[normalize-space() != ''])"><fo:inline font-size="1pt"> </fo:inline></xsl:if>
 	</xsl:template><xsl:template match="*[local-name() = 'errata']">
 		<!-- <row>
 					<date>05-07-2013</date>
@@ -7859,4 +8751,40 @@
 				<xsl:value-of select="$value"/>
 			</xsl:otherwise>
 		</xsl:choose>
+	</xsl:template><xsl:template match="*" mode="print_as_xml">
+		<xsl:param name="level">0</xsl:param>
+
+		<fo:block margin-left="{2*$level}mm">
+			<xsl:text>
+&lt;</xsl:text>
+			<xsl:value-of select="local-name()"/>
+			<xsl:for-each select="@*">
+				<xsl:text> </xsl:text>
+				<xsl:value-of select="local-name()"/>
+				<xsl:text>="</xsl:text>
+				<xsl:value-of select="."/>
+				<xsl:text>"</xsl:text>
+			</xsl:for-each>
+			<xsl:text>&gt;</xsl:text>
+			
+			<xsl:if test="not(*)">
+				<fo:inline font-weight="bold"><xsl:value-of select="."/></fo:inline>
+				<xsl:text>&lt;/</xsl:text>
+					<xsl:value-of select="local-name()"/>
+					<xsl:text>&gt;</xsl:text>
+			</xsl:if>
+		</fo:block>
+		
+		<xsl:if test="*">
+			<fo:block>
+				<xsl:apply-templates mode="print_as_xml">
+					<xsl:with-param name="level" select="$level + 1"/>
+				</xsl:apply-templates>
+			</fo:block>
+			<fo:block margin-left="{2*$level}mm">
+				<xsl:text>&lt;/</xsl:text>
+				<xsl:value-of select="local-name()"/>
+				<xsl:text>&gt;</xsl:text>
+			</fo:block>
+		</xsl:if>
 	</xsl:template></xsl:stylesheet>
