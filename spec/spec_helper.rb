@@ -42,12 +42,20 @@ def strip_guid(x)
   x.gsub(%r{ id="_[^"]+"}, ' id="_"').gsub(%r{ target="_[^"]+"}, ' target="_"')
 end
 
-def xmlpp(x)
-  s = String.new
+def xmlpp(xml)
+  c = HTMLEntities.new
+  xml &&= xml.split(/(&\S+?;)/).map do |n|
+    if /^&\S+?;$/.match?(n)
+      c.encode(c.decode(n), :hexadecimal)
+    else n
+    end
+  end.join
+  s = +""
   f = REXML::Formatters::Pretty.new(2)
   f.compact = true
-  f.write(REXML::Document.new(x), s)
-  s
+  f.write(REXML::Document.new(xml
+    .gsub(%r{<fetched>20[0-9-]+</fetched>}, "<fetched/>")), s)
+  HTMLEntities.new.decode(s)
 end
 
 ASCIIDOC_BLANK_HDR = <<~"HDR"
