@@ -1952,7 +1952,7 @@
 			</xsl:for-each>
 		</figures>
 	</xsl:template><xsl:template name="processPrefaceSectionsDefault">
-		<xsl:for-each select="/*/*[local-name()='preface']/*">
+		<xsl:for-each select="/*/*[local-name()='preface']/*[not(local-name() = 'note' or local-name() = 'admonition')]">
 			<xsl:sort select="@displayorder" data-type="number"/>
 			<xsl:apply-templates select="."/>
 		</xsl:for-each>
@@ -7428,108 +7428,52 @@
 	</xsl:template><xsl:template match="*[local-name() = 'references'][not(@normative='true')]/*[local-name() = 'bibitem']" priority="2">
 		
 		
-				<fo:block xsl:use-attribute-sets="bibitem-non-normative-style">
-					<fo:inline id="{@id}">
+				<!-- start CSA bibitem processing -->
+				<fo:block id="{@id}" xsl:use-attribute-sets="bibitem-non-normative-style">
+				
+					<xsl:variable name="docidentifier">
 						<xsl:value-of select="csa:docidentifier[@type = 'metanorma-ordinal']"/>
 						<xsl:if test="not(csa:docidentifier[@type = 'metanorma-ordinal'])">
 							<xsl:number format="[1]"/>
 						</xsl:if>
-					</fo:inline>
-						
-					<xsl:if test="not(csa:formattedref)">
-						<xsl:choose>
-							<xsl:when test="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:abbreviation">
-								<xsl:for-each select="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:abbreviation">
-									<xsl:value-of select="."/>
-									<xsl:if test="position() != last()">/</xsl:if>
-								</xsl:for-each>
-								<xsl:text>: </xsl:text>
-							</xsl:when>
-							<xsl:when test="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:name">
-								<xsl:value-of select="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:name"/>
-								<xsl:text>: </xsl:text>
-							</xsl:when>
-						</xsl:choose>
-						
-					</xsl:if>
-					
-					<xsl:if test="csa:docidentifier[not(@type = 'metanorma-ordinal')]">
-						<xsl:choose>
-							<xsl:when test="csa:docidentifier/@type = 'ISO' and csa:formattedref"/>
-							<xsl:when test="csa:docidentifier/@type = 'OGC' and csa:formattedref"/>
-							<xsl:otherwise><fo:inline>
-								<!-- <xsl:if test="csa:docidentifier/@type = 'OGC'">OGC </xsl:if> -->
-								<xsl:value-of select="csa:docidentifier[not(@type = 'metanorma-ordinal')]"/><xsl:apply-templates select="csa:note"/>, </fo:inline></xsl:otherwise>
-						</xsl:choose>
-					</xsl:if>
-					
-					<xsl:choose>
-						<xsl:when test="csa:title[@type = 'main' and @language = 'en']">
-							<xsl:apply-templates select="csa:title[@type = 'main' and @language = 'en']"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:apply-templates select="csa:title"/>
-						</xsl:otherwise>
-					</xsl:choose>
-					<xsl:if test="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:name">
-						<xsl:text>, </xsl:text>
-						<xsl:for-each select="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:name">
-							<xsl:if test="position() != last()">and </xsl:if>
-							<xsl:value-of select="."/>
-						</xsl:for-each>
-						
-					</xsl:if>
-					<xsl:if test="csa:place">
-						<xsl:text>, </xsl:text>
-						<xsl:value-of select="csa:place"/>
-					</xsl:if>
-					<xsl:if test="csa:date[@type='published']/csa:on">
-						<xsl:text> (</xsl:text><xsl:value-of select="csa:date[@type='published']/csa:on"/><xsl:text>).</xsl:text>
-					</xsl:if>
+					</xsl:variable>
+				
+					<xsl:value-of select="$docidentifier"/>
+					<xsl:apply-templates select="*[local-name() = 'note']"/>
+					<xsl:text> </xsl:text>
+				  
 					<xsl:apply-templates select="csa:formattedref"/>
 							
 				</fo:block>
+				<!-- END CSA bibitem processing -->
 			
 		
 	</xsl:template><xsl:template name="processBibitem">
 		
 		
-				<!-- start CSA bibitem processing -->
-				<xsl:if test=".//csa:fn">
+				<!-- start bibitem processing -->
+				<xsl:if test=".//*[local-name() = 'fn']">
 					<xsl:attribute name="line-height-shift-adjustment">disregard-shifts</xsl:attribute>
 				</xsl:if>
-				<xsl:choose>
-					<xsl:when test="csa:formattedref">
-						<xsl:apply-templates select="csa:formattedref"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:for-each select="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:name">
-							<xsl:apply-templates/>
-							<xsl:if test="position() != last()">, </xsl:if>
-							<xsl:if test="position() = last()">: </xsl:if>
-						</xsl:for-each>
-							<!-- csa:docidentifier -->
-						<xsl:value-of select="csa:docidentifier[not(@type = 'metanorma-ordinal')]"/>
-						<xsl:apply-templates select="csa:note"/>
-						<xsl:if test="csa:docidentifier[not(@type = 'metanorma-ordinal')]">, </xsl:if>
-						<xsl:choose>
-							<xsl:when test="csa:title[@type = 'main' and @language = 'en']">
-								<fo:inline><xsl:apply-templates select="csa:title[@type = 'main' and @language = 'en']"/><xsl:text>. </xsl:text></fo:inline>
-							</xsl:when>
-							<xsl:otherwise>
-								<fo:inline><xsl:apply-templates select="csa:title"/><xsl:text>. </xsl:text></fo:inline>
-							</xsl:otherwise>
-						</xsl:choose>
-						<xsl:for-each select="csa:contributor[csa:role/@type='publisher']/csa:organization/csa:name">
-							<xsl:apply-templates/>
-							<xsl:if test="position() != last()">, </xsl:if>
-						</xsl:for-each>
-						<xsl:if test="csa:date[@type='published']/csa:on">
-							<xsl:text>(</xsl:text><xsl:value-of select="csa:date[@type='published']/csa:on"/><xsl:text>)</xsl:text>
-						</xsl:if>
-					</xsl:otherwise>
-				</xsl:choose>
-				<!-- end CSA bibitem processing -->
+				
+				<!-- display document identifier, not number [1] -->
+				<xsl:variable name="docidentifier">
+					<xsl:choose>
+						<xsl:when test="*[local-name() = 'docidentifier']/@type = 'metanorma'"/>
+						<xsl:otherwise><xsl:value-of select="*[local-name() = 'docidentifier'][not(@type = 'metanorma-ordinal')]"/></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:value-of select="$docidentifier"/>
+				
+				<xsl:apply-templates select="*[local-name() = 'note']"/>
+				
+				<xsl:if test="normalize-space($docidentifier) != '' and *[local-name() = 'formattedref']">
+					
+					<xsl:text> </xsl:text>
+				</xsl:if>
+				
+				<xsl:apply-templates select="*[local-name() = 'formattedref']"/>
+				<!-- end bibitem processing -->
 			
 	</xsl:template><xsl:template name="processBibitemDocId">
 		<xsl:variable name="_doc_ident" select="*[local-name() = 'docidentifier'][not(@type = 'DOI' or @type = 'metanorma' or @type = 'metanorma-ordinal' or @type = 'ISSN' or @type = 'ISBN' or @type = 'rfc-anchor')]"/>
