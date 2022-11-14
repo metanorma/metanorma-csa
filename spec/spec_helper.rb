@@ -24,22 +24,22 @@ RSpec.configure do |config|
   end
 end
 
-def metadata(x)
-  x.sort.to_h.delete_if do |_k, v|
+def metadata(xml)
+  xml.sort.to_h.delete_if do |_k, v|
     v.nil? || (v.respond_to?(:empty?) && v.empty?)
   end
 end
 
-def htmlencode(x)
-  HTMLEntities.new.encode(x, :hexadecimal).gsub(/&#x3e;/, ">").gsub(/&#xa;/, "\n")
+def htmlencode(xml)
+  HTMLEntities.new.encode(xml, :hexadecimal).gsub(/&#x3e;/, ">").gsub(/&#xa;/, "\n")
     .gsub(/&#x22;/, '"').gsub(/&#x3c;/, "<").gsub(/&#x26;/, "&").gsub(/&#x27;/, "'")
     .gsub(/\\u(....)/) do |_s|
     "&#x#{$1.downcase};"
   end
 end
 
-def strip_guid(x)
-  x.gsub(%r{ id="_[^"]+"}, ' id="_"').gsub(%r{ target="_[^"]+"}, ' target="_"')
+def strip_guid(xml)
+  xml.gsub(%r{ id="_[^"]+"}, ' id="_"').gsub(%r{ target="_[^"]+"}, ' target="_"')
 end
 
 def xmlpp(xml)
@@ -50,12 +50,9 @@ def xmlpp(xml)
     else n
     end
   end.join
-  s = +""
-  f = REXML::Formatters::Pretty.new(2)
-  f.compact = true
-  f.write(REXML::Document.new(xml
-    .gsub(%r{<fetched>20[0-9-]+</fetched>}, "<fetched/>")), s)
-  HTMLEntities.new.decode(s)
+  ret = Nokogiri::XML(xml).to_xml(indent: 2, encoding: "UTF-8")
+    .gsub(%r{<fetched>20[0-9-]+</fetched>}, "<fetched/>")
+  HTMLEntities.new.decode(ret)
 end
 
 ASCIIDOC_BLANK_HDR = <<~"HDR"
