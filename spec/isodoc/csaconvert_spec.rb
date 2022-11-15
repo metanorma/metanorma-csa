@@ -126,10 +126,7 @@ RSpec.describe IsoDoc::Csa do
       </csa-standard>
     INPUT
 
-    html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
-      .gsub(/^.*<body/m, "<body")
-      .gsub(%r{</body>.*}m, "</body>")
-    expect(xmlpp(html)).to be_equivalent_to <<~"OUTPUT"
+    output = <<~OUTPUT
       #{HTML_HDR}
       <br/>
       <div>
@@ -140,6 +137,10 @@ RSpec.describe IsoDoc::Csa do
       </div>
       </body>
     OUTPUT
+    html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
+      .gsub(/^.*<body/m, "<body")
+      .gsub(%r{</body>.*}m, "</body>")
+    expect(xmlpp(html)).to be_equivalent_to xmlpp(output)
   end
 
   it "processes keyword" do
