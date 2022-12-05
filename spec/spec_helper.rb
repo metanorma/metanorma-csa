@@ -38,7 +38,8 @@ def htmlencode(xml)
 end
 
 def strip_guid(xml)
-  xml.gsub(%r{ id="_[^"]+"}, ' id="_"').gsub(%r{ target="_[^"]+"}, ' target="_"')
+  xml.gsub(%r{ id="_[^"]+"}, ' id="_"').gsub(%r{ target="_[^"]+"},
+                                             ' target="_"')
 end
 
 def xmlpp(xml)
@@ -49,16 +50,16 @@ def xmlpp(xml)
     else n
     end
   end.join
-   xsl = <<~XSL
+  xsl = <<~XSL
     <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
       <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
       <xsl:strip-space elements="*"/>
       <xsl:template match="/">
-        <xsml:copy-of select="."/>
+        <xsl:copy-of select="."/>
       </xsl:template>
     </xsl:stylesheet>
   XSL
-  ret = Nokogiri::XSLT(xsl).transform(Nokogiri::XML(xml))
+  ret = Nokogiri::XSLT(xsl).transform(Nokogiri::XML(xml, &:noblanks))
     .to_xml(indent: 2, encoding: "UTF-8")
     .gsub(%r{<fetched>20[0-9-]+</fetched>}, "<fetched/>")
   HTMLEntities.new.decode(ret)
