@@ -6,7 +6,7 @@ require "fileutils"
 RSpec.describe IsoDoc::Csa do
   it "processes default metadata" do
     csdc = IsoDoc::Csa::HtmlConvert.new({})
-    docxml, filename, dir = csdc.convert_init(<<~"INPUT", "test", true)
+    docxml, _filename, _dir = csdc.convert_init(<<~"INPUT", "test", true)
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
       <bibdata type="standard">
         <title language="en" format="plain">Main Title</title>
@@ -74,47 +74,49 @@ RSpec.describe IsoDoc::Csa do
       </csa-standard>
     INPUT
 
-    expect(htmlencode(metadata(csdc.info(docxml, nil)).to_s.gsub(/, :/, ",\n:"))).to be_equivalent_to (<<~OUTPUT)
-      {:accesseddate=>"XXX",
-      :agency=>"Ribose",
-      :authors=>["Fred Nerk", "Julius Caesar"],
-      :authors_affiliations=>{""=>["Fred Nerk", "Julius Caesar"]},
-      :circulateddate=>"XXX",
-      :confirmeddate=>"XXX",
-      :copieddate=>"XXX",
-      :createddate=>"XXX",
-      :docnumber=>"1000(wd)",
-      :docnumeric=>"1000",
-      :doctitle=>"Main Title",
-      :doctype=>"Standard",
-      :doctype_display=>"Standard",
-      :docyear=>"2001",
-      :draft=>"3.4",
-      :draftinfo=>" (draft 3.4, 2000-01-01)",
-      :edition=>"2",
-      :implementeddate=>"XXX",
-      :issueddate=>"XXX",
-      :lang=>"en",
-      :metadata_extensions=>{"doctype"=>"standard", "editorialgroup"=>{"committee_type"=>"A", "committee"=>"TC"}},
-      :obsoleteddate=>"XXX",
-      :publisheddate=>"XXX",
-      :publisher=>"Ribose",
-      :receiveddate=>"XXX",
-      :revdate=>"2000-01-01",
-      :revdate_monthyear=>"January 2000",
-      :roles_authors_affiliations=>{"editor"=>{""=>["Julius Caesar"]}, "full-author"=>{""=>["Fred Nerk"]}},
-      :script=>"Latn",
-      :stage=>"Working Draft",
-      :stage_display=>"Working Draft",
-      :stageabbr=>"wd",
-      :tc=>"TC",
-      :transmitteddate=>"XXX",
-      :unchangeddate=>"XXX",
-      :unpublished=>true,
-      :updateddate=>"XXX",
-      :vote_endeddate=>"XXX",
-      :vote_starteddate=>"XXX"}
-    OUTPUT
+    expect(htmlencode(metadata(csdc.info(docxml, nil))
+      .to_s.gsub(/, :/, ",\n:")))
+      .to be_equivalent_to (<<~OUTPUT)
+        {:accesseddate=>"XXX",
+        :agency=>"Ribose",
+        :authors=>["Fred Nerk", "Julius Caesar"],
+        :authors_affiliations=>{""=>["Fred Nerk", "Julius Caesar"]},
+        :circulateddate=>"XXX",
+        :confirmeddate=>"XXX",
+        :copieddate=>"XXX",
+        :createddate=>"XXX",
+        :docnumber=>"1000(wd)",
+        :docnumeric=>"1000",
+        :doctitle=>"Main Title",
+        :doctype=>"Standard",
+        :doctype_display=>"Standard",
+        :docyear=>"2001",
+        :draft=>"3.4",
+        :draftinfo=>" (draft 3.4, 2000-01-01)",
+        :edition=>"2",
+        :implementeddate=>"XXX",
+        :issueddate=>"XXX",
+        :lang=>"en",
+        :metadata_extensions=>{"doctype"=>"standard", "editorialgroup"=>{"committee_type"=>"A", "committee"=>"TC"}},
+        :obsoleteddate=>"XXX",
+        :publisheddate=>"XXX",
+        :publisher=>"Ribose",
+        :receiveddate=>"XXX",
+        :revdate=>"2000-01-01",
+        :revdate_monthyear=>"January 2000",
+        :roles_authors_affiliations=>{"editor"=>{""=>["Julius Caesar"]}, "full-author"=>{""=>["Fred Nerk"]}},
+        :script=>"Latn",
+        :stage=>"Working Draft",
+        :stage_display=>"Working Draft",
+        :stageabbr=>"wd",
+        :tc=>"TC",
+        :transmitteddate=>"XXX",
+        :unchangeddate=>"XXX",
+        :unpublished=>true,
+        :updateddate=>"XXX",
+        :vote_endeddate=>"XXX",
+        :vote_starteddate=>"XXX"}
+      OUTPUT
   end
 
   it "processes pre" do
@@ -204,12 +206,16 @@ RSpec.describe IsoDoc::Csa do
             </div>
           </body>
     OUTPUT
-    expect(xmlpp(IsoDoc::Csa::PresentationXMLConvert.new({}).convert("test", input, true))).to be_equivalent_to xmlpp(presxml)
-    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({}).convert("test", presxml, true).gsub(/^.*<body/m, "<body").gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(html)
+    expect(xmlpp(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
+      .convert("test", input, true))).to be_equivalent_to xmlpp(presxml)
+    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({})
+      .convert("test", presxml, true)
+      .gsub(/^.*<body/m, "<body")
+      .gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(html)
   end
 
   it "processes section names" do
-    expect(xmlpp(IsoDoc::Csa::PresentationXMLConvert.new({}).convert("test", <<~"INPUT", true))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~INPUT
       <csa-standard xmlns="http://riboseinc.com/isoxml">
       <preface>
       <foreword obligation="informative">
@@ -276,6 +282,7 @@ RSpec.describe IsoDoc::Csa do
        </bibliography>
        </csa-standard>
     INPUT
+    output = <<~OUTPUT
       <csa-standard xmlns="http://riboseinc.com/isoxml" type="presentation">
       <preface>
       <foreword obligation="informative" displayorder="1">
@@ -340,6 +347,8 @@ RSpec.describe IsoDoc::Csa do
        </bibliography>
        </csa-standard>
     OUTPUT
+    expect(xmlpp(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
+      .convert("test", input, true))).to be_equivalent_to xmlpp(output)
   end
 
   it "injects JS into blank html" do
