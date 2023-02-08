@@ -323,6 +323,12 @@ pre,
   margin: 2em 0 2em -1em;
 }
 
+table div.figure {
+  padding: 0;
+  margin: 0;
+}
+
+
 @include admonitionBlock();
 @include recommendationBlock();
 @include listBlock();
