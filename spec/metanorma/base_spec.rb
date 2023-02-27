@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'fileutils'
+require "spec_helper"
+require "fileutils"
 
 RSpec.describe Metanorma::Csa do
   it "has a version number" do
@@ -9,7 +9,8 @@ RSpec.describe Metanorma::Csa do
   end
 
   it "processes a blank document" do
-    input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa, header_footer: true)
+    input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa,
+                                                    header_footer: true)
     expect(xmlpp(strip_guid(input))).to be_equivalent_to xmlpp(<<~"OUTPUT")
       #{BLANK_HDR}
       <sections/>
@@ -21,23 +22,26 @@ RSpec.describe Metanorma::Csa do
     FileUtils.rm_f "test.html"
     FileUtils.rm_f "test.pdf"
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~INPUT
       = Document title
       Author
       :docfile: test.adoc
       :novalid:
     INPUT
-    #{BLANK_HDR}
-<sections/>
-</csa-standard>
+    output = <<~OUTPUT
+          #{BLANK_HDR}
+      <sections/>
+      </csa-standard>
     OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
     expect(File.exist?("test.html")).to be true
     expect(File.exist?("test.pdf")).to be true
   end
 
   it "processes default metadata" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~INPUT
       = Document title
       Author
       :docfile: test.adoc
@@ -69,101 +73,12 @@ RSpec.describe Metanorma::Csa do
       :givenname_2: Julius
       :role_2: contributor
     INPUT
-    <?xml version="1.0" encoding="UTF-8"?>
-<csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
-<bibdata type="standard">
-<title language="en" format="text/plain">Main Title</title>
-<docidentifier type="CSA">1000(wd):2001</docidentifier>
-<docnumber>1000</docnumber>
-  <contributor>
-    <role type="author"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-      <abbreviation>CSA</abbreviation>
-    </organization>
-  </contributor>
-           <contributor>
-             <role type='author'>
-               <description>full-author</description>
-             </role>
-             <person>
-               <name>
-                 <completename>Fred Nerk</completename>
-               </name>
-             </person>
-           </contributor>
-           <contributor>
-             <role type='author'>
-               <description>contributor</description>
-             </role>
-             <person>
-               <name>
-                 <forename>Julius</forename>
-                 <surname>Caesar</surname>
-               </name>
-             </person>
-           </contributor>
-  <contributor>
-    <role type="publisher"/>
-    <organization>
-      <name>Cloud Security Alliance</name>
-      <abbreviation>CSA</abbreviation>
-    </organization>
-  </contributor>
-    <edition>2</edition>
-<version>
-  <revision-date>2000-01-01</revision-date>
-  <draft>3.4</draft>
-</version>
-  <language>en</language>
-  <script>Latn</script>
-  <status>
-    <stage>working-draft</stage>
-    <iteration>3</iteration>
-  </status>
-  <copyright>
-    <from>2001</from>
-    <owner>
-      <organization>
-        <name>Cloud Security Alliance</name>
-        <abbreviation>CSA</abbreviation>
-      </organization>
-    </owner>
-  </copyright>
-  <ext>
-  <doctype>standard</doctype>
-  <editorialgroup>
-    <committee type="A">TC</committee>
-    <committee type="B">TC1</committee>
-  </editorialgroup>
-  </ext>
-</bibdata>
-    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, "2001 Cloud Security Alliance")}
-<sections/>
-</csa-standard>
-    OUTPUT
-  end
-
-  it "processes committee-draft" do
-    args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-      = Document title
-      Author
-      :docfile: test.adoc
-      :nodoc:
-      :novalid:
-      :docnumber: 1000
-      :doctype: standard
-      :status: committee-draft
-      :iteration: 3
-      :language: en
-      :title: Main Title
-    INPUT
+    output = <<~OUTPUT
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
-        <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="CSA">1000(cd):#{Time.now.year}</docidentifier>
-        <docnumber>1000</docnumber>
+      <title language="en" format="text/plain">Main Title</title>
+      <docidentifier type="CSA">1000(wd):2001</docidentifier>
+      <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
           <organization>
@@ -171,6 +86,27 @@ RSpec.describe Metanorma::Csa do
             <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
+                 <contributor>
+                   <role type='author'>
+                     <description>full-author</description>
+                   </role>
+                   <person>
+                     <name>
+                       <completename>Fred Nerk</completename>
+                     </name>
+                   </person>
+                 </contributor>
+                 <contributor>
+                   <role type='author'>
+                     <description>contributor</description>
+                   </role>
+                   <person>
+                     <name>
+                       <forename>Julius</forename>
+                       <surname>Caesar</surname>
+                     </name>
+                   </person>
+                 </contributor>
         <contributor>
           <role type="publisher"/>
           <organization>
@@ -178,129 +114,15 @@ RSpec.describe Metanorma::Csa do
             <abbreviation>CSA</abbreviation>
           </organization>
         </contributor>
+          <edition>2</edition>
+      <version>
+        <revision-date>2000-01-01</revision-date>
+        <draft>3.4</draft>
+      </version>
         <language>en</language>
         <script>Latn</script>
         <status>
-          <stage>committee-draft</stage>
-          <iteration>3</iteration>
-        </status>
-        <copyright>
-          <from>#{Date.today.year}</from>
-          <owner>
-            <organization>
-              <name>Cloud Security Alliance</name>
-              <abbreviation>CSA</abbreviation>
-            </organization>
-          </owner>
-        </copyright>
-        <ext>
-        <doctype>standard</doctype>
-        </ext>
-      </bibdata>
-    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
-      <sections/>
-      </csa-standard>
-    OUTPUT
-  end
-
-  it "processes draft-standard" do
-    args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-      = Document title
-      Author
-      :docfile: test.adoc
-      :nodoc:
-      :novalid:
-      :docnumber: 1000
-      :doctype: standard
-      :status: draft-standard
-      :iteration: 3
-      :language: en
-      :title: Main Title
-    INPUT
-      <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
-      <bibdata type="standard">
-        <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="CSA">1000(d):#{Time.now.year}</docidentifier>
-        <docnumber>1000</docnumber>
-        <contributor>
-          <role type="author"/>
-          <organization>
-            <name>Cloud Security Alliance</name>
-            <abbreviation>CSA</abbreviation>
-          </organization>
-        </contributor>
-        <contributor>
-          <role type="publisher"/>
-          <organization>
-            <name>Cloud Security Alliance</name>
-            <abbreviation>CSA</abbreviation>
-          </organization>
-        </contributor>
-        <language>en</language>
-        <script>Latn</script>
-        <status>
-          <stage>draft-standard</stage>
-          <iteration>3</iteration>
-        </status>
-        <copyright>
-          <from>#{Date.today.year}</from>
-          <owner>
-            <organization>
-              <name>Cloud Security Alliance</name>
-              <abbreviation>CSA</abbreviation>
-            </organization>
-          </owner>
-        </copyright>
-        <ext>
-        <doctype>standard</doctype>
-        </ext>
-      </bibdata>
-    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
-      <sections/>
-      </csa-standard>
-    OUTPUT
-  end
-
-  it "ignores unrecognised status" do
-    args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
-      = Document title
-      Author
-      :docfile: test.adoc
-      :nodoc:
-      :novalid:
-      :docnumber: 1000
-      :doctype: standard
-      :copyright-year: 2001
-      :status: standard
-      :iteration: 3
-      :language: en
-      :title: Main Title
-    INPUT
-      <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
-      <bibdata type="standard">
-        <title language="en" format="text/plain">Main Title</title>
-        <docidentifier type="CSA">1000:2001</docidentifier>
-        <docnumber>1000</docnumber>
-        <contributor>
-          <role type="author"/>
-          <organization>
-            <name>Cloud Security Alliance</name>
-            <abbreviation>CSA</abbreviation>
-          </organization>
-        </contributor>
-        <contributor>
-          <role type="publisher"/>
-          <organization>
-            <name>Cloud Security Alliance</name>
-            <abbreviation>CSA</abbreviation>
-          </organization>
-        </contributor>
-        <language>en</language>
-        <script>Latn</script>
-        <status>
-          <stage>standard</stage>
+          <stage>working-draft</stage>
           <iteration>3</iteration>
         </status>
         <copyright>
@@ -314,17 +136,266 @@ RSpec.describe Metanorma::Csa do
         </copyright>
         <ext>
         <doctype>standard</doctype>
+        <editorialgroup>
+          <committee type="A">TC</committee>
+          <committee type="B">TC1</committee>
+        </editorialgroup>
         </ext>
       </bibdata>
-    #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, "2001 Cloud Security Alliance")}
+               <metanorma-extension>
+           <presentation-metadata>
+             <name>TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>HTML TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>DOC TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+         </metanorma-extension>
+          #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
       <sections/>
       </csa-standard>
     OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
+  end
+
+  it "processes committee-draft" do
+    args = { backend: :csa, header_footer: true }
+    input = <<~INPUT
+      = Document title
+      Author
+      :docfile: test.adoc
+      :nodoc:
+      :novalid:
+      :docnumber: 1000
+      :doctype: standard
+      :status: committee-draft
+      :iteration: 3
+      :language: en
+      :title: Main Title
+    INPUT
+    output = <<~OUTPUT
+        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <bibdata type="standard">
+          <title language="en" format="text/plain">Main Title</title>
+          <docidentifier type="CSA">1000(cd):#{Time.now.year}</docidentifier>
+          <docnumber>1000</docnumber>
+          <contributor>
+            <role type="author"/>
+            <organization>
+              <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
+            </organization>
+          </contributor>
+          <contributor>
+            <role type="publisher"/>
+            <organization>
+              <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
+            </organization>
+          </contributor>
+          <language>en</language>
+          <script>Latn</script>
+          <status>
+            <stage>committee-draft</stage>
+            <iteration>3</iteration>
+          </status>
+          <copyright>
+            <from>#{Date.today.year}</from>
+            <owner>
+              <organization>
+                <name>Cloud Security Alliance</name>
+                <abbreviation>CSA</abbreviation>
+              </organization>
+            </owner>
+          </copyright>
+          <ext>
+          <doctype>standard</doctype>
+          </ext>
+        </bibdata>
+                 <metanorma-extension>
+           <presentation-metadata>
+             <name>TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>HTML TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>DOC TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+         </metanorma-extension>
+      #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
+        <sections/>
+        </csa-standard>
+    OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
+  end
+
+  it "processes draft-standard" do
+    args = { backend: :csa, header_footer: true }
+    input = <<~INPUT
+      = Document title
+      Author
+      :docfile: test.adoc
+      :nodoc:
+      :novalid:
+      :docnumber: 1000
+      :doctype: standard
+      :status: draft-standard
+      :iteration: 3
+      :language: en
+      :title: Main Title
+    INPUT
+    output = <<~OUTPUT
+        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <bibdata type="standard">
+          <title language="en" format="text/plain">Main Title</title>
+          <docidentifier type="CSA">1000(d):#{Time.now.year}</docidentifier>
+          <docnumber>1000</docnumber>
+          <contributor>
+            <role type="author"/>
+            <organization>
+              <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
+            </organization>
+          </contributor>
+          <contributor>
+            <role type="publisher"/>
+            <organization>
+              <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
+            </organization>
+          </contributor>
+          <language>en</language>
+          <script>Latn</script>
+          <status>
+            <stage>draft-standard</stage>
+            <iteration>3</iteration>
+          </status>
+          <copyright>
+            <from>#{Date.today.year}</from>
+            <owner>
+              <organization>
+                <name>Cloud Security Alliance</name>
+                <abbreviation>CSA</abbreviation>
+              </organization>
+            </owner>
+          </copyright>
+          <ext>
+          <doctype>standard</doctype>
+          </ext>
+        </bibdata>
+                 <metanorma-extension>
+           <presentation-metadata>
+             <name>TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>HTML TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>DOC TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+         </metanorma-extension>
+      #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
+        <sections/>
+        </csa-standard>
+    OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
+  end
+
+  it "ignores unrecognised status" do
+    args = { backend: :csa, header_footer: true }
+    input = <<~INPUT
+      = Document title
+      Author
+      :docfile: test.adoc
+      :nodoc:
+      :novalid:
+      :docnumber: 1000
+      :doctype: standard
+      :copyright-year: 2001
+      :status: standard
+      :iteration: 3
+      :language: en
+      :title: Main Title
+    INPUT
+    output = <<~OUTPUT
+        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <bibdata type="standard">
+          <title language="en" format="text/plain">Main Title</title>
+          <docidentifier type="CSA">1000:2001</docidentifier>
+          <docnumber>1000</docnumber>
+          <contributor>
+            <role type="author"/>
+            <organization>
+              <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
+            </organization>
+          </contributor>
+          <contributor>
+            <role type="publisher"/>
+            <organization>
+              <name>Cloud Security Alliance</name>
+              <abbreviation>CSA</abbreviation>
+            </organization>
+          </contributor>
+          <language>en</language>
+          <script>Latn</script>
+          <status>
+            <stage>standard</stage>
+            <iteration>3</iteration>
+          </status>
+          <copyright>
+            <from>2001</from>
+            <owner>
+              <organization>
+                <name>Cloud Security Alliance</name>
+                <abbreviation>CSA</abbreviation>
+              </organization>
+            </owner>
+          </copyright>
+          <ext>
+          <doctype>standard</doctype>
+          </ext>
+        </bibdata>
+                 <metanorma-extension>
+           <presentation-metadata>
+             <name>TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>HTML TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>DOC TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+         </metanorma-extension>
+      #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
+        <sections/>
+        </csa-standard>
+    OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
   end
 
   it "processes figures" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~INPUT
       #{ASCIIDOC_BLANK_HDR}
 
       [[id]]
@@ -335,6 +406,7 @@ RSpec.describe Metanorma::Csa do
       Amen
       ....
     INPUT
+    output = <<~OUTPUT
       #{BLANK_HDR}
       <sections>
         <figure id="id">
@@ -346,26 +418,31 @@ RSpec.describe Metanorma::Csa do
        </sections>
        </csa-standard>
     OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
   end
 
   it "strips inline header" do
     args = { backend: :csa, header_footer: true }
-    expect(xmlpp(strip_guid(Asciidoctor.convert(<<~"INPUT", args)))).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    input = <<~INPUT
       #{ASCIIDOC_BLANK_HDR}
       This is a preamble
 
       == Section 1
-      INPUT
-    #{BLANK_HDR}
-             <preface><foreword id="_" obligation="informative">
-         <title>Foreword</title>
-         <p id="_">This is a preamble</p>
-       </foreword></preface><sections>
-       <clause id="_" obligation="normative">
-         <title>Section 1</title>
-       </clause></sections>
-       </csa-standard>
+    INPUT
+    output = <<~OUTPUT
+      #{BLANK_HDR}
+               <preface><foreword id="_" obligation="informative">
+           <title>Foreword</title>
+           <p id="_">This is a preamble</p>
+         </foreword></preface><sections>
+         <clause id="_" obligation="normative">
+           <title>Section 1</title>
+         </clause></sections>
+         </csa-standard>
     OUTPUT
+    expect(xmlpp(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to xmlpp(output)
   end
 
   it "uses default fonts" do
