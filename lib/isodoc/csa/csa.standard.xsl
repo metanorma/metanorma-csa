@@ -1251,6 +1251,7 @@
 	</xsl:attribute-set>
 
 	<xsl:attribute-set name="xref-style">
+		<xsl:attribute name="keep-together.within-line">always</xsl:attribute>
 
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
 
@@ -8386,7 +8387,10 @@
 	<xsl:variable name="ul_labels" select="xalan:nodeset($ul_labels_)"/>
 
 	<xsl:template name="setULLabel">
-		<xsl:variable name="list_level_" select="count(ancestor::*[local-name() = 'ul']) + count(ancestor::*[local-name() = 'ol'])"/>
+		<xsl:variable name="list_level__">
+			<xsl:value-of select="count(ancestor::*[local-name() = 'ul']) + count(ancestor::*[local-name() = 'ol'])"/>/&gt;
+		</xsl:variable>
+		<xsl:variable name="list_level_" select="number($list_level__)"/>
 		<xsl:variable name="list_level">
 			<xsl:choose>
 				<xsl:when test="$list_level_ &lt;= 3"><xsl:value-of select="$list_level_"/></xsl:when>
@@ -8519,9 +8523,11 @@
 				</fo:block-container>
 			</xsl:when>
 			<xsl:otherwise>
-				<fo:block>
-					<xsl:apply-templates select="." mode="list"/>
-				</fo:block>
+
+						<fo:block>
+							<xsl:apply-templates select="." mode="list"/>
+						</fo:block>
+
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
