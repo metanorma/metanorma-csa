@@ -6,7 +6,7 @@ require "fileutils"
 RSpec.describe IsoDoc::Csa do
   it "processes default metadata" do
     csdc = IsoDoc::Csa::HtmlConvert.new({})
-    docxml, _filename, _dir = csdc.convert_init(<<~"INPUT", "test", true)
+    docxml, _filename, _dir = csdc.convert_init(<<~INPUT, "test", true)
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
       <bibdata type="standard">
         <title language="en" format="plain">Main Title</title>
@@ -120,7 +120,7 @@ RSpec.describe IsoDoc::Csa do
   end
 
   it "processes pre" do
-    input = <<~"INPUT"
+    input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
       <preface><foreword>
       <pre>ABC</pre>
@@ -146,7 +146,7 @@ RSpec.describe IsoDoc::Csa do
   end
 
   it "processes keyword" do
-    input = <<~"INPUT"
+    input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
         <preface><foreword><keyword>ABC</keyword></foreword></preface>
       </csa-standard>
@@ -170,7 +170,7 @@ RSpec.describe IsoDoc::Csa do
   end
 
   it "processes simple terms & definitions" do
-    input = <<~"INPUT"
+    input = <<~INPUT
       <csa-standard xmlns="http://riboseinc.com/isoxml">
         <sections>
           <terms id="H" obligation="normative"><title>Terms, Definitions, Symbols and Abbreviated Terms</title>
@@ -184,8 +184,13 @@ RSpec.describe IsoDoc::Csa do
 
     presxml = <<~OUTPUT
           <csa-standard xmlns='http://riboseinc.com/isoxml' type="presentation">
+            <preface>
+            <clause type="toc" id="_" displayorder="1">
+          <title depth="1">Table of contents</title>
+        </clause>
+      </preface>
         <sections>
-          <terms id='H' obligation='normative' displayorder="1">
+          <terms id='H' obligation='normative' displayorder="2">
             <title depth='1'>1.<tab/>Terms, Definitions, Symbols and Abbreviated Terms</title>
             <term id='J'>
               <name>1.1.</name>
@@ -197,17 +202,21 @@ RSpec.describe IsoDoc::Csa do
     OUTPUT
 
     html = <<~OUTPUT
-       #{HTML_HDR}
-              <p class="zzSTDTitle1"/>
-              <div id="H"><h1>1.&#160; Terms, Definitions, Symbols and Abbreviated Terms</h1>
-      <p class="TermNum" id="J">1.1.</p>
-        <p class="Terms" style="text-align:left;">Term2</p>
+         #{HTML_HDR}
+             <br/>
+      <div id="_" class="TOC">
+        <h1 class="IntroTitle">Table of contents</h1>
       </div>
-            </div>
-          </body>
+                <p class="zzSTDTitle1"/>
+                <div id="H"><h1>1.&#160; Terms, Definitions, Symbols and Abbreviated Terms</h1>
+        <p class="TermNum" id="J">1.1.</p>
+          <p class="Terms" style="text-align:left;">Term2</p>
+        </div>
+              </div>
+            </body>
     OUTPUT
-    expect(xmlpp(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
-      .convert("test", input, true))).to be_equivalent_to xmlpp(presxml)
+    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
+      .convert("test", input, true)))).to be_equivalent_to xmlpp(presxml)
     expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({})
       .convert("test", presxml, true)
       .gsub(/^.*<body/m, "<body")
@@ -285,21 +294,24 @@ RSpec.describe IsoDoc::Csa do
     output = <<~OUTPUT
       <csa-standard xmlns="http://riboseinc.com/isoxml" type="presentation">
       <preface>
-      <foreword obligation="informative" displayorder="1">
+          <clause type="toc" id="_" displayorder="1">
+        <title depth="1">Table of contents</title>
+      </clause>
+      <foreword obligation="informative" displayorder="2">
          <title>Foreword</title>
          <p id="A">This is a preamble</p>
        </foreword>
-        <introduction id="B" obligation="informative" displayorder="2">
+        <introduction id="B" obligation="informative" displayorder="3">
          <title>Introduction</title>
          <clause id="C" inline-header="false" obligation="informative">
          <title depth="2">Introduction Subsection</title>
        </clause>
        </introduction></preface><sections>
-       <clause id="D" obligation="normative" displayorder="6">
+       <clause id="D" obligation="normative" displayorder="7">
          <title depth="1">4.<tab/>Scope</title>
          <p id="E">Text</p>
        </clause>
-       <clause id="H" obligation="normative" displayorder="4">
+       <clause id="H" obligation="normative" displayorder="5">
          <title depth="1">2.<tab/>Terms, Definitions, Symbols and Abbreviated Terms</title>
          <terms id="I" obligation="normative">
          <title depth="2">2.1.<tab/>Normal Terms</title>
@@ -314,13 +326,13 @@ RSpec.describe IsoDoc::Csa do
          </dl>
        </definitions>
        </clause>
-       <definitions id="L" displayorder="5"><title>3.</title>
+       <definitions id="L" displayorder="6"><title>3.</title>
          <dl>
          <dt>Symbol</dt>
          <dd>Definition</dd>
          </dl>
        </definitions>
-       <clause id="M" inline-header="false" obligation="normative" displayorder="7">
+       <clause id="M" inline-header="false" obligation="normative" displayorder="8">
          <title depth="1">5.<tab/>Clause 4</title>
          <clause id="N" inline-header="false" obligation="normative">
          <title depth="2">5.1.<tab/>Introduction</title>
@@ -328,7 +340,7 @@ RSpec.describe IsoDoc::Csa do
        <clause id="O" inline-header="false" obligation="normative">
          <title depth="2">5.2.<tab/>Clause 4.2</title>
        </clause></clause>
-       </sections><annex id="P" inline-header="false" obligation="normative" displayorder="8">
+       </sections><annex id="P" inline-header="false" obligation="normative" displayorder="9">
          <title><strong>Appendix A</strong><br/>(normative)<br/><strong>Annex</strong></title>
          <clause id="Q" inline-header="false" obligation="normative">
          <title depth="2">A.1.<tab/>Annex A.1</title>
@@ -336,9 +348,9 @@ RSpec.describe IsoDoc::Csa do
          <title depth="3">A.1.1.<tab/>Annex A.1a</title>
          </clause>
        </clause>
-       </annex><bibliography><references id="R" obligation="informative" normative="true" displayorder="3">
+       </annex><bibliography><references id="R" obligation="informative" normative="true" displayorder="4">
          <title depth="1">1.<tab/>Normative References</title>
-       </references><clause id="S" obligation="informative" displayorder="9">
+       </references><clause id="S" obligation="informative" displayorder="10">
          <title depth="1">Bibliography</title>
          <references id="T" obligation="informative" normative="false">
          <title depth="2">Bibliography Subsection</title>
@@ -347,13 +359,13 @@ RSpec.describe IsoDoc::Csa do
        </bibliography>
        </csa-standard>
     OUTPUT
-    expect(xmlpp(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
-      .convert("test", input, true))).to be_equivalent_to xmlpp(output)
+    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
+      .convert("test", input, true)))).to be_equivalent_to xmlpp(output)
   end
 
   it "injects JS into blank html" do
     FileUtils.rm_f "test.html"
-    input = <<~"INPUT"
+    input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
       <preface><foreword>
       <pre>ABC</pre>
