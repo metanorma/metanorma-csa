@@ -27,6 +27,7 @@ header: lib/isodoc/csa/html/header.html
 wordcoverpage: lib/isodoc/csa/html/word_csa_titlepage.html
 wordintropage: lib/isodoc/csa/html/word_csa_intro.html
 wordstylesheet: lib/isodoc/csa/html/wordstyle.scss
+boilerplate: lib/metanorma/csa/boilerplate.adoc
 webfont:
   - "https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i|Space+Mono:400,700"
   - "https://fonts.googleapis.com/css?family=Lato:400,400i,700,900"

@@ -70,7 +70,7 @@ def xmlpp(xml)
   HTMLEntities.new.decode(ret)
 end
 
-ASCIIDOC_BLANK_HDR = <<~"HDR"
+ASCIIDOC_BLANK_HDR = <<~HDR
   = Document title
   Author
   :docfile: test.adoc
@@ -79,7 +79,7 @@ ASCIIDOC_BLANK_HDR = <<~"HDR"
 
 HDR
 
-VALIDATING_BLANK_HDR = <<~"HDR"
+VALIDATING_BLANK_HDR = <<~HDR
   = Document title
   Author
   :docfile: test.adoc
@@ -87,19 +87,27 @@ VALIDATING_BLANK_HDR = <<~"HDR"
 
 HDR
 
-BOILERPLATE =
+def boilerplate_read(file)
   HTMLEntities.new.decode(
-    File.read(File.join(File.dirname(__FILE__), "..", "lib", "metanorma", "csa", "boilerplate.xml"), encoding: "utf-8")
+    Metanorma::Csa::Converter.new(:csa, {}).boilerplate_file_restructure(file)
+    .to_xml.gsub(/<(\/)?sections>/, "<\\1boilerplate>")
+      .gsub(/ id="_[^"]+"/, " id='_'"),
+  )
+end
+
+BOILERPLATE =
+  boilerplate_read(
+    File.read(File.join(File.dirname(__FILE__), "..", "lib", "metanorma", "csa", "boilerplate.adoc"), encoding: "utf-8")
     .gsub(/\{\{ docyear \}\}/, Date.today.year.to_s)
     .gsub(/<p>/, '<p id="_">')
     .gsub(/<p align="left">/, '<p align="left" id="_">')
     .gsub(/\{% if unpublished %\}.+?\{% endif %\}/m, "")
     .gsub(/\{% if ip_notice_received %\}\{% else %\}not\{% endif %\}/m, ""),
-  )
+  ).freeze
 
 LICENSE_BOILERPLATE = <<~BOILERPLATE
   <license-statement>
-  <clause>
+  <clause id="_" obligation="normative">
                <title>Warning for Drafts</title>
                <p id='_'>
                  This document is not a CSA Standard. It is distributed for review and
@@ -169,7 +177,7 @@ BLANK_HDR = <<~"HDR"
           #{BOILERPLATE}
 HDR
 
-HTML_HDR = <<~"HDR"
+HTML_HDR = <<~HDR
   <body lang="EN-US" link="blue" vlink="#954F72" xml:lang="EN-US" class="container">
   <div class="title-section">
     <p>&#160;</p>
@@ -183,7 +191,7 @@ HTML_HDR = <<~"HDR"
 HDR
 
 def mock_pdf
-  allow(::Mn2pdf).to receive(:convert) do |url, output, _c, _d|
+  allow(Mn2pdf).to receive(:convert) do |url, output, _c, _d|
     FileUtils.cp(url.gsub(/"/, ""), output.gsub(/"/, ""))
   end
 end
