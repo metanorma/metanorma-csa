@@ -13,6 +13,8 @@ module IsoDoc
         prefix_name(elem, "<br/>", lbl, "title")
       end
 
+      def middle_title(docxml); end
+
       include Init
     end
   end

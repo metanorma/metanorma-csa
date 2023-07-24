@@ -220,7 +220,7 @@ h3,.h3 {
   font-size: 1.5em;
 }
 /*
-span[id^="toc"]:after {
+span[id^="toc"]::after {
 float: left;
 padding-right: 4px;
 margin-left: -20px;
@@ -755,7 +755,7 @@ To top button
   }
 }
 
-nav h1:hover a:after {
+nav h1:hover a::after {
   display: none;
 }
 
