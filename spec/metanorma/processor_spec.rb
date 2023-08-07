@@ -13,7 +13,7 @@ RSpec.describe Metanorma::Csa::Processor do
   end
 
   it "registers output formats against metanorma" do
-    expect(processor.output_formats.sort.to_s).to be_equivalent_to <<~"OUTPUT"
+    expect(processor.output_formats.sort.to_s).to be_equivalent_to <<~OUTPUT
       [[:doc, "doc"], [:html, "html"], [:pdf, "pdf"], [:presentation, "presentation.xml"], [:rxl, "rxl"], [:xml, "xml"]]
     OUTPUT
   end
@@ -37,10 +37,11 @@ RSpec.describe Metanorma::Csa::Processor do
 
   it "generates HTML from IsoDoc XML" do
     FileUtils.rm_f "test.xml"
-    processor.output(<<~"INPUT", "test.xml", "test.html", :html)
+    processor.output(<<~INPUT, "test.xml", "test.html", :html)
       <csa-standard xmlns="http://riboseinc.com/isoxml">
         <sections>
-        <terms id="H" obligation="normative"><title>1.<tab/>Terms, Definitions, Symbols and Abbreviated Terms</title>
+        <terms id="H" obligation="normative" displayorder="1">
+          <title>1.<tab/>Terms, Definitions, Symbols and Abbreviated Terms</title>
           <term id="J">
           <name>1.1.</name>
           <preferred>Term2</preferred>
@@ -52,9 +53,8 @@ RSpec.describe Metanorma::Csa::Processor do
     test_html = File.read("test.html", encoding: "utf-8")
       .gsub(/^.*<main/m, "<main")
       .gsub(%r{</main>.*}m, "</main>")
-    expect(xmlpp(strip_guid(test_html))).to be_equivalent_to xmlpp(strip_guid(<<~"OUTPUT"))
+    expect(xmlpp(strip_guid(test_html))).to be_equivalent_to xmlpp(strip_guid(<<~OUTPUT))
       <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
-        <p class="zzSTDTitle1"></p>
         <div id="H"><h1 id="_">1.&#xA0; Terms, Definitions, Symbols and Abbreviated Terms</h1>
         <p class='Terms' style='text-align:left;' id='J'><strong>1.1.</strong>&#xa0;Term2</p>
         </div>

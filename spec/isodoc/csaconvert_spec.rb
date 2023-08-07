@@ -122,7 +122,7 @@ RSpec.describe IsoDoc::Csa do
   it "processes pre" do
     input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
-      <preface><foreword>
+      <preface><foreword displayorder="1">
       <pre>ABC</pre>
       </foreword></preface>
       </csa-standard>
@@ -135,7 +135,6 @@ RSpec.describe IsoDoc::Csa do
         <h1 class="ForewordTitle">Foreword</h1>
         <pre>ABC</pre>
       </div>
-      <p class="zzSTDTitle1"/>
       </div>
       </body>
     OUTPUT
@@ -148,7 +147,7 @@ RSpec.describe IsoDoc::Csa do
   it "processes keyword" do
     input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
-        <preface><foreword><keyword>ABC</keyword></foreword></preface>
+        <preface><foreword displayorder="1"><keyword>ABC</keyword></foreword></preface>
       </csa-standard>
     INPUT
 
@@ -163,7 +162,6 @@ RSpec.describe IsoDoc::Csa do
              <h1 class="ForewordTitle">Foreword</h1>
              <span class="keyword">ABC</span>
            </div>
-           <p class="zzSTDTitle1"/>
          </div>
        </body>
     OUTPUT
@@ -207,7 +205,6 @@ RSpec.describe IsoDoc::Csa do
       <div id="_" class="TOC">
         <h1 class="IntroTitle">Table of contents</h1>
       </div>
-                <p class="zzSTDTitle1"/>
                 <div id="H"><h1>1.&#160; Terms, Definitions, Symbols and Abbreviated Terms</h1>
         <p class="TermNum" id="J">1.1.</p>
           <p class="Terms" style="text-align:left;">Term2</p>
@@ -215,7 +212,8 @@ RSpec.describe IsoDoc::Csa do
               </div>
             </body>
     OUTPUT
-    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
+    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+      .new(presxml_options)
       .convert("test", input, true)))).to be_equivalent_to xmlpp(presxml)
     expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({})
       .convert("test", presxml, true)
@@ -340,6 +338,9 @@ RSpec.describe IsoDoc::Csa do
        <clause id="O" inline-header="false" obligation="normative">
          <title depth="2">5.2.<tab/>Clause 4.2</title>
        </clause></clause>
+       <references id="R" obligation="informative" normative="true" displayorder="4">
+         <title depth="1">1.<tab/>Normative References</title>
+       </references>
        </sections><annex id="P" inline-header="false" obligation="normative" displayorder="9">
          <title><strong>Appendix A</strong><br/>(normative)<br/><strong>Annex</strong></title>
          <clause id="Q" inline-header="false" obligation="normative">
@@ -348,9 +349,8 @@ RSpec.describe IsoDoc::Csa do
          <title depth="3">A.1.1.<tab/>Annex A.1a</title>
          </clause>
        </clause>
-       </annex><bibliography><references id="R" obligation="informative" normative="true" displayorder="4">
-         <title depth="1">1.<tab/>Normative References</title>
-       </references><clause id="S" obligation="informative" displayorder="10">
+       </annex><bibliography>
+       <clause id="S" obligation="informative" displayorder="10">
          <title depth="1">Bibliography</title>
          <references id="T" obligation="informative" normative="false">
          <title depth="2">Bibliography Subsection</title>
@@ -359,7 +359,8 @@ RSpec.describe IsoDoc::Csa do
        </bibliography>
        </csa-standard>
     OUTPUT
-    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert.new(presxml_options)
+    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+      .new(presxml_options)
       .convert("test", input, true)))).to be_equivalent_to xmlpp(output)
   end
 
