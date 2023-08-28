@@ -891,11 +891,26 @@
 							<xsl:value-of select="$font_extended"/><xsl:text>, </xsl:text>
 						</xsl:if>
 
-						<xsl:value-of select="."/>
+						<xsl:variable name="font_family" select="."/>
 
-						<xsl:if test="$additional_fonts != ''">
-							<xsl:text>, </xsl:text><xsl:value-of select="$additional_fonts"/>
-						</xsl:if>
+						<xsl:choose>
+							<xsl:when test="$additional_fonts = ''">
+								<xsl:value-of select="$font_family"/>
+							</xsl:when>
+							<xsl:otherwise> <!-- $additional_fonts != '' -->
+								<xsl:choose>
+									<xsl:when test="contains($font_family, ',')">
+										<xsl:value-of select="substring-before($font_family, ',')"/>
+										<xsl:text>, </xsl:text><xsl:value-of select="$additional_fonts"/>
+										<xsl:text>, </xsl:text><xsl:value-of select="substring-after($font_family, ',')"/>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="$font_family"/>
+										<xsl:text>, </xsl:text><xsl:value-of select="$additional_fonts"/>
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:otherwise>
+						</xsl:choose>
 					</xsl:attribute>
 				</xsl:when>
 				<xsl:otherwise>
@@ -3380,21 +3395,21 @@
 
 	<xsl:template match="*[local-name()='table']/*[local-name()='note' or local-name() = 'example']" priority="2">
 
-		<fo:block xsl:use-attribute-sets="table-note-style">
+				<fo:block xsl:use-attribute-sets="table-note-style">
 
-			<xsl:call-template name="refine_table-note-style"/>
+					<xsl:call-template name="refine_table-note-style"/>
 
-			<!-- Table's note/example name (NOTE, for example) -->
-			<fo:inline xsl:use-attribute-sets="table-note-name-style">
+					<!-- Table's note/example name (NOTE, for example) -->
+					<fo:inline xsl:use-attribute-sets="table-note-name-style">
 
-				<xsl:call-template name="refine_table-note-name-style"/>
+						<xsl:call-template name="refine_table-note-name-style"/>
 
-				<xsl:apply-templates select="*[local-name() = 'name']"/>
+						<xsl:apply-templates select="*[local-name() = 'name']"/>
 
-			</fo:inline>
+					</fo:inline>
 
-			<xsl:apply-templates select="node()[not(local-name() = 'name')]"/>
-		</fo:block>
+					<xsl:apply-templates select="node()[not(local-name() = 'name')]"/>
+				</fo:block>
 
 	</xsl:template> <!-- table/note -->
 
@@ -6512,8 +6527,12 @@
 		<xsl:variable name="isAdded" select="../@added"/>
 		<xsl:variable name="isDeleted" select="../@deleted"/>
 		<xsl:choose>
-			<xsl:when test="ancestor::*[local-name() = 'title']">
+			<xsl:when test="ancestor::*[local-name() = 'title'] or not(parent::*[local-name() = 'figure']) or parent::*[local-name() = 'p']">
 				<fo:inline padding-left="1mm" padding-right="1mm">
+					<xsl:if test="not(parent::*[local-name() = 'figure']) or parent::*[local-name() = 'p']">
+						<xsl:attribute name="padding-left">0mm</xsl:attribute>
+						<xsl:attribute name="padding-right">0mm</xsl:attribute>
+					</xsl:if>
 					<xsl:variable name="src">
 						<xsl:call-template name="image_src"/>
 					</xsl:variable>
@@ -6546,7 +6565,7 @@
 							<fo:external-graphic src="{$src}" fox:alt-text="Image {@alt}" xsl:use-attribute-sets="image-graphic-style">
 								<xsl:if test="not(@mimetype = 'image/svg+xml') and ../*[local-name() = 'name'] and not(ancestor::*[local-name() = 'table'])">
 
-									<xsl:if test="@width != '' and @width != 'auto'">
+									<xsl:if test="@width != '' and @width != 'auto' and @width != 'text-width' and @width != 'full-page-width' and @width != 'narrow'">
 										<xsl:attribute name="width">
 											<xsl:value-of select="@width"/>
 										</xsl:attribute>
