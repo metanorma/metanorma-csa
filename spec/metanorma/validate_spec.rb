@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Metanorma::Csa do
   context "when xref_error.adoc compilation" do
     around do |example|
-      FileUtils.rm_f "spec/assets/xref_error.err"
+      FileUtils.rm_f "spec/assets/xref_error.err.html"
       example.run
       Dir["spec/assets/xref_error*"].each do |file|
         next if file.match?(/adoc$/)
@@ -20,13 +20,13 @@ RSpec.describe Metanorma::Csa do
         Metanorma::Compile
           .new
           .compile("spec/assets/xref_error.adoc", type: "csa", :"agree-to-terms" => true)
-      end.to(change { File.exist?("spec/assets/xref_error.err") }
+      end.to(change { File.exist?("spec/assets/xref_error.err.html") }
               .from(false).to(true))
     end
   end
 
   it 'Warns of illegal doctype' do
-    FileUtils.rm_rf "test.err"
+    FileUtils.rm_rf "test.err.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)
       = Document title
       Author
@@ -37,7 +37,7 @@ RSpec.describe Metanorma::Csa do
 
       text
     INPUT
-    expect(File.read("test.err")).to include "pizza is not a legal document type"
+    expect(File.read("test.err.html")).to include "pizza is not a legal document type"
 
   end
 
@@ -53,13 +53,13 @@ RSpec.describe Metanorma::Csa do
       text
     INPUT
 
-    FileUtils.rm_rf "test.err"
+    FileUtils.rm_rf "test.err.html"
     Asciidoctor.convert(input, backend: :csa, header_footer: true)
-    expect(File.read("test.err")).to include "pizza is not a recognised status"
+    expect(File.read("test.err.html")).to include "pizza is not a recognised status"
   end
 
   it 'Warns of illegal role' do
-    FileUtils.rm_rf "test.err"
+    FileUtils.rm_rf "test.err.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)
       = Document title
       Author
@@ -72,7 +72,7 @@ RSpec.describe Metanorma::Csa do
 
       text
     INPUT
-    expect(File.read("test.err")).to include "pokemon-man is not a recognised role"
+    expect(File.read("test.err.html")).to include "pokemon-man is not a recognised role"
 
   end
 
