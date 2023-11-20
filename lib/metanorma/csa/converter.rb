@@ -99,7 +99,9 @@ module Metanorma
       end
 
       def presentation_xml_converter(node)
-        IsoDoc::Csa::PresentationXMLConvert.new(doc_extract_attributes(node))
+        IsoDoc::Csa::PresentationXMLConvert
+          .new(doc_extract_attributes(node)
+          .merge(output_formats: ::Metanorma::Csa::Processor.new.output_formats))
       end
     end
   end
