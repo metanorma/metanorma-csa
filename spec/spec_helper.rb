@@ -173,6 +173,10 @@ BLANK_HDR = <<~"HDR"
              <name>DOC TOC Heading Levels</name>
              <value>2</value>
            </presentation-metadata>
+           <presentation-metadata>
+             <name>PDF TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
          </metanorma-extension>
           #{BOILERPLATE}
 HDR

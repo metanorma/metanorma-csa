@@ -78,7 +78,9 @@ RSpec.describe IsoDoc::Csa do
       .to_s.gsub(/, :/, ",\n:")))
       .to be_equivalent_to (<<~OUTPUT)
         {:accesseddate=>"XXX",
+        :adapteddate=>"XXX",
         :agency=>"Ribose",
+        :announceddate=>"XXX",
         :authors=>["Fred Nerk", "Julius Caesar"],
         :authors_affiliations=>{""=>["Fred Nerk", "Julius Caesar"]},
         :circulateddate=>"XXX",
@@ -107,6 +109,7 @@ RSpec.describe IsoDoc::Csa do
         :revdate_monthyear=>"January 2000",
         :roles_authors_affiliations=>{"editor"=>{""=>["Julius Caesar"]}, "full-author"=>{""=>["Fred Nerk"]}},
         :script=>"Latn",
+        :stable_untildate=>"XXX",
         :stage=>"Working Draft",
         :stage_display=>"Working Draft",
         :stageabbr=>"wd",

@@ -155,6 +155,10 @@ RSpec.describe Metanorma::Csa do
              <name>DOC TOC Heading Levels</name>
              <value>2</value>
            </presentation-metadata>
+           <presentation-metadata>
+             <name>PDF TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
          </metanorma-extension>
           #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
       <sections/>
@@ -229,6 +233,10 @@ RSpec.describe Metanorma::Csa do
            </presentation-metadata>
            <presentation-metadata>
              <name>DOC TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>PDF TOC Heading Levels</name>
              <value>2</value>
            </presentation-metadata>
          </metanorma-extension>
@@ -307,6 +315,10 @@ RSpec.describe Metanorma::Csa do
              <name>DOC TOC Heading Levels</name>
              <value>2</value>
            </presentation-metadata>
+           <presentation-metadata>
+             <name>PDF TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
         <sections/>
@@ -382,6 +394,10 @@ RSpec.describe Metanorma::Csa do
            </presentation-metadata>
            <presentation-metadata>
              <name>DOC TOC Heading Levels</name>
+             <value>2</value>
+           </presentation-metadata>
+           <presentation-metadata>
+             <name>PDF TOC Heading Levels</name>
              <value>2</value>
            </presentation-metadata>
          </metanorma-extension>
