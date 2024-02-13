@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'isodoc'
+require "isodoc"
 
 module IsoDoc
   module Csa
@@ -12,7 +12,8 @@ module IsoDoc
       end
 
       def title(isoxml, _out)
-        main = isoxml&.at(ns("//bibdata/title[@language='en']"))&.text
+        main = isoxml.at(ns("//bibdata/title[@language='en']"))
+          &.children&.to_xml
         set(:doctitle, main)
       end
 
@@ -39,8 +40,8 @@ module IsoDoc
       end
 
       def nonauth_roles(isoxml, persons)
-        roles = isoxml.xpath(ns("//bibdata/contributor[person]/role/@type")).
-          inject([]) { |m, t| m << t.value }.reject { |i| i == "author" }
+        roles = isoxml.xpath(ns("//bibdata/contributor[person]/role/@type"))
+          .inject([]) { |m, t| m << t.value }.reject { |i| i == "author" }
         roles.uniq.sort.each do |r|
           n = isoxml.xpath(ns("//bibdata/contributor[role/@type = '#{r}']"\
                               "/person"))
@@ -51,12 +52,13 @@ module IsoDoc
 
       def auth_roles(isoxml, persons)
         roles = isoxml.xpath(ns("//bibdata/contributor[person]/"\
-                                "role[@type = 'author']/description")).
-        inject([]) { |m, t| m << t.text }
+                                "role[@type = 'author']/description"))
+          .inject([]) { |m, t| m << t.text }
         roles.uniq.sort.each do |r|
           n = isoxml.xpath(
-               ns("//bibdata/contributor[role/@type = 'author']"\
-                  "[xmlns:role/description = '#{r}']/person"))
+            ns("//bibdata/contributor[role/@type = 'author']"\
+               "[xmlns:role/description = '#{r}']/person"),
+          )
           n.empty? or persons[r] = extract_person_names_affiliations(n)
         end
         persons
