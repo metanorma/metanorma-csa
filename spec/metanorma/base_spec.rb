@@ -77,7 +77,7 @@ RSpec.describe Metanorma::Csa do
       <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
       <title language="en" format="text/plain">Main Title</title>
-      <docidentifier type="CSA">1000(wd):2001</docidentifier>
+      <docidentifier primary="true" type="CSA">1000(wd):2001</docidentifier>
       <docnumber>1000</docnumber>
         <contributor>
           <role type="author"/>
@@ -187,7 +187,7 @@ RSpec.describe Metanorma::Csa do
         <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
-          <docidentifier type="CSA">1000(cd):#{Time.now.year}</docidentifier>
+          <docidentifier primary="true" type="CSA">1000(cd):#{Time.now.year}</docidentifier>
           <docnumber>1000</docnumber>
           <contributor>
             <role type="author"/>
@@ -267,7 +267,7 @@ RSpec.describe Metanorma::Csa do
         <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
-          <docidentifier type="CSA">1000(d):#{Time.now.year}</docidentifier>
+          <docidentifier primary="true" type="CSA">1000(d):#{Time.now.year}</docidentifier>
           <docnumber>1000</docnumber>
           <contributor>
             <role type="author"/>
@@ -348,7 +348,7 @@ RSpec.describe Metanorma::Csa do
         <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
-          <docidentifier type="CSA">1000:2001</docidentifier>
+          <docidentifier primary="true" type="CSA">1000:2001</docidentifier>
           <docnumber>1000</docnumber>
           <contributor>
             <role type="author"/>
