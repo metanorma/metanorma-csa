@@ -121,64 +121,64 @@ LICENSE_BOILERPLATE = <<~BOILERPLATE
 BOILERPLATE
 
 BLANK_HDR = <<~"HDR"
-         <?xml version="1.0" encoding="UTF-8"?>
-         <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
-         <bibdata type="standard">
-          <title language="en" format="text/plain">Document title</title>
-  <docidentifier type='CSA'>:#{Time.now.year}</docidentifier>
-           <contributor>
-             <role type="author"/>
-             <organization>
-               <name>Cloud Security Alliance</name>
-               <abbreviation>CSA</abbreviation>
-             </organization>
-           </contributor>
-           <contributor>
-             <role type="publisher"/>
-             <organization>
-               <name>Cloud Security Alliance</name>
-               <abbreviation>CSA</abbreviation>
-             </organization>
-           </contributor>
+  <?xml version="1.0" encoding="UTF-8"?>
+  <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+  <bibdata type="standard">
+   <title language="en" format="text/plain">Document title</title>
+   <docidentifier primary="true" type='CSA'>:#{Time.now.year}</docidentifier>
+    <contributor>
+      <role type="author"/>
+      <organization>
+        <name>Cloud Security Alliance</name>
+        <abbreviation>CSA</abbreviation>
+      </organization>
+    </contributor>
+    <contributor>
+      <role type="publisher"/>
+      <organization>
+        <name>Cloud Security Alliance</name>
+        <abbreviation>CSA</abbreviation>
+      </organization>
+    </contributor>
 
-           <language>en</language>
-           <script>Latn</script>
-          <status>
-                  <stage>published</stage>
-          </status>
+    <language>en</language>
+    <script>Latn</script>
+   <status>
+           <stage>published</stage>
+   </status>
 
-           <copyright>
-             <from>#{Time.new.year}</from>
-             <owner>
-               <organization>
-                 <name>Cloud Security Alliance</name>
-                 <abbreviation>CSA</abbreviation>
-               </organization>
-             </owner>
-           </copyright>
-           <ext>
-                  <doctype>standard</doctype>
-          </ext>
-         </bibdata>
-                  <metanorma-extension>
-           <presentation-metadata>
-             <name>TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>HTML TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>DOC TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>PDF TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-         </metanorma-extension>
-          #{BOILERPLATE}
+    <copyright>
+      <from>#{Time.new.year}</from>
+      <owner>
+        <organization>
+          <name>Cloud Security Alliance</name>
+          <abbreviation>CSA</abbreviation>
+        </organization>
+      </owner>
+    </copyright>
+    <ext>
+           <doctype>standard</doctype>
+   </ext>
+  </bibdata>
+           <metanorma-extension>
+    <presentation-metadata>
+      <name>TOC Heading Levels</name>
+      <value>2</value>
+    </presentation-metadata>
+    <presentation-metadata>
+      <name>HTML TOC Heading Levels</name>
+      <value>2</value>
+    </presentation-metadata>
+    <presentation-metadata>
+      <name>DOC TOC Heading Levels</name>
+      <value>2</value>
+    </presentation-metadata>
+    <presentation-metadata>
+      <name>PDF TOC Heading Levels</name>
+      <value>2</value>
+    </presentation-metadata>
+  </metanorma-extension>
+   #{BOILERPLATE}
 HDR
 
 HTML_HDR = <<~HDR
