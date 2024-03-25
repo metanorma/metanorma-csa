@@ -1,7 +1,6 @@
-# frozen_string_literal: true
 require "fileutils"
 
-require 'spec_helper'
+require "spec_helper"
 RSpec.describe Metanorma::Csa do
   context "when xref_error.adoc compilation" do
     around do |example|
@@ -19,13 +18,13 @@ RSpec.describe Metanorma::Csa do
         mock_pdf
         Metanorma::Compile
           .new
-          .compile("spec/assets/xref_error.adoc", type: "csa", :"agree-to-terms" => true)
+          .compile("spec/assets/xref_error.adoc", type: "csa", "agree-to-terms": true)
       end.to(change { File.exist?("spec/assets/xref_error.err.html") }
               .from(false).to(true))
     end
   end
 
-  it 'Warns of illegal doctype' do
+  it "Warns of illegal doctype" do
     FileUtils.rm_rf "test.err.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)
       = Document title
@@ -38,10 +37,9 @@ RSpec.describe Metanorma::Csa do
       text
     INPUT
     expect(File.read("test.err.html")).to include "pizza is not a legal document type"
-
   end
 
-  it 'Warns of illegal status' do
+  it "Warns of illegal status" do
     input = <<~"INPUT"
       = Document title
       Author
@@ -58,7 +56,7 @@ RSpec.describe Metanorma::Csa do
     expect(File.read("test.err.html")).to include "pizza is not a recognised status"
   end
 
-  it 'Warns of illegal role' do
+  it "Warns of illegal role" do
     FileUtils.rm_rf "test.err.html"
     Asciidoctor.convert(<<~"INPUT", backend: :csa, header_footer: true)
       = Document title
@@ -73,7 +71,5 @@ RSpec.describe Metanorma::Csa do
       text
     INPUT
     expect(File.read("test.err.html")).to include "pokemon-man is not a recognised role"
-
   end
-
 end
