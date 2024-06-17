@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:csa="https://www.metanorma.org/ns/csa" xmlns:mathml="http://www.w3.org/1998/Math/MathML" xmlns:xalan="http://xml.apache.org/xalan" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions" xmlns:java="http://xml.apache.org/xalan/java" exclude-result-prefixes="java" version="1.0">
+<?xml version="1.0" encoding="UTF-8"?><xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:csa="https://www.metanorma.org/ns/csa" xmlns:mathml="http://www.w3.org/1998/Math/MathML" xmlns:xalan="http://xml.apache.org/xalan" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions" xmlns:java="http://xml.apache.org/xalan/java" xmlns:redirect="http://xml.apache.org/xalan/redirect" exclude-result-prefixes="java xalan" extension-element-prefixes="redirect" version="1.0">
 
 	<xsl:output version="1.0" method="xml" encoding="UTF-8" indent="yes"/>
 
@@ -41,6 +41,14 @@
 				</fo:simple-page-master>
 
 				<fo:simple-page-master master-name="document" page-width="{$pageWidth}mm" page-height="{$pageHeight}mm">
+					<fo:region-body margin-top="{$marginTop}mm" margin-bottom="{$marginBottom}mm" margin-left="{$marginLeftRight1}mm" margin-right="{$marginLeftRight2}mm"/>
+					<fo:region-before region-name="header" extent="{$marginTop}mm" precedence="true"/>
+					<fo:region-after region-name="footer" extent="{$marginBottom}mm"/>
+					<fo:region-start region-name="left-region" extent="{$marginLeftRight1}mm"/>
+					<fo:region-end region-name="right-region" extent="{$marginLeftRight2}mm"/>
+				</fo:simple-page-master>
+
+				<fo:simple-page-master master-name="document-landscape" page-width="{$pageHeight}mm" page-height="{$pageWidth}mm">
 					<fo:region-body margin-top="{$marginTop}mm" margin-bottom="{$marginBottom}mm" margin-left="{$marginLeftRight1}mm" margin-right="{$marginLeftRight2}mm"/>
 					<fo:region-before region-name="header" extent="{$marginTop}mm" precedence="true"/>
 					<fo:region-after region-name="footer" extent="{$marginBottom}mm"/>
@@ -106,12 +114,11 @@
 				<xsl:call-template name="insertHeaderFooter"/>
 				<fo:flow flow-name="xsl-region-body">
 
-					<xsl:if test="$debug = 'true'">
-						<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-							DEBUG
-							contents=<xsl:copy-of select="$contents"/>
-						<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
-					</xsl:if>
+					<!-- <xsl:if test="$debug = 'true'">
+						<redirect:write file="contents_{java:getTime(java:java.util.Date.new())}.xml">
+							<xsl:copy-of select="$contents"/>
+						</redirect:write>
+					</xsl:if> -->
 
 					<fo:block>
 						<fo:block>The permanent and official location for Cloud Security Alliance DevSecOps is</fo:block>
@@ -186,20 +193,68 @@
 						</xsl:for-each>
 					</xsl:for-each>
 
-					<fo:block break-after="page"/>
+					<!-- <fo:block break-after="page"/> -->
 
 					<!-- Table of Contents -->
-					<xsl:apply-templates select="/*/csa:preface/csa:clause[@type = 'toc']">
+					<!-- <xsl:apply-templates select="/*/csa:preface/csa:clause[@type = 'toc']">
 						<xsl:with-param name="process">true</xsl:with-param>
-					</xsl:apply-templates>
+					</xsl:apply-templates> -->
 
-					<fo:block line-height="145%">
-						<xsl:call-template name="processPrefaceSectionsDefault"/>
+					<!-- <fo:block line-height="145%">
+						<xsl:call-template name="processPrefaceSectionsDefault"/>					
 						<xsl:call-template name="processMainSectionsDefault"/>
-					</fo:block>
+					</fo:block> -->
 
 				</fo:flow>
 			</fo:page-sequence>
+
+			<xsl:variable name="updated_xml">
+				<xsl:call-template name="updateXML"/>
+			</xsl:variable>
+
+			<xsl:for-each select="xalan:nodeset($updated_xml)/*">
+
+				<xsl:variable name="updated_xml_with_pages">
+					<xsl:call-template name="processAllSectionsDefault_items"/>
+				</xsl:variable>
+
+				<xsl:for-each select="xalan:nodeset($updated_xml_with_pages)"> <!-- set context to preface -->
+					<xsl:for-each select=".//*[local-name() = 'page_sequence'][normalize-space() != '' or .//image or .//svg]">
+						<fo:page-sequence master-reference="document" format="1" force-page-count="no-force">
+
+							<xsl:attribute name="master-reference">
+								<xsl:text>document</xsl:text>
+								<xsl:call-template name="getPageSequenceOrientation"/>
+							</xsl:attribute>
+
+							<fo:static-content flow-name="xsl-footnote-separator">
+								<fo:block>
+									<fo:leader leader-pattern="rule" leader-length="30%"/>
+								</fo:block>
+							</fo:static-content>
+							<xsl:call-template name="insertHeaderFooter"/>
+							<fo:flow flow-name="xsl-region-body">
+
+								<!-- Table of Contents -->
+								<xsl:apply-templates select=".//csa:preface//csa:clause[@type = 'toc']">
+									<xsl:with-param name="process">true</xsl:with-param>
+								</xsl:apply-templates>
+
+								<fo:block line-height="145%">
+									<!-- <xsl:call-template name="processPrefaceSectionsDefault"/>					
+									<xsl:call-template name="processMainSectionsDefault"/> -->
+									<xsl:apply-templates/>
+								</fo:block>
+
+								<fo:block/> <!-- for prevent empty preface -->
+							</fo:flow>
+						</fo:page-sequence>
+
+					</xsl:for-each>
+				</xsl:for-each>
+
+			</xsl:for-each>
+
 			<!-- End Document Pages -->
 
 		</fo:root>
@@ -249,7 +304,7 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template match="csa:preface/csa:clause[@type = 'toc']" priority="3">
+	<xsl:template match="csa:preface//csa:clause[@type = 'toc']" priority="3">
 		<xsl:param name="process">false</xsl:param>
 		<xsl:if test="$process = 'true'">
 			<fo:block-container font-size="12pt" line-height="170%" color="rgb(7, 72, 156)">
@@ -316,7 +371,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template match="csa:preface/csa:clause[@type = 'toc']/csa:title" priority="3">
+	<xsl:template match="csa:preface//csa:clause[@type = 'toc']/csa:title" priority="3">
 		<fo:block font-size="26pt" color="black" margin-top="2pt" margin-bottom="30pt" role="H1">
 			<xsl:apply-templates/>
 		</fo:block>
@@ -572,25 +627,25 @@
 		<xsl:text>iVBORw0KGgoAAAANSUhEUgAAASEAAAEhCAYAAAAwHRYbAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDE0IDc5LjE1Njc5NywgMjAxNC8wOC8yMC0wOTo1MzowMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDplYWRhN2RlNC04YzAyLTQ1N2UtYjUwNy0zNGYzY2RjNWE2ZGQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDUyNzBENDc3NjVCMTFFQTlDMDhGMEI2ODhENjUxQkIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDUyNzBENDY3NjVCMTFFQTlDMDhGMEI2ODhENjUxQkIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgSW5EZXNpZ24gMTQuMCAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmZiZjFiODZmLTIzMjMtM2U0OS1hMDMzLTVlOGQxYThlNmI1YiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmlkOjFlMzVjZTE3LWU5NzAtNDQ1OS05ZjI0LTM1NzcwZWYzMjNjMiIvPiA8L3Jk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</xsl:text>
 	</xsl:variable>
 
-			<xsl:strip-space xmlns:redirect="http://xml.apache.org/xalan/redirect" elements="csa:xref"/>
+			<xsl:strip-space elements="csa:xref"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="namespace_full" select="namespace-uri(/*)"/> <!-- example: https://www.metanorma.org/ns/iso -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="root_element" select="local-name(/*)"/> <!-- example: iso-standard -->
+	<xsl:variable name="namespace_full" select="namespace-uri(/*)"/> <!-- example: https://www.metanorma.org/ns/iso -->
+	<xsl:variable name="root_element" select="local-name(/*)"/> <!-- example: iso-standard -->
 
 	<!-- external parameters -->
 
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="svg_images"/> <!-- svg images array -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="images" select="document($svg_images)"/>
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="basepath"/> <!-- base path for images -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="inputxml_basepath"/> <!-- input xml file path -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="inputxml_filename"/> <!-- input xml file name -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="output_path"/> <!-- output PDF file name -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="external_index"/><!-- path to index xml, generated on 1st pass, based on FOP Intermediate Format -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="syntax-highlight">false</xsl:param> <!-- syntax highlighting feature, default - off -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add_math_as_text">true</xsl:param> <!-- add math in text behind svg formula, to copy-paste formula from PDF as text -->
+	<xsl:param name="svg_images"/> <!-- svg images array -->
+	<xsl:variable name="images" select="document($svg_images)"/>
+	<xsl:param name="basepath"/> <!-- base path for images -->
+	<xsl:param name="inputxml_basepath"/> <!-- input xml file path -->
+	<xsl:param name="inputxml_filename"/> <!-- input xml file name -->
+	<xsl:param name="output_path"/> <!-- output PDF file name -->
+	<xsl:param name="external_index"/><!-- path to index xml, generated on 1st pass, based on FOP Intermediate Format -->
+	<xsl:param name="syntax-highlight">false</xsl:param> <!-- syntax highlighting feature, default - off -->
+	<xsl:param name="add_math_as_text">true</xsl:param> <!-- add math in text behind svg formula, to copy-paste formula from PDF as text -->
 
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_if">false</xsl:param> <!-- generate extended table in IF for autolayout-algorithm -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_widths"/> <!-- (debug: path to) xml with table's widths, generated on 1st pass, based on FOP Intermediate Format -->
+	<xsl:param name="table_if">false</xsl:param> <!-- generate extended table in IF for autolayout-algorithm -->
+	<xsl:param name="table_widths"/> <!-- (debug: path to) xml with table's widths, generated on 1st pass, based on FOP Intermediate Format -->
 	<!-- Example: <tables>
 		<table page-width="509103" id="table1" width_max="223561" width_min="223560">
 			<column width_max="39354" width_min="39354"/>
@@ -617,9 +672,9 @@
 	-->
 
 	<!-- for command line debug: <xsl:variable name="table_widths_from_if" select="document($table_widths)"/> -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_widths_from_if" select="xalan:nodeset($table_widths)"/>
+	<xsl:variable name="table_widths_from_if" select="xalan:nodeset($table_widths)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_widths_from_if_calculated_">
+	<xsl:variable name="table_widths_from_if_calculated_">
 		<xsl:for-each select="$table_widths_from_if//table">
 			<xsl:copy>
 				<xsl:copy-of select="@*"/>
@@ -627,16 +682,16 @@
 			</xsl:copy>
 		</xsl:for-each>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_widths_from_if_calculated" select="xalan:nodeset($table_widths_from_if_calculated_)"/>
+	<xsl:variable name="table_widths_from_if_calculated" select="xalan:nodeset($table_widths_from_if_calculated_)"/>
 
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_if_debug">false</xsl:param> <!-- set 'true' to put debug width data before table or dl -->
+	<xsl:param name="table_if_debug">false</xsl:param> <!-- set 'true' to put debug width data before table or dl -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="isApplyAutolayoutAlgorithm_">
+	<xsl:variable name="isApplyAutolayoutAlgorithm_">
 		true
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="isApplyAutolayoutAlgorithm" select="normalize-space($isApplyAutolayoutAlgorithm_)"/>
+	<xsl:variable name="isApplyAutolayoutAlgorithm" select="normalize-space($isApplyAutolayoutAlgorithm_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="isGenerateTableIF_">
+	<xsl:variable name="isGenerateTableIF_">
 		<xsl:choose>
 			<xsl:when test="$isApplyAutolayoutAlgorithm = 'true'">
 				<xsl:value-of select="normalize-space($table_if) = 'true'"/>
@@ -644,13 +699,13 @@
 			<xsl:otherwise>false</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="isGenerateTableIF" select="normalize-space($isGenerateTableIF_)"/>
+	<xsl:variable name="isGenerateTableIF" select="normalize-space($isGenerateTableIF_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="lang">
+	<xsl:variable name="lang">
 		<xsl:call-template name="getLang"/>
 	</xsl:variable>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="inputxml_filename_prefix">
+	<xsl:variable name="inputxml_filename_prefix">
 		<xsl:choose>
 			<xsl:when test="contains($inputxml_filename, '.presentation.xml')">
 				<xsl:value-of select="substring-before($inputxml_filename, '.presentation.xml')"/>
@@ -676,24 +731,24 @@
 	</metanorma-extension>
 	-->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="papersize" select="java:toLowerCase(java:java.lang.String.new(normalize-space(//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'presentation-metadata']/*[local-name() = 'papersize'])))"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="papersize_width_">
+	<xsl:variable name="papersize" select="java:toLowerCase(java:java.lang.String.new(normalize-space(//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'presentation-metadata']/*[local-name() = 'papersize'])))"/>
+	<xsl:variable name="papersize_width_">
 		<xsl:choose>
 			<xsl:when test="$papersize = 'letter'">215.9</xsl:when>
 			<xsl:when test="$papersize = 'a4'">210</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="papersize_width" select="normalize-space($papersize_width_)"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="papersize_height_">
+	<xsl:variable name="papersize_width" select="normalize-space($papersize_width_)"/>
+	<xsl:variable name="papersize_height_">
 		<xsl:choose>
 			<xsl:when test="$papersize = 'letter'">279.4</xsl:when>
 			<xsl:when test="$papersize = 'a4'">297</xsl:when>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="papersize_height" select="normalize-space($papersize_height_)"/>
+	<xsl:variable name="papersize_height" select="normalize-space($papersize_height_)"/>
 
 	<!-- page width in mm -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="pageWidth_">
+	<xsl:variable name="pageWidth_">
 		<xsl:choose>
 			<xsl:when test="$papersize_width != ''"><xsl:value-of select="$papersize_width"/></xsl:when>
 			<xsl:otherwise>
@@ -701,10 +756,10 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="pageWidth" select="normalize-space($pageWidth_)"/>
+	<xsl:variable name="pageWidth" select="normalize-space($pageWidth_)"/>
 
 	<!-- page height in mm -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="pageHeight_">
+	<xsl:variable name="pageHeight_">
 		<xsl:choose>
 			<xsl:when test="$papersize_height != ''"><xsl:value-of select="$papersize_height"/></xsl:when>
 			<xsl:otherwise>
@@ -712,34 +767,34 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="pageHeight" select="normalize-space($pageHeight_)"/>
+	<xsl:variable name="pageHeight" select="normalize-space($pageHeight_)"/>
 
 	<!-- Page margins in mm (just digits, without 'mm')-->
 	<!-- marginLeftRight1 and marginLeftRight2 - is left or right margin depends on odd/even page,
 	for example, left margin on odd page and right margin on even page -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginLeftRight1_">
+	<xsl:variable name="marginLeftRight1_">
 		25
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginLeftRight1" select="normalize-space($marginLeftRight1_)"/>
+	<xsl:variable name="marginLeftRight1" select="normalize-space($marginLeftRight1_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginLeftRight2_">
+	<xsl:variable name="marginLeftRight2_">
 		25
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginLeftRight2" select="normalize-space($marginLeftRight2_)"/>
+	<xsl:variable name="marginLeftRight2" select="normalize-space($marginLeftRight2_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginTop_">
+	<xsl:variable name="marginTop_">
 		25
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginTop" select="normalize-space($marginTop_)"/>
+	<xsl:variable name="marginTop" select="normalize-space($marginTop_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginBottom_">
+	<xsl:variable name="marginBottom_">
 		21
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="marginBottom" select="normalize-space($marginBottom_)"/>
+	<xsl:variable name="marginBottom" select="normalize-space($marginBottom_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="layout_columns_default">1</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="layout_columns_" select="normalize-space((//*[contains(local-name(), '-standard')])[1]/*[local-name() = 'metanorma-extension']/*[local-name() = 'presentation-metadata']/*[local-name() = 'layout-columns'])"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="layout_columns">
+	<xsl:variable name="layout_columns_default">1</xsl:variable>
+	<xsl:variable name="layout_columns_" select="normalize-space((//*[contains(local-name(), '-standard')])[1]/*[local-name() = 'metanorma-extension']/*[local-name() = 'presentation-metadata']/*[local-name() = 'layout-columns'])"/>
+	<xsl:variable name="layout_columns">
 		<xsl:choose>
 			<xsl:when test="$layout_columns_ != ''"><xsl:value-of select="$layout_columns_"/></xsl:when>
 			<xsl:otherwise><xsl:value-of select="$layout_columns_default"/></xsl:otherwise>
@@ -751,7 +806,7 @@
 	 - we need to put the string on two-languages (for instance, on English and French both), but xml contains only localized strings for one language
 	 - there is a difference between localized string value and text that should be displayed in PDF
 	-->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="titles_">
+	<xsl:variable name="titles_">
 
 		<!-- These titles of Table of contents renders different than determined in localized-strings -->
 		<!-- <title-toc lang="en">
@@ -796,9 +851,9 @@
 		<title-subpart lang="fr">Partie de sub #</title-subpart>
 
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="titles" select="xalan:nodeset($titles_)"/>
+	<xsl:variable name="titles" select="xalan:nodeset($titles_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="title-list-tables">
+	<xsl:variable name="title-list-tables">
 		<xsl:variable name="toc_table_title" select="//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'toc'][@type='table']/*[local-name() = 'title']"/>
 		<xsl:value-of select="$toc_table_title"/>
 		<xsl:if test="normalize-space($toc_table_title) = ''">
@@ -808,7 +863,7 @@
 		</xsl:if>
 	</xsl:variable>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="title-list-figures">
+	<xsl:variable name="title-list-figures">
 		<xsl:variable name="toc_figure_title" select="//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'toc'][@type='figure']/*[local-name() = 'title']"/>
 		<xsl:value-of select="$toc_figure_title"/>
 		<xsl:if test="normalize-space($toc_figure_title) = ''">
@@ -818,7 +873,7 @@
 		</xsl:if>
 	</xsl:variable>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="title-list-recommendations">
+	<xsl:variable name="title-list-recommendations">
 		<xsl:variable name="toc_requirement_title" select="//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'toc'][@type='requirement']/*[local-name() = 'title']"/>
 		<xsl:value-of select="$toc_requirement_title"/>
 		<xsl:if test="normalize-space($toc_requirement_title) = ''">
@@ -828,25 +883,25 @@
 		</xsl:if>
 	</xsl:variable>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibdata">
+	<xsl:variable name="bibdata">
 		<xsl:copy-of select="//*[contains(local-name(), '-standard')]/*[local-name() = 'bibdata']"/>
 		<xsl:copy-of select="//*[contains(local-name(), '-standard')]/*[local-name() = 'localized-strings']"/>
 	</xsl:variable>
 
 	<!-- Characters -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="linebreak">&#8232;</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="tab_zh">　</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="non_breaking_hyphen">‑</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="thin_space"> </xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="zero_width_space">​</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hair_space"> </xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="en_dash">–</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="em_dash">—</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="cr">&#13;</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="lf">
+	<xsl:variable name="linebreak">&#8232;</xsl:variable>
+	<xsl:variable name="tab_zh">　</xsl:variable>
+	<xsl:variable name="non_breaking_hyphen">‑</xsl:variable>
+	<xsl:variable name="thin_space"> </xsl:variable>
+	<xsl:variable name="zero_width_space">​</xsl:variable>
+	<xsl:variable name="hair_space"> </xsl:variable>
+	<xsl:variable name="en_dash">–</xsl:variable>
+	<xsl:variable name="em_dash">—</xsl:variable>
+	<xsl:variable name="cr">&#13;</xsl:variable>
+	<xsl:variable name="lf">
 </xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getTitle">
+	<xsl:template name="getTitle">
 		<xsl:param name="name"/>
 		<xsl:param name="lang"/>
 		<xsl:variable name="lang_">
@@ -871,18 +926,18 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
+	<xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable>
+	<xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="en_chars" select="concat($lower,$upper,',.`1234567890-=~!@#$%^*()_+[]{}\|?/')"/>
+	<xsl:variable name="en_chars" select="concat($lower,$upper,',.`1234567890-=~!@#$%^*()_+[]{}\|?/')"/>
 
 	<!-- ====================================== -->
 	<!-- STYLES -->
 	<!-- ====================================== -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="font_noto_sans">Noto Sans, Noto Sans HK, Noto Sans JP, Noto Sans KR, Noto Sans SC, Noto Sans TC</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="font_noto_sans_mono">Noto Sans Mono, Noto Sans Mono CJK HK, Noto Sans Mono CJK JP, Noto Sans Mono CJK KR, Noto Sans Mono CJK SC, Noto Sans Mono CJK TC</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="font_noto_serif">Noto Serif, Noto Serif HK, Noto Serif JP, Noto Serif KR, Noto Serif SC, Noto Serif TC</xsl:variable>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="root-style">
+	<xsl:variable name="font_noto_sans">Noto Sans, Noto Sans HK, Noto Sans JP, Noto Sans KR, Noto Sans SC, Noto Sans TC</xsl:variable>
+	<xsl:variable name="font_noto_sans_mono">Noto Sans Mono, Noto Sans Mono CJK HK, Noto Sans Mono CJK JP, Noto Sans Mono CJK KR, Noto Sans Mono CJK SC, Noto Sans Mono CJK TC</xsl:variable>
+	<xsl:variable name="font_noto_serif">Noto Serif, Noto Serif HK, Noto Serif JP, Noto Serif KR, Noto Serif SC, Noto Serif TC</xsl:variable>
+	<xsl:attribute-set name="root-style">
 
 			<xsl:attribute name="font-family">Azo Sans, STIX Two Math, <xsl:value-of select="$font_noto_sans"/></xsl:attribute>
 			<xsl:attribute name="font-family-generic">Sans</xsl:attribute>
@@ -890,7 +945,7 @@
 
 	</xsl:attribute-set> <!-- root-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertRootStyle">
+	<xsl:template name="insertRootStyle">
 		<xsl:param name="root-style"/>
 		<xsl:variable name="root-style_" select="xalan:nodeset($root-style)"/>
 
@@ -974,75 +1029,75 @@
 	</xsl:template> <!-- insertRootStyle -->
 
 	<!-- Preface sections styles -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="copyright-statement-style">
+	<xsl:attribute-set name="copyright-statement-style">
 
 	</xsl:attribute-set> <!-- copyright-statement-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="copyright-statement-title-style">
+	<xsl:attribute-set name="copyright-statement-title-style">
 
 	</xsl:attribute-set> <!-- copyright-statement-title-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="copyright-statement-p-style">
+	<xsl:attribute-set name="copyright-statement-p-style">
 
 	</xsl:attribute-set> <!-- copyright-statement-p-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="license-statement-style">
+	<xsl:attribute-set name="license-statement-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="license-statement-title-style">
+	<xsl:attribute-set name="license-statement-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set> <!-- license-statement-title-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="license-statement-p-style">
+	<xsl:attribute-set name="license-statement-p-style">
 
 	</xsl:attribute-set> <!-- license-statement-p-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="legal-statement-style">
+	<xsl:attribute-set name="legal-statement-style">
 
 	</xsl:attribute-set> <!-- legal-statement-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="legal-statement-title-style">
+	<xsl:attribute-set name="legal-statement-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set> <!-- legal-statement-title-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="legal-statement-p-style">
+	<xsl:attribute-set name="legal-statement-p-style">
 
 	</xsl:attribute-set> <!-- legal-statement-p-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="feedback-statement-style">
+	<xsl:attribute-set name="feedback-statement-style">
 
 	</xsl:attribute-set> <!-- feedback-statement-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="feedback-statement-title-style">
+	<xsl:attribute-set name="feedback-statement-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set> <!-- feedback-statement-title-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="feedback-statement-p-style">
+	<xsl:attribute-set name="feedback-statement-p-style">
 
 	</xsl:attribute-set> <!-- feedback-statement-p-style -->
 
 	<!-- End Preface sections styles -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="link-style">
+	<xsl:attribute-set name="link-style">
 
 			<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_link-style">
+	<xsl:template name="refine_link-style">
 
 	</xsl:template> <!-- refine_link-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="sourcecode-container-style">
+	<xsl:attribute-set name="sourcecode-container-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="sourcecode-style">
+	<xsl:attribute-set name="sourcecode-style">
 		<xsl:attribute name="white-space">pre</xsl:attribute>
 		<xsl:attribute name="wrap-option">wrap</xsl:attribute>
 		<xsl:attribute name="role">Code</xsl:attribute>
@@ -1054,11 +1109,11 @@
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_sourcecode-style">
+	<xsl:template name="refine_sourcecode-style">
 
 	</xsl:template> <!-- refine_sourcecode-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="pre-style">
+	<xsl:attribute-set name="pre-style">
 		<xsl:attribute name="font-family">Courier New, <xsl:value-of select="$font_noto_sans_mono"/></xsl:attribute>
 		<xsl:attribute name="margin-bottom">6pt</xsl:attribute>
 
@@ -1067,96 +1122,96 @@
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="permission-style">
+	<xsl:attribute-set name="permission-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="permission-name-style">
+	<xsl:attribute-set name="permission-name-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="permission-label-style">
+	<xsl:attribute-set name="permission-label-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="requirement-style">
+	<xsl:attribute-set name="requirement-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="requirement-name-style">
+	<xsl:attribute-set name="requirement-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="requirement-label-style">
+	<xsl:attribute-set name="requirement-label-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="subject-style">
+	<xsl:attribute-set name="subject-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="inherit-style">
+	<xsl:attribute-set name="inherit-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="description-style">
+	<xsl:attribute-set name="description-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="specification-style">
+	<xsl:attribute-set name="specification-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="measurement-target-style">
+	<xsl:attribute-set name="measurement-target-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="verification-style">
+	<xsl:attribute-set name="verification-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="import-style">
+	<xsl:attribute-set name="import-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="component-style">
+	<xsl:attribute-set name="component-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="recommendation-style">
-
-	</xsl:attribute-set>
-
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="recommendation-name-style">
+	<xsl:attribute-set name="recommendation-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="recommendation-label-style">
+	<xsl:attribute-set name="recommendation-name-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termexample-style">
+	<xsl:attribute-set name="recommendation-label-style">
+
+	</xsl:attribute-set>
+
+	<xsl:attribute-set name="termexample-style">
 
 			<xsl:attribute name="font-size">10pt</xsl:attribute>
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_termexample-style">
+	<xsl:template name="refine_termexample-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="example-style">
+	<xsl:attribute-set name="example-style">
 
 			<xsl:attribute name="font-size">10pt</xsl:attribute>
 
 	</xsl:attribute-set> <!-- example-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_example-style">
+	<xsl:template name="refine_example-style">
 
 	</xsl:template> <!-- refine_example-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="example-body-style">
+	<xsl:attribute-set name="example-body-style">
 
 			<xsl:attribute name="margin-left">12.5mm</xsl:attribute>
 			<xsl:attribute name="margin-right">12.5mm</xsl:attribute>
 
 	</xsl:attribute-set> <!-- example-body-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="example-name-style">
+	<xsl:attribute-set name="example-name-style">
 
 			<xsl:attribute name="keep-with-next">always</xsl:attribute>
 			<xsl:attribute name="margin-top">12pt</xsl:attribute>
@@ -1165,50 +1220,50 @@
 
 	</xsl:attribute-set> <!-- example-name-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_example-name-style">
+	<xsl:template name="refine_example-name-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="example-p-style">
+	<xsl:attribute-set name="example-p-style">
 
 			<xsl:attribute name="margin-bottom">14pt</xsl:attribute>
 
 	</xsl:attribute-set> <!-- example-p-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_example-p-style">
+	<xsl:template name="refine_example-p-style">
 
 	</xsl:template> <!-- refine_example-p-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termexample-name-style">
+	<xsl:attribute-set name="termexample-name-style">
 
 			<xsl:attribute name="padding-right">10mm</xsl:attribute>
 
 	</xsl:attribute-set> <!-- termexample-name-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_termexample-name-style">
+	<xsl:template name="refine_termexample-name-style">
 
 	</xsl:template>
 
 	<!-- ========================== -->
 	<!-- Table styles -->
 	<!-- ========================== -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-border_">
+	<xsl:variable name="table-border_">
 
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-border" select="normalize-space($table-border_)"/>
+	<xsl:variable name="table-border" select="normalize-space($table-border_)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-cell-border_">
+	<xsl:variable name="table-cell-border_">
 
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-cell-border" select="normalize-space($table-cell-border_)"/>
+	<xsl:variable name="table-cell-border" select="normalize-space($table-cell-border_)"/>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-container-style">
+	<xsl:attribute-set name="table-container-style">
 		<xsl:attribute name="margin-left">0mm</xsl:attribute>
 		<xsl:attribute name="margin-right">0mm</xsl:attribute>
 
 	</xsl:attribute-set> <!-- table-container-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-container-style">
+	<xsl:template name="refine_table-container-style">
 		<xsl:param name="margin-side"/>
 
 			<xsl:attribute name="margin-left"><xsl:value-of select="-$margin-side"/>mm</xsl:attribute>
@@ -1217,13 +1272,13 @@
 		<!-- end table block-container attributes -->
 	</xsl:template> <!-- refine_table-container-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-style">
+	<xsl:attribute-set name="table-style">
 		<xsl:attribute name="table-omit-footer-at-break">true</xsl:attribute>
 		<xsl:attribute name="table-layout">fixed</xsl:attribute>
 
 	</xsl:attribute-set><!-- table-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-style">
+	<xsl:template name="refine_table-style">
 		<xsl:param name="margin-side"/>
 
 			<xsl:if test="$margin-side != 0">
@@ -1235,51 +1290,51 @@
 
 	</xsl:template> <!-- refine_table-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-name-style">
+	<xsl:attribute-set name="table-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set> <!-- table-name-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-name-style">
+	<xsl:template name="refine_table-name-style">
 		<xsl:param name="continued"/>
 
 	</xsl:template> <!-- refine_table-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-row-style">
+	<xsl:attribute-set name="table-row-style">
 		<xsl:attribute name="min-height">4mm</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-header-row-style" use-attribute-sets="table-row-style">
+	<xsl:attribute-set name="table-header-row-style" use-attribute-sets="table-row-style">
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-header-row-style">
+	<xsl:template name="refine_table-header-row-style">
 
 		<xsl:call-template name="setBordersTableArray"/>
 
 	</xsl:template> <!-- refine_table-header-row-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-footer-row-style" use-attribute-sets="table-row-style">
+	<xsl:attribute-set name="table-footer-row-style" use-attribute-sets="table-row-style">
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-footer-row-style">
+	<xsl:template name="refine_table-footer-row-style">
 
 	</xsl:template> <!-- refine_table-footer-row-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-body-row-style" use-attribute-sets="table-row-style">
+	<xsl:attribute-set name="table-body-row-style" use-attribute-sets="table-row-style">
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-body-row-style">
+	<xsl:template name="refine_table-body-row-style">
 
 		<xsl:call-template name="setBordersTableArray"/>
 
 	</xsl:template> <!-- refine_table-body-row-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-header-cell-style">
+	<xsl:attribute-set name="table-header-cell-style">
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 		<xsl:attribute name="padding-left">1mm</xsl:attribute>
 		<xsl:attribute name="padding-right">1mm</xsl:attribute>
@@ -1287,7 +1342,7 @@
 
 	</xsl:attribute-set> <!-- table-header-cell-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-header-cell-style">
+	<xsl:template name="refine_table-header-cell-style">
 
 		<xsl:call-template name="setBordersTableArray"/>
 
@@ -1299,14 +1354,14 @@
 
 	</xsl:template> <!-- refine_table-header-cell-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-cell-style">
+	<xsl:attribute-set name="table-cell-style">
 		<xsl:attribute name="display-align">center</xsl:attribute>
 		<xsl:attribute name="padding-left">1mm</xsl:attribute>
 		<xsl:attribute name="padding-right">1mm</xsl:attribute>
 
 	</xsl:attribute-set> <!-- table-cell-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-cell-style">
+	<xsl:template name="refine_table-cell-style">
 
 		<xsl:if test="$lang = 'ar'">
 			<xsl:attribute name="padding-right">1mm</xsl:attribute>
@@ -1318,7 +1373,7 @@
 
 	</xsl:template> <!-- refine_table-cell-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-footer-cell-style">
+	<xsl:attribute-set name="table-footer-cell-style">
 		<xsl:attribute name="border">solid black 1pt</xsl:attribute>
 		<xsl:attribute name="padding-left">1mm</xsl:attribute>
 		<xsl:attribute name="padding-right">1mm</xsl:attribute>
@@ -1326,57 +1381,57 @@
 
 	</xsl:attribute-set> <!-- table-footer-cell-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-footer-cell-style">
+	<xsl:template name="refine_table-footer-cell-style">
 
 	</xsl:template> <!-- refine_table-footer-cell-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-note-style">
+	<xsl:attribute-set name="table-note-style">
 		<xsl:attribute name="font-size">10pt</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set><!-- table-note-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-note-style">
+	<xsl:template name="refine_table-note-style">
 
 	</xsl:template> <!-- refine_table-note-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-fn-style">
+	<xsl:attribute-set name="table-fn-style">
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set> <!-- table-fn-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-fn-style">
+	<xsl:template name="refine_table-fn-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-fn-number-style">
+	<xsl:attribute-set name="table-fn-number-style">
 		<xsl:attribute name="font-size">80%</xsl:attribute>
 		<xsl:attribute name="padding-right">5mm</xsl:attribute>
 
 	</xsl:attribute-set> <!-- table-fn-number-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-fn-number-style">
+	<xsl:template name="refine_table-fn-number-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn-container-body-style">
+	<xsl:attribute-set name="fn-container-body-style">
 		<xsl:attribute name="text-indent">0</xsl:attribute>
 		<xsl:attribute name="start-indent">0</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-fn-body-style">
+	<xsl:attribute-set name="table-fn-body-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-fn-number-style">
+	<xsl:attribute-set name="figure-fn-number-style">
 		<xsl:attribute name="font-size">80%</xsl:attribute>
 		<xsl:attribute name="padding-right">5mm</xsl:attribute>
 		<xsl:attribute name="vertical-align">super</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-fn-body-style">
+	<xsl:attribute-set name="figure-fn-body-style">
 		<xsl:attribute name="text-align">justify</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
@@ -1389,43 +1444,43 @@
 	<!-- Definition's list styles -->
 	<!-- ========================== -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="dl-block-style">
+	<xsl:attribute-set name="dl-block-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="dt-row-style">
+	<xsl:attribute-set name="dt-row-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="dt-cell-style">
+	<xsl:attribute-set name="dt-cell-style">
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_dt-cell-style">
+	<xsl:template name="refine_dt-cell-style">
 
 	</xsl:template> <!-- refine_dt-cell-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="dt-block-style">
+	<xsl:attribute-set name="dt-block-style">
 		<xsl:attribute name="margin-top">0pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_dt-block-style">
+	<xsl:template name="refine_dt-block-style">
 
 	</xsl:template> <!-- refine_dt-block-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="dl-name-style">
+	<xsl:attribute-set name="dl-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 		<xsl:attribute name="margin-bottom">6pt</xsl:attribute>
 
 	</xsl:attribute-set> <!-- dl-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="dd-cell-style">
+	<xsl:attribute-set name="dd-cell-style">
 		<xsl:attribute name="padding-left">2mm</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_dd-cell-style">
+	<xsl:template name="refine_dd-cell-style">
 
 	</xsl:template> <!-- refine_dd-cell-style -->
 
@@ -1433,34 +1488,34 @@
 	<!-- END Definition's list styles -->
 	<!-- ========================== -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="appendix-style">
+	<xsl:attribute-set name="appendix-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="appendix-example-style">
+	<xsl:attribute-set name="appendix-example-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="xref-style">
+	<xsl:attribute-set name="xref-style">
 
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="eref-style">
+	<xsl:attribute-set name="eref-style">
 
 			<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_eref-style">
+	<xsl:template name="refine_eref-style">
 		<xsl:variable name="citeas" select="java:replaceAll(java:java.lang.String.new(@citeas),'^\[?(.+?)\]?$','$1')"/> <!-- remove leading and trailing brackets -->
 		<xsl:variable name="text" select="normalize-space()"/>
 
 	</xsl:template> <!-- refine_eref-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="note-style">
+	<xsl:attribute-set name="note-style">
 
 			<xsl:attribute name="font-size">10pt</xsl:attribute>
 			<xsl:attribute name="margin-top">12pt</xsl:attribute>
@@ -1469,63 +1524,63 @@
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_note-style">
+	<xsl:template name="refine_note-style">
 
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="note-body-indent">10mm</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="note-body-indent-table">5mm</xsl:variable>
+	<xsl:variable name="note-body-indent">10mm</xsl:variable>
+	<xsl:variable name="note-body-indent-table">5mm</xsl:variable>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="note-name-style">
+	<xsl:attribute-set name="note-name-style">
 
 			<xsl:attribute name="padding-right">4mm</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_note-name-style">
+	<xsl:template name="refine_note-name-style">
 
 	</xsl:template> <!-- refine_note-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-note-name-style">
+	<xsl:attribute-set name="table-note-name-style">
 		<xsl:attribute name="padding-right">2mm</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-note-name-style">
+	<xsl:template name="refine_table-note-name-style">
 
 	</xsl:template> <!-- refine_table-note-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="note-p-style">
+	<xsl:attribute-set name="note-p-style">
 
 			<xsl:attribute name="margin-top">12pt</xsl:attribute>
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termnote-style">
+	<xsl:attribute-set name="termnote-style">
 
 			<xsl:attribute name="font-size">10pt</xsl:attribute>
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_termnote-style">
+	<xsl:template name="refine_termnote-style">
 
 	</xsl:template> <!-- refine_termnote-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termnote-name-style">
+	<xsl:attribute-set name="termnote-name-style">
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_termnote-name-style">
+	<xsl:template name="refine_termnote-name-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termnote-p-style">
+	<xsl:attribute-set name="termnote-p-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="quote-style">
+	<xsl:attribute-set name="quote-style">
 		<xsl:attribute name="margin-left">12mm</xsl:attribute>
 		<xsl:attribute name="margin-right">12mm</xsl:attribute>
 
@@ -1534,65 +1589,65 @@
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_quote-style">
+	<xsl:template name="refine_quote-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="quote-source-style">
+	<xsl:attribute-set name="quote-source-style">
 		<xsl:attribute name="text-align">right</xsl:attribute>
 
 			<xsl:attribute name="margin-right">25mm</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termsource-style">
+	<xsl:attribute-set name="termsource-style">
 
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 			<xsl:attribute name="keep-with-previous">always</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_termsource-style">
+	<xsl:template name="refine_termsource-style">
 
 	</xsl:template> <!-- refine_termsource-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="termsource-text-style">
+	<xsl:attribute-set name="termsource-text-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="origin-style">
+	<xsl:attribute-set name="origin-style">
 
 			<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 			<xsl:attribute name="text-decoration">underline</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="term-style">
+	<xsl:attribute-set name="term-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="term-name-style">
+	<xsl:attribute-set name="term-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-block-style">
+	<xsl:attribute-set name="figure-block-style">
 		<xsl:attribute name="role">SKIP</xsl:attribute>
 
 			<xsl:attribute name="margin-bottom">6pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_figure-block-style">
+	<xsl:template name="refine_figure-block-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-style">
+	<xsl:attribute-set name="figure-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-name-style">
+	<xsl:attribute-set name="figure-name-style">
 		<xsl:attribute name="role">Caption</xsl:attribute>
 
 			<xsl:attribute name="font-size">11pt</xsl:attribute>
@@ -1604,22 +1659,22 @@
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_figure-name-style">
+	<xsl:template name="refine_figure-name-style">
 
 	</xsl:template> <!-- refine_figure-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-source-style">
+	<xsl:attribute-set name="figure-source-style">
 
 	</xsl:attribute-set>
 
 	<!-- Formula's styles -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="formula-style">
+	<xsl:attribute-set name="formula-style">
 		<xsl:attribute name="margin-top">6pt</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set> <!-- formula-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="formula-stem-block-style">
+	<xsl:attribute-set name="formula-stem-block-style">
 		<xsl:attribute name="text-align">center</xsl:attribute>
 
 			<xsl:attribute name="text-align">left</xsl:attribute>
@@ -1627,35 +1682,35 @@
 
 	</xsl:attribute-set> <!-- formula-stem-block-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_formula-stem-block-style">
+	<xsl:template name="refine_formula-stem-block-style">
 
 	</xsl:template> <!-- refine_formula-stem-block-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="formula-stem-number-style">
+	<xsl:attribute-set name="formula-stem-number-style">
 		<xsl:attribute name="text-align">right</xsl:attribute>
 
 	</xsl:attribute-set> <!-- formula-stem-number-style -->
 	<!-- End Formula's styles -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_formula-stem-number-style">
+	<xsl:template name="refine_formula-stem-number-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="image-style">
+	<xsl:attribute-set name="image-style">
 		<xsl:attribute name="role">SKIP</xsl:attribute>
 		<xsl:attribute name="text-align">center</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_image-style">
+	<xsl:template name="refine_image-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure-pseudocode-p-style">
+	<xsl:attribute-set name="figure-pseudocode-p-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="image-graphic-style">
+	<xsl:attribute-set name="image-graphic-style">
 		<xsl:attribute name="width">100%</xsl:attribute>
 		<xsl:attribute name="content-height">100%</xsl:attribute>
 		<xsl:attribute name="scaling">uniform</xsl:attribute>
@@ -1664,13 +1719,13 @@
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="tt-style">
+	<xsl:attribute-set name="tt-style">
 
 			<xsl:attribute name="font-family"><xsl:value-of select="$font_noto_sans_mono"/></xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="sourcecode-name-style">
+	<xsl:attribute-set name="sourcecode-name-style">
 		<xsl:attribute name="font-size">11pt</xsl:attribute>
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 		<xsl:attribute name="text-align">center</xsl:attribute>
@@ -1679,11 +1734,11 @@
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="preferred-block-style">
+	<xsl:attribute-set name="preferred-block-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="preferred-term-style">
+	<xsl:attribute-set name="preferred-term-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 
@@ -1691,28 +1746,28 @@
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="domain-style">
+	<xsl:attribute-set name="domain-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="admitted-style">
+	<xsl:attribute-set name="admitted-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="deprecates-style">
+	<xsl:attribute-set name="deprecates-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="definition-style">
+	<xsl:attribute-set name="definition-style">
 
 			<xsl:attribute name="space-after">6pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="color-added-text">
+	<xsl:variable name="color-added-text">
 		<xsl:text>rgb(0, 255, 0)</xsl:text>
 	</xsl:variable>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-style">
+	<xsl:attribute-set name="add-style">
 
 				<xsl:attribute name="color">red</xsl:attribute>
 				<xsl:attribute name="text-decoration">underline</xsl:attribute>
@@ -1723,91 +1778,91 @@
 
 	</xsl:attribute-set>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-style">
+	<xsl:variable name="add-style">
 			<add-style xsl:use-attribute-sets="add-style"/>
 		</xsl:variable>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="append_add-style">
+	<xsl:template name="append_add-style">
 		<xsl:copy-of select="xalan:nodeset($add-style)/add-style/@*"/>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="color-deleted-text">
+	<xsl:variable name="color-deleted-text">
 		<xsl:text>red</xsl:text>
 	</xsl:variable>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="del-style">
+	<xsl:attribute-set name="del-style">
 		<xsl:attribute name="color"><xsl:value-of select="$color-deleted-text"/></xsl:attribute>
 		<xsl:attribute name="text-decoration">line-through</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="mathml-style">
+	<xsl:attribute-set name="mathml-style">
 		<xsl:attribute name="font-family">STIX Two Math</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_mathml-style">
+	<xsl:template name="refine_mathml-style">
 
 	</xsl:template>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="list-style">
+	<xsl:attribute-set name="list-style">
 
 			<xsl:attribute name="provisional-distance-between-starts">6.5mm</xsl:attribute>
 			<xsl:attribute name="line-height">145%</xsl:attribute>
 
 	</xsl:attribute-set> <!-- list-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_list-style">
+	<xsl:template name="refine_list-style">
 
 	</xsl:template> <!-- refine_list-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="list-name-style">
+	<xsl:attribute-set name="list-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set> <!-- list-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="list-item-style">
+	<xsl:attribute-set name="list-item-style">
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_list-item-style">
+	<xsl:template name="refine_list-item-style">
 
 	</xsl:template> <!-- refine_list-item-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="list-item-label-style">
+	<xsl:attribute-set name="list-item-label-style">
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_list-item-label-style">
+	<xsl:template name="refine_list-item-label-style">
 
 	</xsl:template> <!-- refine_list-item-label-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="list-item-body-style">
+	<xsl:attribute-set name="list-item-body-style">
 
 			<xsl:attribute name="line-height-shift-adjustment">disregard-shifts</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_list-item-body-style">
+	<xsl:template name="refine_list-item-body-style">
 
 	</xsl:template> <!-- refine_list-item-body-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="toc-style">
+	<xsl:attribute-set name="toc-style">
 		<xsl:attribute name="line-height">135%</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn-reference-style">
+	<xsl:attribute-set name="fn-reference-style">
 		<xsl:attribute name="font-size">80%</xsl:attribute>
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_fn-reference-style">
+	<xsl:template name="refine_fn-reference-style">
 
 	</xsl:template> <!-- refine_fn-reference-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn-style">
+	<xsl:attribute-set name="fn-style">
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn-num-style">
+	<xsl:attribute-set name="fn-num-style">
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
 
 			<xsl:attribute name="font-size">65%</xsl:attribute>
@@ -1815,7 +1870,7 @@
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn-body-style">
+	<xsl:attribute-set name="fn-body-style">
 		<xsl:attribute name="font-weight">normal</xsl:attribute>
 		<xsl:attribute name="font-style">normal</xsl:attribute>
 		<xsl:attribute name="text-indent">0</xsl:attribute>
@@ -1829,11 +1884,11 @@
 
 	</xsl:attribute-set>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_fn-body-style">
+	<xsl:template name="refine_fn-body-style">
 
 	</xsl:template> <!-- refine_fn-body-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn-body-num-style">
+	<xsl:attribute-set name="fn-body-num-style">
 		<xsl:attribute name="keep-with-next.within-line">always</xsl:attribute>
 
 			<xsl:attribute name="font-size">60%</xsl:attribute>
@@ -1841,12 +1896,12 @@
 
 	</xsl:attribute-set> <!-- fn-body-num-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_fn-body-num-style">
+	<xsl:template name="refine_fn-body-num-style">
 
 	</xsl:template> <!-- refine_fn-body-num-style -->
 
 	<!-- admonition -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="admonition-style">
+	<xsl:attribute-set name="admonition-style">
 
 			<xsl:attribute name="border">0.5pt solid rgb(79, 129, 189)</xsl:attribute>
 			<xsl:attribute name="color">rgb(79, 129, 189)</xsl:attribute>
@@ -1856,7 +1911,7 @@
 
 	</xsl:attribute-set> <!-- admonition-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="admonition-container-style">
+	<xsl:attribute-set name="admonition-container-style">
 		<xsl:attribute name="margin-left">0mm</xsl:attribute>
 		<xsl:attribute name="margin-right">0mm</xsl:attribute>
 
@@ -1865,7 +1920,7 @@
 
 	</xsl:attribute-set> <!-- admonition-container-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="admonition-name-style">
+	<xsl:attribute-set name="admonition-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 			<xsl:attribute name="font-size">11pt</xsl:attribute>
@@ -1876,7 +1931,7 @@
 
 	</xsl:attribute-set> <!-- admonition-name-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="admonition-p-style">
+	<xsl:attribute-set name="admonition-p-style">
 
 			<xsl:attribute name="font-style">italic</xsl:attribute>
 
@@ -1884,7 +1939,7 @@
 	<!-- end admonition -->
 
 	<!-- bibitem in Normative References (references/@normative="true") -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-normative-style">
+	<xsl:attribute-set name="bibitem-normative-style">
 
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 			<xsl:attribute name="start-indent">12mm</xsl:attribute>
@@ -1894,7 +1949,7 @@
 	</xsl:attribute-set> <!-- bibitem-normative-style -->
 
 	<!-- bibitem in Normative References (references/@normative="true"), renders as list -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-normative-list-style">
+	<xsl:attribute-set name="bibitem-normative-list-style">
 		<xsl:attribute name="provisional-distance-between-starts">12mm</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
@@ -1905,7 +1960,7 @@
 
 	</xsl:attribute-set> <!-- bibitem-normative-list-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-non-normative-style">
+	<xsl:attribute-set name="bibitem-non-normative-style">
 
 			<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 			<xsl:attribute name="line-height">145%</xsl:attribute>
@@ -1913,28 +1968,28 @@
 	</xsl:attribute-set> <!-- bibitem-non-normative-style -->
 
 	<!-- bibitem in bibliography section (references/@normative="false"), renders as list -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-non-normative-list-style">
+	<xsl:attribute-set name="bibitem-non-normative-list-style">
 		<xsl:attribute name="provisional-distance-between-starts">12mm</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set> <!-- bibitem-non-normative-list-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-non-normative-list-item-style">
+	<xsl:attribute-set name="bibitem-non-normative-list-item-style">
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 
 	</xsl:attribute-set>
 
 	<!-- bibitem in bibliography section (references/@normative="false"), list body -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-normative-list-body-style">
+	<xsl:attribute-set name="bibitem-normative-list-body-style">
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-non-normative-list-body-style">
+	<xsl:attribute-set name="bibitem-non-normative-list-body-style">
 
 	</xsl:attribute-set> <!-- bibitem-non-normative-list-body-style -->
 
 	<!-- footnote reference number for bibitem, in the text  -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-note-fn-style">
+	<xsl:attribute-set name="bibitem-note-fn-style">
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
 		<xsl:attribute name="font-size">65%</xsl:attribute>
 
@@ -1943,7 +1998,7 @@
 	</xsl:attribute-set> <!-- bibitem-note-fn-style -->
 
 	<!-- footnote number on the page bottom -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-note-fn-number-style">
+	<xsl:attribute-set name="bibitem-note-fn-number-style">
 		<xsl:attribute name="keep-with-next.within-line">always</xsl:attribute>
 
 			<xsl:attribute name="font-size">60%</xsl:attribute>
@@ -1952,7 +2007,7 @@
 	</xsl:attribute-set> <!-- bibitem-note-fn-number-style -->
 
 	<!-- footnote body (text) on the page bottom -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitem-note-fn-body-style">
+	<xsl:attribute-set name="bibitem-note-fn-body-style">
 		<xsl:attribute name="font-size">10pt</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 		<xsl:attribute name="start-indent">0pt</xsl:attribute>
@@ -1962,173 +2017,173 @@
 
 	</xsl:attribute-set> <!-- bibitem-note-fn-body-style -->
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="references-non-normative-style">
+	<xsl:attribute-set name="references-non-normative-style">
 
 			<xsl:attribute name="line-height">145%</xsl:attribute>
 
 	</xsl:attribute-set> <!-- references-non-normative-style -->
 
 	<!-- Highlight.js syntax GitHub styles -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-doctag">
+	<xsl:attribute-set name="hljs-doctag">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-keyword">
+	<xsl:attribute-set name="hljs-keyword">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-meta_hljs-keyword">
+	<xsl:attribute-set name="hljs-meta_hljs-keyword">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-template-tag">
+	<xsl:attribute-set name="hljs-template-tag">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-template-variable">
+	<xsl:attribute-set name="hljs-template-variable">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-type">
+	<xsl:attribute-set name="hljs-type">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-variable_and_language_">
+	<xsl:attribute-set name="hljs-variable_and_language_">
 		<xsl:attribute name="color">#d73a49</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-title">
+	<xsl:attribute-set name="hljs-title">
 		<xsl:attribute name="color">#6f42c1</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-title_and_class_">
+	<xsl:attribute-set name="hljs-title_and_class_">
 		<xsl:attribute name="color">#6f42c1</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-title_and_class__and_inherited__">
+	<xsl:attribute-set name="hljs-title_and_class__and_inherited__">
 		<xsl:attribute name="color">#6f42c1</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-title_and_function_">
+	<xsl:attribute-set name="hljs-title_and_function_">
 		<xsl:attribute name="color">#6f42c1</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-attr">
+	<xsl:attribute-set name="hljs-attr">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-attribute">
+	<xsl:attribute-set name="hljs-attribute">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-literal">
+	<xsl:attribute-set name="hljs-literal">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-meta">
+	<xsl:attribute-set name="hljs-meta">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-number">
+	<xsl:attribute-set name="hljs-number">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-operator">
+	<xsl:attribute-set name="hljs-operator">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-variable">
+	<xsl:attribute-set name="hljs-variable">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-selector-attr">
+	<xsl:attribute-set name="hljs-selector-attr">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-selector-class">
+	<xsl:attribute-set name="hljs-selector-class">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-selector-id">
+	<xsl:attribute-set name="hljs-selector-id">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-regexp">
+	<xsl:attribute-set name="hljs-regexp">
 		<xsl:attribute name="color">#032f62</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-string">
+	<xsl:attribute-set name="hljs-string">
 		<xsl:attribute name="color">#032f62</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-meta_hljs-string">
+	<xsl:attribute-set name="hljs-meta_hljs-string">
 		<xsl:attribute name="color">#032f62</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-built_in">
+	<xsl:attribute-set name="hljs-built_in">
 		<xsl:attribute name="color">#e36209</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-symbol">
+	<xsl:attribute-set name="hljs-symbol">
 		<xsl:attribute name="color">#e36209</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-comment">
+	<xsl:attribute-set name="hljs-comment">
 		<xsl:attribute name="color">#6a737d</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-code">
+	<xsl:attribute-set name="hljs-code">
 		<xsl:attribute name="color">#6a737d</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-formula">
+	<xsl:attribute-set name="hljs-formula">
 		<xsl:attribute name="color">#6a737d</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-name">
+	<xsl:attribute-set name="hljs-name">
 		<xsl:attribute name="color">#22863a</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-quote">
+	<xsl:attribute-set name="hljs-quote">
 		<xsl:attribute name="color">#22863a</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-selector-tag">
+	<xsl:attribute-set name="hljs-selector-tag">
 		<xsl:attribute name="color">#22863a</xsl:attribute>
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-selector-pseudo">
+	<xsl:attribute-set name="hljs-selector-pseudo">
 		<xsl:attribute name="color">#22863a</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-subst">
+	<xsl:attribute-set name="hljs-subst">
 		<xsl:attribute name="color">#24292e</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-section">
+	<xsl:attribute-set name="hljs-section">
 		<xsl:attribute name="color">#005cc5</xsl:attribute>
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-bullet">
+	<xsl:attribute-set name="hljs-bullet">
 		<xsl:attribute name="color">#735c0f</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-emphasis">
+	<xsl:attribute-set name="hljs-emphasis">
 		<xsl:attribute name="color">#24292e</xsl:attribute>
 		<xsl:attribute name="font-style">italic</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-strong">
+	<xsl:attribute-set name="hljs-strong">
 		<xsl:attribute name="color">#24292e</xsl:attribute>
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-addition">
+	<xsl:attribute-set name="hljs-addition">
 		<xsl:attribute name="color">#22863a</xsl:attribute>
 		<xsl:attribute name="background-color">#f0fff4</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-deletion">
+	<xsl:attribute-set name="hljs-deletion">
 		<xsl:attribute name="color">#b31d28</xsl:attribute>
 		<xsl:attribute name="background-color">#ffeef0</xsl:attribute>
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-char_and_escape_">
+	<xsl:attribute-set name="hljs-char_and_escape_">
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-link">
+	<xsl:attribute-set name="hljs-link">
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-params">
+	<xsl:attribute-set name="hljs-params">
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-property">
+	<xsl:attribute-set name="hljs-property">
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-punctuation">
+	<xsl:attribute-set name="hljs-punctuation">
 	</xsl:attribute-set>
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="hljs-tag">
+	<xsl:attribute-set name="hljs-tag">
 	</xsl:attribute-set>
 	<!-- End Highlight syntax styles -->
 
 	<!-- Index section styles -->
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="indexsect-title-style">
+	<xsl:attribute-set name="indexsect-title-style">
 		<xsl:attribute name="role">H1</xsl:attribute>
 
 	</xsl:attribute-set>
 
-	<xsl:attribute-set xmlns:redirect="http://xml.apache.org/xalan/redirect" name="indexsect-clause-title-style">
+	<xsl:attribute-set name="indexsect-clause-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 
 	</xsl:attribute-set>
@@ -2138,12 +2193,12 @@
 	<!-- END STYLES -->
 	<!-- ====================================== -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="border-block-added">2.5pt solid rgb(0, 176, 80)</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="border-block-deleted">2.5pt solid rgb(255, 0, 0)</xsl:variable>
+	<xsl:variable name="border-block-added">2.5pt solid rgb(0, 176, 80)</xsl:variable>
+	<xsl:variable name="border-block-deleted">2.5pt solid rgb(255, 0, 0)</xsl:variable>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="ace_tag">ace-tag_</xsl:variable>
+	<xsl:variable name="ace_tag">ace-tag_</xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processPrefaceSectionsDefault_Contents">
+	<xsl:template name="processPrefaceSectionsDefault_Contents">
 		<xsl:variable name="nodes_preface_">
 			<xsl:for-each select="/*/*[local-name()='preface']/*[not(local-name() = 'note' or local-name() = 'admonition' or @type = 'toc')]">
 				<node id="{@id}"/>
@@ -2164,7 +2219,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processMainSectionsDefault_Contents">
+	<xsl:template name="processMainSectionsDefault_Contents">
 
 		<xsl:variable name="nodes_sections_">
 			<xsl:for-each select="/*/*[local-name()='sections']/*">
@@ -2196,7 +2251,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processTablesFigures_Contents">
+	<xsl:template name="processTablesFigures_Contents">
 		<xsl:param name="always"/>
 		<xsl:if test="(//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'toc'][@type='table']/*[local-name() = 'title']) or normalize-space($always) = 'true'">
 			<xsl:call-template name="processTables_Contents"/>
@@ -2206,7 +2261,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processTables_Contents">
+	<xsl:template name="processTables_Contents">
 		<tables>
 			<xsl:for-each select="//*[local-name() = 'table'][not(ancestor::*[local-name() = 'metanorma-extension'])][@id and *[local-name() = 'name'] and normalize-space(@id) != '']">
 				<table id="{@id}" alt-text="{*[local-name() = 'name']}">
@@ -2216,7 +2271,7 @@
 		</tables>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processFigures_Contents">
+	<xsl:template name="processFigures_Contents">
 		<figures>
 			<xsl:for-each select="//*[local-name() = 'figure'][@id and *[local-name() = 'name'] and not(@unnumbered = 'true') and normalize-space(@id) != ''] | //*[@id and starts-with(*[local-name() = 'name'], 'Figure ') and normalize-space(@id) != '']">
 				<figure id="{@id}" alt-text="{*[local-name() = 'name']}">
@@ -2226,14 +2281,14 @@
 		</figures>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processPrefaceSectionsDefault">
+	<xsl:template name="processPrefaceSectionsDefault">
 		<xsl:for-each select="/*/*[local-name()='preface']/*[not(local-name() = 'note' or local-name() = 'admonition')]">
 			<xsl:sort select="@displayorder" data-type="number"/>
 			<xsl:apply-templates select="."/>
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processPrefaceSectionsDefault_items">
+	<xsl:template name="processPrefaceSectionsDefault_items">
 
 		<xsl:variable name="updated_xml_step_move_pagebreak">
 
@@ -2269,7 +2324,7 @@
 
 		<xsl:if test="$debug = 'true'">
 			<redirect:write file="page_sequence_preface.xml">
-				<xsl:copy-of select="document($updated_xml_step_move_pagebreak_filename)"/>
+				<xsl:copy-of select="$updated_xml_step_move_pagebreak"/>
 			</redirect:write>
 		</xsl:if>
 
@@ -2280,12 +2335,12 @@
 		<!-- <xsl:message>end delete updated_xml_step_move_pagebreak_filename</xsl:message> -->
 	</xsl:template> <!-- END: processPrefaceSectionsDefault_items -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="copyCommonElements">
+	<xsl:template name="copyCommonElements">
 		<!-- copy bibdata, localized-strings, metanorma-extension and boilerplate -->
 		<xsl:copy-of select="/*/*[local-name() != 'preface' and local-name() != 'sections' and local-name() != 'annex' and local-name() != 'bibliography']"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processMainSectionsDefault">
+	<xsl:template name="processMainSectionsDefault">
 		<xsl:for-each select="/*/*[local-name()='sections']/* | /*/*[local-name()='bibliography']/*[local-name()='references'][@normative='true']">
 			<xsl:sort select="@displayorder" data-type="number"/>
 			<xsl:apply-templates select="."/>
@@ -2321,7 +2376,7 @@
 		</page_sequence>
 	</iso-standard>
 	-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processMainSectionsDefault_items">
+	<xsl:template name="processMainSectionsDefault_items">
 
 		<xsl:variable name="updated_xml_step_move_pagebreak">
 
@@ -2367,7 +2422,7 @@
 
 		<xsl:if test="$debug = 'true'">
 			<redirect:write file="page_sequence_main.xml">
-				<xsl:copy-of select="document($updated_xml_step_move_pagebreak_filename)"/>
+				<xsl:copy-of select="$updated_xml_step_move_pagebreak"/>
 			</redirect:write>
 		</xsl:if>
 
@@ -2376,14 +2431,92 @@
 		</xsl:call-template>
 	</xsl:template> <!-- END: processMainSectionsDefault_items -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="deleteFile">
+	<xsl:template name="processAllSectionsDefault_items">
+
+		<xsl:variable name="updated_xml_step_move_pagebreak">
+
+			<xsl:element name="{$root_element}" namespace="{$namespace_full}">
+
+				<xsl:call-template name="copyCommonElements"/>
+
+				<xsl:element name="page_sequence" namespace="{$namespace_full}">
+
+					<xsl:element name="preface" namespace="{$namespace_full}"> <!-- save context element -->
+						<xsl:for-each select="/*/*[local-name()='preface']/*[not(local-name() = 'note' or local-name() = 'admonition')]">
+							<xsl:sort select="@displayorder" data-type="number"/>
+							<xsl:apply-templates select="." mode="update_xml_step_move_pagebreak">
+								<xsl:with-param name="page_sequence_at_top">true</xsl:with-param>
+							</xsl:apply-templates>
+						</xsl:for-each>
+					</xsl:element>
+
+					<xsl:element name="sections" namespace="{$namespace_full}"> <!-- save context element -->
+
+						<xsl:for-each select="/*/*[local-name()='sections']/* | /*/*[local-name()='bibliography']/*[local-name()='references'][@normative='true']">
+							<xsl:sort select="@displayorder" data-type="number"/>
+							<xsl:apply-templates select="." mode="update_xml_step_move_pagebreak">
+								<xsl:with-param name="page_sequence_at_top">true</xsl:with-param>
+							</xsl:apply-templates>
+
+						</xsl:for-each>
+					</xsl:element>
+
+					<xsl:for-each select="/*/*[local-name()='annex']">
+						<xsl:sort select="@displayorder" data-type="number"/>
+						<xsl:apply-templates select="." mode="update_xml_step_move_pagebreak">
+								<xsl:with-param name="page_sequence_at_top">true</xsl:with-param>
+							</xsl:apply-templates>
+					</xsl:for-each>
+
+					<xsl:element name="bibliography" namespace="{$namespace_full}"> <!-- save context element -->
+						<xsl:for-each select="/*/*[local-name()='bibliography']/*[not(@normative='true')] |              /*/*[local-name()='bibliography']/*[local-name()='clause'][*[local-name()='references'][not(@normative='true')]]">
+							<xsl:sort select="@displayorder" data-type="number"/>
+							<xsl:apply-templates select="." mode="update_xml_step_move_pagebreak">
+								<xsl:with-param name="page_sequence_at_top">true</xsl:with-param>
+							</xsl:apply-templates>
+						</xsl:for-each>
+					</xsl:element>
+
+				</xsl:element>
+			</xsl:element>
+		</xsl:variable>
+
+		<xsl:variable name="updated_xml_step_move_pagebreak_filename" select="concat($output_path,'_preface_and_main_', java:getTime(java:java.util.Date.new()), '.xml')"/>
+		<!-- <xsl:message>updated_xml_step_move_pagebreak_filename=<xsl:value-of select="$updated_xml_step_move_pagebreak_filename"/></xsl:message>
+		<xsl:message>start write updated_xml_step_move_pagebreak_filename</xsl:message> -->
+		<redirect:write file="{$updated_xml_step_move_pagebreak_filename}">
+			<xsl:copy-of select="$updated_xml_step_move_pagebreak"/>
+		</redirect:write>
+		<!-- <xsl:message>end write updated_xml_step_move_pagebreak_filename</xsl:message> -->
+
+		<xsl:copy-of select="document($updated_xml_step_move_pagebreak_filename)"/>
+
+		<!-- TODO: instead of 
+		<xsl:for-each select=".//*[local-name() = 'page_sequence'][normalize-space() != '' or .//image or .//svg]">
+		in each template, add removing empty page_sequence here
+		-->
+
+		<xsl:if test="$debug = 'true'">
+			<redirect:write file="page_sequence_preface_and_main.xml">
+				<xsl:copy-of select="$updated_xml_step_move_pagebreak"/>
+			</redirect:write>
+		</xsl:if>
+
+		<!-- <xsl:message>start delete updated_xml_step_move_pagebreak_filename</xsl:message> -->
+		<xsl:call-template name="deleteFile">
+			<xsl:with-param name="filepath" select="$updated_xml_step_move_pagebreak_filename"/>
+		</xsl:call-template>
+		<!-- <xsl:message>end delete updated_xml_step_move_pagebreak_filename</xsl:message> -->
+	</xsl:template> <!-- END: processAllSectionsDefault_items -->
+
+	<xsl:template name="deleteFile">
 		<xsl:param name="filepath"/>
 		<xsl:variable name="xml_file" select="java:java.io.File.new($filepath)"/>
 		<xsl:variable name="xml_file_path" select="java:toPath($xml_file)"/>
 		<xsl:variable name="deletefile" select="java:java.nio.file.Files.deleteIfExists($xml_file_path)"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getPageSequenceOrientation">
+	<xsl:template name="getPageSequenceOrientation">
 		<xsl:variable name="previous_orientation" select="preceding-sibling::*[local-name() = 'page_sequence'][@orientation][1]/@orientation"/>
 		<xsl:choose>
 			<xsl:when test="@orientation = 'landscape'">-<xsl:value-of select="@orientation"/></xsl:when>
@@ -2391,10 +2524,10 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="regex_standard_reference">([A-Z]{2,}(/[A-Z]{2,})* \d+(-\d+)*(:\d{4})?)</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="tag_fo_inline_keep-together_within-line_open">###fo:inline keep-together_within-line###</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="tag_fo_inline_keep-together_within-line_close">###/fo:inline keep-together_within-line###</xsl:variable>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()" name="text">
+	<xsl:variable name="regex_standard_reference">([A-Z]{2,}(/[A-Z]{2,})* \d+(-\d+)*(:\d{4})?)</xsl:variable>
+	<xsl:variable name="tag_fo_inline_keep-together_within-line_open">###fo:inline keep-together_within-line###</xsl:variable>
+	<xsl:variable name="tag_fo_inline_keep-together_within-line_close">###/fo:inline keep-together_within-line###</xsl:variable>
+	<xsl:template match="text()" name="text">
 
 				<xsl:choose>
 					<xsl:when test="ancestor::*[local-name() = 'table']"><xsl:value-of select="."/></xsl:when>
@@ -2410,7 +2543,7 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="replace_fo_inline_tags">
+	<xsl:template name="replace_fo_inline_tags">
 		<xsl:param name="tag_open"/>
 		<xsl:param name="tag_close"/>
 		<xsl:param name="text"/>
@@ -2419,9 +2552,16 @@
 				<xsl:value-of select="substring-before($text, $tag_open)"/>
 				<!-- <xsl:text disable-output-escaping="yes">&lt;fo:inline keep-together.within-line="always"&gt;</xsl:text> -->
 				<xsl:variable name="text_after" select="substring-after($text, $tag_open)"/>
-				<fo:inline keep-together.within-line="always">
-					<xsl:value-of select="substring-before($text_after, $tag_close)"/>
-				</fo:inline>
+				<xsl:choose>
+					<xsl:when test="local-name(..) = 'keep-together_within-line'"> <!-- prevent two nested <fo:inline keep-together.within-line="always"><fo:inline keep-together.within-line="always" -->
+						<xsl:value-of select="substring-before($text_after, $tag_close)"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<fo:inline keep-together.within-line="always" role="SKIP">
+							<xsl:value-of select="substring-before($text_after, $tag_close)"/>
+						</fo:inline>
+					</xsl:otherwise>
+				</xsl:choose>
 				<!-- <xsl:text disable-output-escaping="yes">&lt;/fo:inline&gt;</xsl:text> -->
 				<xsl:call-template name="replace_fo_inline_tags">
 					<xsl:with-param name="tag_open" select="$tag_open"/>
@@ -2433,12 +2573,12 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='br']">
+	<xsl:template match="*[local-name()='br']">
 		<xsl:value-of select="$linebreak"/>
 	</xsl:template>
 
 	<!-- keep-together for standard's name (ISO 12345:2020) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'keep-together_within-line']">
+	<xsl:template match="*[local-name() = 'keep-together_within-line']">
 		<xsl:param name="split_keep-within-line"/>
 
 		<!-- <fo:inline>split_keep-within-line='<xsl:value-of select="$split_keep-within-line"/>'</fo:inline> -->
@@ -2476,47 +2616,47 @@
 	<!-- ================================= -->
 	<!-- Preface boilerplate sections processing -->
 	<!-- ================================= -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='copyright-statement']">
+	<xsl:template match="*[local-name()='copyright-statement']">
 		<fo:block xsl:use-attribute-sets="copyright-statement-style" role="SKIP">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template> <!-- copyright-statement -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='copyright-statement']//*[local-name()='title']">
+	<xsl:template match="*[local-name()='copyright-statement']//*[local-name()='title']">
 
 				<!-- process in the template 'title' -->
 				<xsl:call-template name="title"/>
 
 	</xsl:template> <!-- copyright-statement//title -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='copyright-statement']//*[local-name()='p']">
+	<xsl:template match="*[local-name()='copyright-statement']//*[local-name()='p']">
 
 				<!-- process in the template 'paragraph' -->
 				<xsl:call-template name="paragraph"/>
 
 	</xsl:template> <!-- copyright-statement//p -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='license-statement']">
+	<xsl:template match="*[local-name()='license-statement']">
 		<fo:block xsl:use-attribute-sets="license-statement-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template> <!-- license-statement -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='license-statement']//*[local-name()='title']">
+	<xsl:template match="*[local-name()='license-statement']//*[local-name()='title']">
 
 				<!-- process in the template 'title' -->
 				<xsl:call-template name="title"/>
 
 	</xsl:template> <!-- license-statement/title -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='license-statement']//*[local-name()='p']">
+	<xsl:template match="*[local-name()='license-statement']//*[local-name()='p']">
 
 				<!-- process in the template 'paragraph' -->
 				<xsl:call-template name="paragraph"/>
 
 	</xsl:template> <!-- license-statement/p -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='legal-statement']">
+	<xsl:template match="*[local-name()='legal-statement']">
 		<xsl:param name="isLegacy">false</xsl:param>
 		<fo:block xsl:use-attribute-sets="legal-statement-style">
 
@@ -2524,14 +2664,14 @@
 		</fo:block>
 	</xsl:template> <!-- legal-statement -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='legal-statement']//*[local-name()='title']">
+	<xsl:template match="*[local-name()='legal-statement']//*[local-name()='title']">
 
 				<!-- process in the template 'title' -->
 				<xsl:call-template name="title"/>
 
 	</xsl:template> <!-- legal-statement/title -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='legal-statement']//*[local-name()='p']">
+	<xsl:template match="*[local-name()='legal-statement']//*[local-name()='p']">
 		<xsl:param name="margin"/>
 
 				<!-- process in the template 'paragraph' -->
@@ -2541,20 +2681,20 @@
 
 	</xsl:template> <!-- legal-statement/p -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='feedback-statement']">
+	<xsl:template match="*[local-name()='feedback-statement']">
 		<fo:block xsl:use-attribute-sets="feedback-statement-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template> <!-- feedback-statement -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='feedback-statement']//*[local-name()='title']">
+	<xsl:template match="*[local-name()='feedback-statement']//*[local-name()='title']">
 
 				<!-- process in the template 'title' -->
 				<xsl:call-template name="title"/>
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='feedback-statement']//*[local-name()='p']">
+	<xsl:template match="*[local-name()='feedback-statement']//*[local-name()='p']">
 		<xsl:param name="margin"/>
 
 				<!-- process in the template 'paragraph' -->
@@ -2569,7 +2709,7 @@
 	<!-- ================================= -->
 
 	<!-- add zero spaces into table cells text -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='td']//text() | *[local-name()='th']//text() | *[local-name()='dt']//text() | *[local-name()='dd']//text()" priority="1">
+	<xsl:template match="*[local-name()='td']//text() | *[local-name()='th']//text() | *[local-name()='dt']//text() | *[local-name()='dd']//text()" priority="1">
 		<xsl:choose>
 			<xsl:when test="parent::*[local-name() = 'keep-together_within-line']">
 				<xsl:value-of select="."/>
@@ -2580,7 +2720,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="addZeroWidthSpacesToTextNodes">
+	<xsl:template name="addZeroWidthSpacesToTextNodes">
 		<xsl:variable name="text"><text><xsl:call-template name="text"/></text></xsl:variable>
 		<!-- <xsl:copy-of select="$text"/> -->
 		<xsl:for-each select="xalan:nodeset($text)/text/node()">
@@ -2592,10 +2732,10 @@
 	</xsl:template>
 
 	<!-- for table auto-layout algorithm -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_only_with_id"/> <!-- Example: 'table1' -->
-	<xsl:param xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_only_with_ids"/> <!-- Example: 'table1 table2 table3 ' -->
+	<xsl:param name="table_only_with_id"/> <!-- Example: 'table1' -->
+	<xsl:param name="table_only_with_ids"/> <!-- Example: 'table1 table2 table3 ' -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']" priority="2">
+	<xsl:template match="*[local-name()='table']" priority="2">
 		<xsl:choose>
 			<xsl:when test="$table_only_with_id != '' and @id = $table_only_with_id">
 				<xsl:call-template name="table"/>
@@ -2611,7 +2751,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']" name="table">
+	<xsl:template match="*[local-name()='table']" name="table">
 
 		<xsl:variable name="table-preamble">
 
@@ -2852,11 +2992,11 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setBordersTableArray">
+	<xsl:template name="setBordersTableArray">
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name()='table']/*[local-name() = 'name']">
 		<xsl:param name="continued"/>
 		<xsl:if test="normalize-space() != ''">
 
@@ -2889,7 +3029,7 @@
 	</xsl:template> <!-- table/name -->
 
 	<!-- workaround solution for https://github.com/metanorma/metanorma-iso/issues/1151#issuecomment-2033087938 -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']/*[local-name() = 'note'][@type = 'units']/*[local-name() = 'p']/text()" priority="4">
+	<xsl:template match="*[local-name()='table']/*[local-name() = 'note'][@type = 'units']/*[local-name() = 'p']/text()" priority="4">
 		<xsl:choose>
 			<xsl:when test="preceding-sibling::*[local-name() = 'br']">
 				<!-- remove CR or LF at start -->
@@ -2900,11 +3040,11 @@
 	</xsl:template>
 
 	<!-- SOURCE: ... -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']/*[local-name() = 'source']" priority="2">
+	<xsl:template match="*[local-name()='table']/*[local-name() = 'source']" priority="2">
 		<xsl:call-template name="termsource"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="calculate-columns-numbers">
+	<xsl:template name="calculate-columns-numbers">
 		<xsl:param name="table-row"/>
 		<xsl:variable name="columns-count" select="count($table-row/*)"/>
 		<xsl:variable name="sum-colspans" select="sum($table-row/*/@colspan)"/>
@@ -2912,7 +3052,7 @@
 		<xsl:value-of select="$columns-count + $sum-colspans - $columns-with-colspan"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="calculate-column-widths">
+	<xsl:template name="calculate-column-widths">
 		<xsl:param name="table"/>
 		<xsl:param name="cols-count"/>
 		<xsl:choose>
@@ -2932,7 +3072,7 @@
 	<!-- ================================================== -->
 	<!-- Calculate column's width based on text string max widths -->
 	<!-- ================================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="calculate-column-widths-proportional">
+	<xsl:template name="calculate-column-widths-proportional">
 		<xsl:param name="table"/>
 		<xsl:param name="cols-count"/>
 		<xsl:param name="curr-col" select="1"/>
@@ -3047,7 +3187,7 @@
 	<!-- mode="td_text" -->
 	<!-- ================================= -->
 	<!-- replace each each char to 'X', just to process the tag 'keep-together_within-line' as whole word in longest word calculation -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[@keep-together.within-line or local-name() = 'keep-together_within-line']/text()" priority="2" mode="td_text">
+	<xsl:template match="*[@keep-together.within-line or local-name() = 'keep-together_within-line']/text()" priority="2" mode="td_text">
 		<!-- <xsl:message>DEBUG t1=<xsl:value-of select="."/></xsl:message>
 		<xsl:message>DEBUG t2=<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),'.','X')"/></xsl:message> -->
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),'.','X')"/>
@@ -3061,19 +3201,19 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()" mode="td_text">
+	<xsl:template match="text()" mode="td_text">
 		<xsl:value-of select="translate(., $zero_width_space, ' ')"/><xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='termsource']" mode="td_text">
+	<xsl:template match="*[local-name()='termsource']" mode="td_text">
 		<xsl:value-of select="*[local-name()='origin']/@citeas"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='link']" mode="td_text">
+	<xsl:template match="*[local-name()='link']" mode="td_text">
 		<xsl:value-of select="@target"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='math']" mode="td_text" name="math_length">
+	<xsl:template match="*[local-name()='math']" mode="td_text" name="math_length">
 		<xsl:if test="$isGenerateTableIF = 'false'">
 			<xsl:variable name="mathml_">
 				<xsl:for-each select="*">
@@ -3105,7 +3245,7 @@
 	<!-- ================================================== -->
 
 	<!-- INPUT: table with columns widths, generated by table_if.xsl  -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="calculate-column-widths-autolayout-algorithm">
+	<xsl:template name="calculate-column-widths-autolayout-algorithm">
 		<xsl:param name="parent_table_page-width"/> <!-- for nested tables, in re-calculate step -->
 
 		<!-- via intermediate format -->
@@ -3190,7 +3330,7 @@
 
 	</xsl:template> <!-- calculate-column-widths-autolayout-algorithm -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="get-calculated-column-widths-autolayout-algorithm">
+	<xsl:template name="get-calculated-column-widths-autolayout-algorithm">
 
 		<!-- if nested 'dl' or 'table' -->
 		<xsl:variable name="parent_table_id" select="normalize-space(ancestor::*[local-name() = 'table' or local-name() = 'dl'][1]/@id)"/>
@@ -3255,7 +3395,7 @@
 	<!-- Calculate column's width based on HTML4 algorithm -->
 	<!-- ================================================== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='thead']">
+	<xsl:template match="*[local-name()='thead']">
 		<xsl:param name="cols-count"/>
 		<fo:table-header>
 
@@ -3264,7 +3404,7 @@
 	</xsl:template> <!-- thead -->
 
 	<!-- template is using for iec, iso, jcgm, bsi only -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table-header-title">
+	<xsl:template name="table-header-title">
 		<xsl:param name="cols-count"/>
 		<!-- row for title -->
 		<fo:table-row role="SKIP">
@@ -3284,21 +3424,21 @@
 		</fo:table-row>
 	</xsl:template> <!-- table-header-title -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_table-header-title-style">
+	<xsl:template name="refine_table-header-title-style">
 
 	</xsl:template> <!-- refine_table-header-title-style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='thead']" mode="process_tbody">
+	<xsl:template match="*[local-name()='thead']" mode="process_tbody">
 		<fo:table-body>
 			<xsl:apply-templates/>
 		</fo:table-body>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tfoot']">
+	<xsl:template match="*[local-name()='tfoot']">
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertTableFooter">
+	<xsl:template name="insertTableFooter">
 		<xsl:param name="cols-count"/>
 		<xsl:if test="../*[local-name()='tfoot']">
 			<fo:table-footer>
@@ -3307,7 +3447,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertTableFooterInSeparateTable">
+	<xsl:template name="insertTableFooterInSeparateTable">
 		<xsl:param name="table_attributes"/>
 		<xsl:param name="colwidths"/>
 		<xsl:param name="colgroup"/>
@@ -3424,7 +3564,7 @@
 		</xsl:if>
 	</xsl:template> <!-- insertTableFooterInSeparateTable -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tbody']">
+	<xsl:template match="*[local-name()='tbody']">
 
 		<xsl:variable name="cols-count">
 			<xsl:choose>
@@ -3457,14 +3597,14 @@
 
 	</xsl:template> <!-- tbody -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="/" mode="process_table-if">
+	<xsl:template match="/" mode="process_table-if">
 		<xsl:param name="table_or_dl">table</xsl:param>
 		<xsl:apply-templates mode="process_table-if">
 			<xsl:with-param name="table_or_dl" select="$table_or_dl"/>
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tbody']" mode="process_table-if">
+	<xsl:template match="*[local-name()='tbody']" mode="process_table-if">
 		<xsl:param name="table_or_dl">table</xsl:param>
 
 		<fo:table-body>
@@ -3512,7 +3652,7 @@
 	<!-- Table's row processing -->
 	<!-- ===================== -->
 	<!-- row in table header (thead) thead/tr -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='thead']/*[local-name()='tr']" priority="2">
+	<xsl:template match="*[local-name()='thead']/*[local-name()='tr']" priority="2">
 		<fo:table-row xsl:use-attribute-sets="table-header-row-style">
 
 			<xsl:call-template name="refine_table-header-row-style"/>
@@ -3523,7 +3663,7 @@
 		</fo:table-row>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setBorderUnderRow">
+	<xsl:template name="setBorderUnderRow">
 		<xsl:variable name="border_under_row_" select="normalize-space(ancestor::*[local-name() = 'table'][1]/@border-under-row)"/>
 		<xsl:choose>
 			<xsl:when test="$border_under_row_ != ''">
@@ -3546,7 +3686,7 @@
 	</xsl:template>
 
 	<!-- row in table footer (tfoot), tfoot/tr -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tfoot']/*[local-name()='tr']" priority="2">
+	<xsl:template match="*[local-name()='tfoot']/*[local-name()='tr']" priority="2">
 		<fo:table-row xsl:use-attribute-sets="table-footer-row-style">
 
 			<xsl:call-template name="refine_table-footer-row-style"/>
@@ -3557,7 +3697,7 @@
 	</xsl:template>
 
 	<!-- row in table's body (tbody) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tr']">
+	<xsl:template match="*[local-name()='tr']">
 		<fo:table-row xsl:use-attribute-sets="table-body-row-style">
 
 			<xsl:if test="count(*) = count(*[local-name() = 'th'])"> <!-- row contains 'th' only -->
@@ -3572,7 +3712,7 @@
 		</fo:table-row>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setTableRowAttributes">
+	<xsl:template name="setTableRowAttributes">
 
 	</xsl:template> <!-- setTableRowAttributes -->
 	<!-- ===================== -->
@@ -3580,7 +3720,7 @@
 	<!-- ===================== -->
 
 	<!-- cell in table header row -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th']">
+	<xsl:template match="*[local-name()='th']">
 		<fo:table-cell xsl:use-attribute-sets="table-header-cell-style"> <!-- text-align="{@align}" -->
 			<xsl:call-template name="setTextAlignment">
 				<xsl:with-param name="default">center</xsl:with-param>
@@ -3610,7 +3750,7 @@
 		</fo:table-cell>
 	</xsl:template> <!-- cell in table header row - 'th' -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setTableCellAttributes">
+	<xsl:template name="setTableCellAttributes">
 		<xsl:if test="@colspan">
 			<xsl:attribute name="number-columns-spanned">
 				<xsl:value-of select="@colspan"/>
@@ -3624,7 +3764,7 @@
 		<xsl:call-template name="display-align"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="display-align">
+	<xsl:template name="display-align">
 		<xsl:if test="@valign">
 			<xsl:attribute name="display-align">
 				<xsl:choose>
@@ -3638,7 +3778,7 @@
 	</xsl:template>
 
 	<!-- cell in table body, footer -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='td']" name="td">
+	<xsl:template match="*[local-name()='td']" name="td">
 		<fo:table-cell xsl:use-attribute-sets="table-cell-style"> <!-- text-align="{@align}" -->
 			<xsl:call-template name="setTextAlignment">
 				<xsl:with-param name="default">left</xsl:with-param>
@@ -3671,7 +3811,7 @@
 		</fo:table-cell>
 	</xsl:template> <!-- td -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']/*[local-name()='note' or local-name() = 'example']" priority="2">
+	<xsl:template match="*[local-name()='table']/*[local-name()='note' or local-name() = 'example']" priority="2">
 
 				<fo:block xsl:use-attribute-sets="table-note-style">
 
@@ -3691,7 +3831,7 @@
 
 	</xsl:template> <!-- table/note -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='table']/*[local-name()='note' or local-name()='example']/*[local-name()='p']" priority="2">
+	<xsl:template match="*[local-name()='table']/*[local-name()='note' or local-name()='example']/*[local-name()='p']" priority="2">
 		<xsl:apply-templates/>
 	</xsl:template>
 
@@ -3704,7 +3844,7 @@
 		</fn>
 	-->
 	<!-- footnotes in text (title, bibliography, main body, table's, figure's names), not for tables, figures -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'fn'][not(ancestor::*[(local-name() = 'table' or local-name() = 'figure')] and not(ancestor::*[local-name() = 'name']))]" priority="2" name="fn">
+	<xsl:template match="*[local-name() = 'fn'][not(ancestor::*[(local-name() = 'table' or local-name() = 'figure')] and not(ancestor::*[local-name() = 'name']))]" priority="2" name="fn">
 
 		<!-- list of footnotes to calculate actual footnotes number -->
 		<xsl:variable name="p_fn_">
@@ -3814,7 +3954,7 @@
 		</xsl:choose>
 	</xsl:template> <!-- fn in text -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="get_fn_list">
+	<xsl:template name="get_fn_list">
 		<xsl:choose>
 			<xsl:when test="@current_fn_number"> <!-- for BSI, footnote reference number calculated already -->
 				<fn gen_id="{generate-id(.)}">
@@ -3834,7 +3974,7 @@
 						<xsl:copy-of select="node()"/>
 					</fn>
 				</xsl:for-each>
-				<xsl:for-each select="ancestor::*[contains(local-name(), '-standard')]/*[local-name()='boilerplate']/* |       ancestor::*[contains(local-name(), '-standard')]/*[local-name()='preface']/* |      ancestor::*[contains(local-name(), '-standard')]/*[local-name()='sections']/* |       ancestor::*[contains(local-name(), '-standard')]//*[local-name()='annex'] |      ancestor::*[contains(local-name(), '-standard')]//*[local-name()='bibliography']/*">
+				<xsl:for-each select="ancestor::*[contains(local-name(), '-standard')]/*[local-name()='boilerplate']/* |       ancestor::*[contains(local-name(), '-standard')]//*[local-name()='preface']/* |      ancestor::*[contains(local-name(), '-standard')]//*[local-name()='sections']/* |       ancestor::*[contains(local-name(), '-standard')]//*[local-name()='annex'] |      ancestor::*[contains(local-name(), '-standard')]//*[local-name()='bibliography']/*">
 					<xsl:sort select="@displayorder" data-type="number"/>
 					<!-- commented:
 					 .//*[local-name() = 'bibitem'][ancestor::*[local-name() = 'references']]/*[local-name() = 'note'] |
@@ -3851,7 +3991,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="get_fn_list_for_element">
+	<xsl:template name="get_fn_list_for_element">
 		<xsl:choose>
 			<xsl:when test="@current_fn_number"> <!-- footnote reference number calculated already -->
 				<fn gen_id="{generate-id(.)}">
@@ -3876,7 +4016,7 @@
 	<!-- ============================ -->
 	<!-- table's footnotes rendering -->
 	<!-- ============================ -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_fn_display">
+	<xsl:template name="table_fn_display">
 		<xsl:variable name="references">
 
 			<xsl:for-each select="..//*[local-name()='fn'][local-name(..) != 'name']">
@@ -3906,7 +4046,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="create_fn">
+	<xsl:template name="create_fn">
 		<fn reference="{@reference}" id="{@reference}_{ancestor::*[@id][1]/@id}">
 
 			<xsl:apply-templates/>
@@ -3914,7 +4054,7 @@
 	</xsl:template>
 
 	<!-- footnotes for table's name rendering -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="table_name_fn_display">
+	<xsl:template name="table_name_fn_display">
 		<xsl:for-each select="*[local-name()='name']//*[local-name()='fn']">
 			<xsl:variable name="reference" select="@reference"/>
 			<fo:block id="{@reference}_{ancestor::*[@id][1]/@id}"><xsl:value-of select="@reference"/></fo:block>
@@ -3928,7 +4068,7 @@
 	<!-- ============================ -->
 
 	<!-- figure's footnotes rendering -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="fn_display_figure">
+	<xsl:template name="fn_display_figure">
 
 		<!-- current figure id -->
 		<xsl:variable name="figure_id_">
@@ -4045,7 +4185,7 @@
 	</xsl:template> <!-- fn_display_figure -->
 
 	<!-- fn reference in the text rendering (for instance, 'some text 1) some text' ) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='fn']">
+	<xsl:template match="*[local-name()='fn']">
 		<fo:inline xsl:use-attribute-sets="fn-reference-style">
 
 			<xsl:call-template name="refine_fn-reference-style"/>
@@ -4058,11 +4198,11 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='fn']/text()[normalize-space() != '']">
+	<xsl:template match="*[local-name()='fn']/text()[normalize-space() != '']">
 		<fo:inline role="SKIP"><xsl:value-of select="."/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='fn']//*[local-name()='p']">
+	<xsl:template match="*[local-name()='fn']//*[local-name()='p']">
 		<fo:inline role="P">
 			<xsl:apply-templates/>
 		</fo:inline>
@@ -4076,7 +4216,7 @@
 	<!-- ===================== -->
 
 	<!-- for table auto-layout algorithm -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dl']" priority="2">
+	<xsl:template match="*[local-name()='dl']" priority="2">
 		<xsl:choose>
 			<xsl:when test="$table_only_with_id != '' and @id = $table_only_with_id">
 				<xsl:call-template name="dl"/>
@@ -4092,7 +4232,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dl']" name="dl">
+	<xsl:template match="*[local-name()='dl']" name="dl">
 		<xsl:variable name="isAdded" select="@added"/>
 		<xsl:variable name="isDeleted" select="@deleted"/>
 		<!-- <dl><xsl:copy-of select="."/></dl> -->
@@ -4376,28 +4516,28 @@
 
 	</xsl:template> <!-- END: dl -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_dl_formula_where_style">
+	<xsl:template name="refine_dl_formula_where_style">
 
 	</xsl:template> <!-- refine_dl_formula_where_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_figure_key_style">
+	<xsl:template name="refine_figure_key_style">
 
 	</xsl:template> <!-- refine_figure_key_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_multicomponent_style">
+	<xsl:template name="refine_multicomponent_style">
 		<xsl:variable name="parent" select="local-name(..)"/>
 
 	</xsl:template> <!-- refine_multicomponent_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_multicomponent_block_style">
+	<xsl:template name="refine_multicomponent_block_style">
 		<xsl:variable name="parent" select="local-name(..)"/>
 
 	</xsl:template> <!-- refine_multicomponent_block_style -->
 
 	<!-- ignore 'p' with 'where' in formula, before 'dl' -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formula']/*[local-name() = 'p' and @keep-with-next = 'true' and following-sibling::*[1][local-name() = 'dl']]"/>
+	<xsl:template match="*[local-name() = 'formula']/*[local-name() = 'p' and @keep-with-next = 'true' and following-sibling::*[1][local-name() = 'dl']]"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'dl']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'dl']/*[local-name() = 'name']">
 		<xsl:param name="process">false</xsl:param>
 		<xsl:if test="$process = 'true'">
 			<fo:block xsl:use-attribute-sets="dl-name-style">
@@ -4406,7 +4546,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setColumnWidth_dl">
+	<xsl:template name="setColumnWidth_dl">
 		<xsl:param name="colwidths"/>
 		<xsl:param name="maxlength_dt"/>
 		<xsl:param name="isContainsKeepTogetherTag"/>
@@ -4474,7 +4614,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertTableColumnWidth">
+	<xsl:template name="insertTableColumnWidth">
 		<xsl:param name="colwidths"/>
 
 		<xsl:for-each select="xalan:nodeset($colwidths)//column">
@@ -4494,7 +4634,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getMaxLength_dt">
+	<xsl:template name="getMaxLength_dt">
 		<xsl:variable name="lengths">
 			<xsl:for-each select="*[local-name()='dt']">
 				<xsl:variable name="maintext_length" select="string-length(normalize-space(.))"/>
@@ -4519,7 +4659,7 @@
 
 	<!-- note in definition list: dl/note -->
 	<!-- renders in the 2-column spanned table row -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dl']/*[local-name()='note']" priority="2">
+	<xsl:template match="*[local-name()='dl']/*[local-name()='note']" priority="2">
 		<xsl:param name="key_iso"/>
 		<!-- <tr>
 			<td>NOTE</td>
@@ -4558,7 +4698,7 @@
 	</xsl:template> <!-- END: dl/note -->
 
 	<!-- virtual html table for dl/[dt and dd]  -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dt']" mode="dl">
+	<xsl:template match="*[local-name()='dt']" mode="dl">
 		<xsl:param name="id"/>
 		<xsl:variable name="row_number" select="count(preceding-sibling::*[local-name()='dt']) + 1"/>
 		<tr>
@@ -4583,7 +4723,7 @@
 	</xsl:template>
 
 	<!-- Definition's term -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dt']">
+	<xsl:template match="*[local-name()='dt']">
 		<xsl:param name="key_iso"/>
 		<xsl:param name="split_keep-within-line"/>
 
@@ -4601,7 +4741,7 @@
 		</fo:table-row>
 	</xsl:template> <!-- END: dt -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insert_dt_cell">
+	<xsl:template name="insert_dt_cell">
 		<xsl:param name="key_iso"/>
 		<xsl:param name="split_keep-within-line"/>
 		<fo:table-cell xsl:use-attribute-sets="dt-cell-style">
@@ -4634,7 +4774,7 @@
 		</fo:table-cell>
 	</xsl:template> <!-- insert_dt_cell -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insert_dd_cell">
+	<xsl:template name="insert_dd_cell">
 		<xsl:param name="split_keep-within-line"/>
 		<fo:table-cell xsl:use-attribute-sets="dd-cell-style">
 
@@ -4674,12 +4814,12 @@
 
 	<!-- END Definition's term -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dd']" mode="dl"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dd']" mode="dl_process">
+	<xsl:template match="*[local-name()='dd']" mode="dl"/>
+	<xsl:template match="*[local-name()='dd']" mode="dl_process">
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dd']">
+	<xsl:template match="*[local-name()='dd']">
 		<xsl:param name="process">false</xsl:param>
 		<xsl:param name="split_keep-within-line"/>
 		<xsl:if test="$process = 'true'">
@@ -4690,7 +4830,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dd']/*" mode="inline">
+	<xsl:template match="*[local-name()='dd']/*" mode="inline">
 		<xsl:variable name="is_inline_element_after_where">
 			<xsl:if test="(local-name() = 'p') and not(preceding-sibling::node()[normalize-space() != ''])">true</xsl:if>
 		</xsl:variable>
@@ -4705,7 +4845,7 @@
 	</xsl:template>
 
 	<!-- virtual html table for dl/[dt and dd] for IF (Intermediate Format) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dt']" mode="dl_if">
+	<xsl:template match="*[local-name()='dt']" mode="dl_if">
 		<xsl:param name="id"/>
 		<tr>
 			<td>
@@ -4719,13 +4859,13 @@
 			</td>
 		</tr>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dd']" mode="dl_if"/>
+	<xsl:template match="*[local-name()='dd']" mode="dl_if"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*" mode="dl_if">
+	<xsl:template match="*" mode="dl_if">
 		<xsl:copy-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p']" mode="dl_if">
+	<xsl:template match="*[local-name() = 'p']" mode="dl_if">
 		<xsl:param name="indent"/>
 		<p>
 			<xsl:copy-of select="@*"/>
@@ -4735,7 +4875,7 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'ul' or local-name() = 'ol']" mode="dl_if">
+	<xsl:template match="*[local-name() = 'ul' or local-name() = 'ol']" mode="dl_if">
 		<xsl:variable name="list_rendered_">
 			<xsl:apply-templates select="."/>
 		</xsl:variable>
@@ -4752,14 +4892,14 @@
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'li']" mode="dl_if">
+	<xsl:template match="*[local-name() = 'li']" mode="dl_if">
 		<xsl:param name="indent"/>
 		<xsl:apply-templates mode="dl_if">
 			<xsl:with-param name="indent" select="$indent"/>
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@provisional-distance-between-starts" mode="dl_if">
+	<xsl:template match="@provisional-distance-between-starts" mode="dl_if">
 		<xsl:variable name="value" select="round(substring-before(.,'mm'))"/>
 		<!-- emulate left indent for list item -->
 		<xsl:call-template name="repeat">
@@ -4768,7 +4908,7 @@
 		</xsl:call-template>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dl']" mode="dl_if_nested">
+	<xsl:template match="*[local-name()='dl']" mode="dl_if_nested">
 		<xsl:for-each select="*[local-name() = 'dt']">
 			<p>
 				<xsl:copy-of select="node()"/>
@@ -4777,29 +4917,29 @@
 			</p>
 		</xsl:for-each>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='dd']" mode="dl_if_nested"/>
+	<xsl:template match="*[local-name()='dd']" mode="dl_if_nested"/>
 	<!-- ===================== -->
 	<!-- END Definition List -->
 	<!-- ===================== -->
 
 	<!-- default: ignore title in sections/p -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sections']/*[local-name() = 'p'][starts-with(@class, 'zzSTDTitle')]" priority="3"/>
+	<xsl:template match="*[local-name() = 'sections']/*[local-name() = 'p'][starts-with(@class, 'zzSTDTitle')]" priority="3"/>
 
 	<!-- ========================= -->
 	<!-- Rich text formatting -->
 	<!-- ========================= -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='em']">
+	<xsl:template match="*[local-name()='em']">
 		<fo:inline font-style="italic">
 			<xsl:call-template name="refine_italic_style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_italic_style">
+	<xsl:template name="refine_italic_style">
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='strong'] | *[local-name()='b']">
+	<xsl:template match="*[local-name()='strong'] | *[local-name()='b']">
 		<xsl:param name="split_keep-within-line"/>
 		<fo:inline font-weight="bold">
 
@@ -4811,30 +4951,30 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_strong_style">
+	<xsl:template name="refine_strong_style">
 
 		<xsl:if test="ancestor::*['preferred']">
 			<xsl:attribute name="role">SKIP</xsl:attribute>
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='padding']">
+	<xsl:template match="*[local-name()='padding']">
 		<fo:inline padding-right="{@value}"> </fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='sup']">
+	<xsl:template match="*[local-name()='sup']">
 		<fo:inline font-size="80%" vertical-align="super">
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='sub']">
+	<xsl:template match="*[local-name()='sub']">
 		<fo:inline font-size="80%" vertical-align="sub">
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tt']">
+	<xsl:template match="*[local-name()='tt']">
 		<fo:inline xsl:use-attribute-sets="tt-style">
 
 			<xsl:variable name="_font-size">
@@ -4859,8 +4999,8 @@
 		</fo:inline>
 	</xsl:template> <!-- tt -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="regex_url_start">^(http://|https://|www\.)?(.*)</xsl:variable>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tt']/text()" priority="2">
+	<xsl:variable name="regex_url_start">^(http://|https://|www\.)?(.*)</xsl:variable>
+	<xsl:template match="*[local-name()='tt']/text()" priority="2">
 		<xsl:choose>
 			<xsl:when test="java:replaceAll(java:java.lang.String.new(.), $regex_url_start, '$2') != ''">
 				 <!-- url -->
@@ -4872,7 +5012,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='underline']">
+	<xsl:template match="*[local-name()='underline']">
 		<fo:inline text-decoration="underline">
 			<xsl:apply-templates/>
 		</fo:inline>
@@ -4881,7 +5021,7 @@
 	<!-- ================= -->
 	<!-- Added,deleted text -->
 	<!-- ================= -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='add'] | *[local-name() = 'change-open-tag'] | *[local-name() = 'change-close-tag']" name="tag_add">
+	<xsl:template match="*[local-name()='add'] | *[local-name() = 'change-open-tag'] | *[local-name() = 'change-close-tag']" name="tag_add">
 		<xsl:param name="skip">true</xsl:param>
 		<xsl:param name="block">false</xsl:param>
 		<xsl:param name="type"/>
@@ -4979,7 +5119,7 @@
 		</xsl:choose>
 	</xsl:template> <!-- add -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertTag">
+	<xsl:template name="insertTag">
 		<xsl:param name="type"/>
 		<xsl:param name="kind"/>
 		<xsl:param name="value"/>
@@ -5029,7 +5169,7 @@
 			</fo:instream-foreign-object>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='del']">
+	<xsl:template match="*[local-name()='del']">
 		<fo:inline xsl:use-attribute-sets="del-style">
 			<xsl:apply-templates/>
 		</fo:inline>
@@ -5039,13 +5179,13 @@
 	<!-- ================= -->
 
 	<!-- highlight text -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='hi']">
+	<xsl:template match="*[local-name()='hi']">
 		<fo:inline background-color="yellow">
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()[ancestor::*[local-name()='smallcap']]">
+	<xsl:template match="text()[ancestor::*[local-name()='smallcap']]">
 		<!-- <xsl:variable name="text" select="normalize-space(.)"/> --> <!-- https://github.com/metanorma/metanorma-iso/issues/1115 -->
 		<xsl:variable name="text" select="."/>
 		<xsl:variable name="ratio_">
@@ -5092,7 +5232,7 @@
 			</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="recursiveSmallCaps">
+	<xsl:template name="recursiveSmallCaps">
     <xsl:param name="text"/>
     <xsl:param name="ratio"/>
     <xsl:variable name="char" select="substring($text,1,1)"/>
@@ -5116,14 +5256,14 @@
     </xsl:if>
   </xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'pagebreak']">
+	<xsl:template match="*[local-name() = 'pagebreak']">
 		<fo:block break-after="page"/>
 		<fo:block> </fo:block>
 		<fo:block break-after="page"/>
 	</xsl:template>
 
 	<!-- Example: <span style="font-family:&quot;Noto Sans JP&quot;">styled text</span> -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span'][@style]" priority="2">
+	<xsl:template match="*[local-name() = 'span'][@style]" priority="2">
 		<xsl:variable name="styles__">
 			<xsl:call-template name="split">
 				<xsl:with-param name="pText" select="concat(@style,';')"/>
@@ -5171,13 +5311,13 @@
 	</xsl:template> <!-- END: span[@style] -->
 
 	<!-- Note: to enable the addition of character span markup with semantic styling for DIS Word output -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span']">
+	<xsl:template match="*[local-name() = 'span']">
 		<xsl:apply-templates/>
 	</xsl:template>
 
 	<!-- Don't break standard's numbers -->
 	<!-- Example : <span class="stdpublisher">ISO</span> <span class="stddocNumber">10303</span>-<span class="stddocPartNumber">1</span>:<span class="stdyear">1994</span> -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']" priority="2">
+	<xsl:template match="*[local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']" priority="2">
 		<xsl:choose>
 			<xsl:when test="ancestor::*[local-name() = 'table']"><xsl:apply-templates/></xsl:when>
 			<xsl:when test="following-sibling::*[2][local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']">
@@ -5188,11 +5328,11 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()[not(ancestor::*[local-name() = 'table']) and preceding-sibling::*[1][local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear'] and   following-sibling::*[1][local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']]" priority="2">
+	<xsl:template match="text()[not(ancestor::*[local-name() = 'table']) and preceding-sibling::*[1][local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear'] and   following-sibling::*[1][local-name() = 'span'][@class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']]" priority="2">
 		<fo:inline keep-with-next.within-line="always"><xsl:value-of select="."/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span'][contains(@style, 'text-transform:none')]//text()" priority="5">
+	<xsl:template match="*[local-name() = 'span'][contains(@style, 'text-transform:none')]//text()" priority="5">
 		<xsl:value-of select="."/>
 	</xsl:template>
 
@@ -5201,7 +5341,7 @@
 	<!-- ========================= -->
 
 	<!-- split string 'text' by 'separator' -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="tokenize">
+	<xsl:template name="tokenize">
 		<xsl:param name="text"/>
 		<xsl:param name="separator" select="' '"/>
 		<xsl:choose>
@@ -5271,7 +5411,7 @@
 	</xsl:template>
 
 	<!-- split string 'text' by 'separator', enclosing in formatting tags -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="tokenize_with_tags">
+	<xsl:template name="tokenize_with_tags">
 		<xsl:param name="tags"/>
 		<xsl:param name="text"/>
 		<xsl:param name="separator" select="' '"/>
@@ -5308,7 +5448,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="enclose_text_in_tags">
+	<xsl:template name="enclose_text_in_tags">
 		<xsl:param name="text"/>
 		<xsl:param name="tags"/>
 		<xsl:param name="num">1</xsl:param> <!-- default (start) value -->
@@ -5330,7 +5470,7 @@
 	</xsl:template>
 
 	<!-- get max value in array -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="max_length">
+	<xsl:template name="max_length">
 		<xsl:param name="words"/>
 		<xsl:for-each select="$words//word">
 				<xsl:sort select="." data-type="number" order="descending"/>
@@ -5340,7 +5480,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-zero-spaces-java">
+	<xsl:template name="add-zero-spaces-java">
 		<xsl:param name="text" select="."/>
 
 		<!-- add zero-width space (#x200B) after dot with next non-digit -->
@@ -5378,7 +5518,7 @@
 		<xsl:value-of select="$text11"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-zero-spaces-link-java">
+	<xsl:template name="add-zero-spaces-link-java">
 		<xsl:param name="text" select="."/>
 
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new($text), $regex_url_start, '$1')"/> <!-- http://. https:// or www. -->
@@ -5394,7 +5534,7 @@
 	</xsl:template>
 
 	<!-- add zero space after dash character (for table's entries) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-zero-spaces">
+	<xsl:template name="add-zero-spaces">
 		<xsl:param name="text" select="."/>
 		<xsl:variable name="zero-space-after-chars">-</xsl:variable>
 		<xsl:variable name="zero-space-after-dot">.</xsl:variable>
@@ -5449,7 +5589,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-zero-spaces-equal">
+	<xsl:template name="add-zero-spaces-equal">
 		<xsl:param name="text" select="."/>
 		<xsl:variable name="zero-space-after-equals">==========</xsl:variable>
 		<xsl:variable name="regex_zero-space-after-equals">(==========)</xsl:variable>
@@ -5482,7 +5622,7 @@
 	</xsl:template>
 
 	<!-- Table normalization (colspan,rowspan processing for adding TDs) for column width calculation -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getSimpleTable">
+	<xsl:template name="getSimpleTable">
 		<xsl:param name="id"/>
 
 		<!-- <test0>
@@ -5525,13 +5665,13 @@
 	<!-- ================================== -->
 	<!-- Step 0. replace <br/> to <p>...</p> -->
 	<!-- ================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="table-without-br">
+	<xsl:template match="@*|node()" mode="table-without-br">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="table-without-br"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name() = 'td'][not(*[local-name()='br']) and not(*[local-name()='p']) and not(*[local-name()='sourcecode']) and not(*[local-name()='ul']) and not(*[local-name()='ol'])]" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name() = 'td'][not(*[local-name()='br']) and not(*[local-name()='p']) and not(*[local-name()='sourcecode']) and not(*[local-name()='ul']) and not(*[local-name()='ol'])]" mode="table-without-br">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<p>
@@ -5540,7 +5680,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td'][*[local-name()='br']]" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name()='td'][*[local-name()='br']]" mode="table-without-br">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<xsl:for-each select="*[local-name()='br']">
@@ -5561,7 +5701,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']/*[local-name() = 'p'][*[local-name()='br']]" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name()='td']/*[local-name() = 'p'][*[local-name()='br']]" mode="table-without-br">
 		<xsl:for-each select="*[local-name()='br']">
 			<xsl:variable name="current_id" select="generate-id()"/>
 			<p>
@@ -5579,11 +5719,11 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']/*[local-name() = 'sourcecode']" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name()='td']/*[local-name() = 'sourcecode']" mode="table-without-br">
 		<xsl:apply-templates mode="table-without-br"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']/*[local-name() = 'sourcecode']/text()[contains(., '&#13;') or contains(., '&#10;')]" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name()='td']/*[local-name() = 'sourcecode']/text()[contains(., '&#13;') or contains(., '&#10;')]" mode="table-without-br">
 
 		<xsl:variable name="sep">###SOURCECODE_NEWLINE###</xsl:variable>
 		<xsl:variable name="sourcecode_text" select="java:replaceAll(java:java.lang.String.new(.),'(&#13;&#10;|&#13;|&#10;)', $sep)"/>
@@ -5602,16 +5742,16 @@
 	</xsl:template>
 
 	<!-- remove redundant white spaces -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()[not(ancestor::*[local-name() = 'sourcecode'])]" mode="table-without-br">
+	<xsl:template match="text()[not(ancestor::*[local-name() = 'sourcecode'])]" mode="table-without-br">
 		<xsl:variable name="text" select="translate(.,'&#9;&#10;&#13;','')"/>
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new($text),' {2,}',' ')"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']//*[local-name() = 'ol' or local-name() = 'ul']" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name()='td']//*[local-name() = 'ol' or local-name() = 'ul']" mode="table-without-br">
 		<xsl:apply-templates mode="table-without-br"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']//*[local-name() = 'li']" mode="table-without-br">
+	<xsl:template match="*[local-name()='th' or local-name()='td']//*[local-name() = 'li']" mode="table-without-br">
 		<xsl:apply-templates mode="table-without-br"/>
 	</xsl:template>
 
@@ -5630,12 +5770,12 @@
 			1.6. add @divide attribute for divide text width in further processing 
 	-->
 	<!-- ===================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='thead'] | *[local-name()='tbody']" mode="simple-table-colspan">
+	<xsl:template match="*[local-name()='thead'] | *[local-name()='tbody']" mode="simple-table-colspan">
 		<xsl:apply-templates mode="simple-table-colspan"/>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='fn']" mode="simple-table-colspan"/>
+	<xsl:template match="*[local-name()='fn']" mode="simple-table-colspan"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th'] | *[local-name()='td']" mode="simple-table-colspan">
+	<xsl:template match="*[local-name()='th'] | *[local-name()='td']" mode="simple-table-colspan">
 		<xsl:choose>
 			<xsl:when test="@colspan">
 				<xsl:variable name="td">
@@ -5665,23 +5805,23 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@colspan" mode="simple-table-colspan"/>
+	<xsl:template match="@colspan" mode="simple-table-colspan"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tr']" mode="simple-table-colspan">
+	<xsl:template match="*[local-name()='tr']" mode="simple-table-colspan">
 		<xsl:element name="tr">
 			<xsl:apply-templates select="@*" mode="simple-table-colspan"/>
 			<xsl:apply-templates mode="simple-table-colspan"/>
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="simple-table-colspan">
+	<xsl:template match="@*|node()" mode="simple-table-colspan">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="simple-table-colspan"/>
 		</xsl:copy>
 	</xsl:template>
 
 	<!-- repeat node 'count' times -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="repeatNode">
+	<xsl:template name="repeatNode">
 		<xsl:param name="count"/>
 		<xsl:param name="node"/>
 
@@ -5701,13 +5841,13 @@
 	<!-- 2. mode "simple-table-rowspan" 
 	Row span processing, more information http://andrewjwelch.com/code/xslt/table/table-normalization.html	-->
 	<!-- ===================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="simple-table-rowspan">
+	<xsl:template match="@*|node()" mode="simple-table-rowspan">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="simple-table-rowspan"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="tbody" mode="simple-table-rowspan">
+	<xsl:template match="tbody" mode="simple-table-rowspan">
 		<xsl:copy>
 				<xsl:copy-of select="tr[1]"/>
 				<xsl:apply-templates select="tr[2]" mode="simple-table-rowspan">
@@ -5716,7 +5856,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="tr" mode="simple-table-rowspan">
+	<xsl:template match="tr" mode="simple-table-rowspan">
 		<xsl:param name="previousRow"/>
 		<xsl:variable name="currentRow" select="."/>
 
@@ -5774,14 +5914,14 @@
 
 	<!-- Step 3: add id for each cell -->
 	<!-- mode: simple-table-id -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="/" mode="simple-table-id">
+	<xsl:template match="/" mode="simple-table-id">
 		<xsl:param name="id"/>
 		<xsl:variable name="id_prefixed" select="concat('table_if_',$id)"/> <!-- table id prefixed by 'table_if_' to simple search in IF  -->
 		<xsl:apply-templates select="@*|node()" mode="simple-table-id">
 			<xsl:with-param name="id" select="$id_prefixed"/>
 		</xsl:apply-templates>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="simple-table-id">
+	<xsl:template match="@*|node()" mode="simple-table-id">
 		<xsl:param name="id"/>
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="simple-table-id">
@@ -5790,7 +5930,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tbody']" mode="simple-table-id">
+	<xsl:template match="*[local-name()='tbody']" mode="simple-table-id">
 		<xsl:param name="id"/>
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
@@ -5801,19 +5941,19 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="font_main_root_style">
+	<xsl:variable name="font_main_root_style">
 		<root-style xsl:use-attribute-sets="root-style">
 		</root-style>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="font_main_root_style_font_family" select="xalan:nodeset($font_main_root_style)/root-style/@font-family"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="font_main">
+	<xsl:variable name="font_main_root_style_font_family" select="xalan:nodeset($font_main_root_style)/root-style/@font-family"/>
+	<xsl:variable name="font_main">
 		<xsl:choose>
 			<xsl:when test="contains($font_main_root_style_font_family, ',')"><xsl:value-of select="substring-before($font_main_root_style_font_family, ',')"/></xsl:when>
 			<xsl:otherwise><xsl:value-of select="$font_main_root_style_font_family"/></xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']" mode="simple-table-id">
+	<xsl:template match="*[local-name()='th' or local-name()='td']" mode="simple-table-id">
 		<xsl:param name="id"/>
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
@@ -5908,7 +6048,7 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th' or local-name()='td']/*[local-name() = 'p']//*" mode="simple-table-noid">
+	<xsl:template match="*[local-name()='th' or local-name()='td']/*[local-name() = 'p']//*" mode="simple-table-noid">
 		<xsl:copy>
 			<xsl:choose>
 				<xsl:when test="$isGenerateTableIF = 'true'">
@@ -5932,15 +6072,15 @@
 	<!-- =============================== -->
 	<!-- mode="td_text_with_formatting" -->
 	<!-- =============================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="td_text_with_formatting">
+	<xsl:template match="@*|node()" mode="td_text_with_formatting">
 		<xsl:copy>
 			<xsl:apply-templates select="@*|node()" mode="td_text_with_formatting"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'stem' or local-name() = 'image']" mode="td_text_with_formatting"/>
+	<xsl:template match="*[local-name() = 'stem' or local-name() = 'image']" mode="td_text_with_formatting"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'keep-together_within-line']/text()" mode="td_text_with_formatting">
+	<xsl:template match="*[local-name() = 'keep-together_within-line']/text()" mode="td_text_with_formatting">
 		<xsl:variable name="formatting_tags">
 			<xsl:call-template name="getFormattingTags"/>
 		</xsl:variable>
@@ -5952,7 +6092,7 @@
 		</word>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() != 'keep-together_within-line']/text()" mode="td_text_with_formatting">
+	<xsl:template match="*[local-name() != 'keep-together_within-line']/text()" mode="td_text_with_formatting">
 
 		<xsl:variable name="td_text" select="."/>
 
@@ -5973,7 +6113,7 @@
 		</xsl:call-template>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'link'][normalize-space() = '']" mode="td_text_with_formatting">
+	<xsl:template match="*[local-name() = 'link'][normalize-space() = '']" mode="td_text_with_formatting">
 		<xsl:variable name="link">
 			<link_updated>
 				<xsl:variable name="target_text">
@@ -5994,7 +6134,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getFormattingTags">
+	<xsl:template name="getFormattingTags">
 		<tags>
 			<xsl:if test="ancestor::*[local-name() = 'strong']"><tag>strong</tag></xsl:if>
 			<xsl:if test="ancestor::*[local-name() = 'em']"><tag>em</tag></xsl:if>
@@ -6009,7 +6149,7 @@
 	<!-- END mode="td_text_with_formatting" -->
 	<!-- =============================== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLang">
+	<xsl:template name="getLang">
 		<xsl:variable name="language_current" select="normalize-space(//*[local-name()='bibdata']//*[local-name()='language'][@current = 'true'])"/>
 		<xsl:variable name="language">
 			<xsl:choose>
@@ -6042,7 +6182,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLang_fromCurrentNode">
+	<xsl:template name="getLang_fromCurrentNode">
 		<xsl:variable name="language_current" select="normalize-space(.//*[local-name()='bibdata']//*[local-name()='language'][@current = 'true'])"/>
 		<xsl:variable name="language">
 			<xsl:choose>
@@ -6069,7 +6209,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="capitalizeWords">
+	<xsl:template name="capitalizeWords">
 		<xsl:param name="str"/>
 		<xsl:variable name="str2" select="translate($str, '-', ' ')"/>
 		<xsl:choose>
@@ -6091,7 +6231,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="capitalize">
+	<xsl:template name="capitalize">
 		<xsl:param name="str"/>
 		<xsl:value-of select="java:toUpperCase(java:java.lang.String.new(substring($str, 1, 1)))"/>
 		<xsl:value-of select="substring($str, 2)"/>
@@ -6100,7 +6240,7 @@
 	<!-- ======================================= -->
 	<!-- math -->
 	<!-- ======================================= -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:math">
+	<xsl:template match="mathml:math">
 		<xsl:variable name="isAdded" select="@added"/>
 		<xsl:variable name="isDeleted" select="@deleted"/>
 
@@ -6138,7 +6278,7 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getMathml_comment_text">
+	<xsl:template name="getMathml_comment_text">
 		<xsl:variable name="comment_text_following" select="following-sibling::node()[1][self::comment()]"/>
 		<xsl:variable name="comment_text_">
 			<xsl:choose>
@@ -6155,16 +6295,16 @@
 		<xsl:value-of select="$comment_text"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'asciimath']">
+	<xsl:template match="*[local-name() = 'asciimath']">
 		<xsl:param name="process" select="'false'"/>
 		<xsl:if test="$process = 'true'">
 			<xsl:apply-templates/>
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'latexmath']"/>
+	<xsl:template match="*[local-name() = 'latexmath']"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getMathml_asciimath_text">
+	<xsl:template name="getMathml_asciimath_text">
 		<xsl:variable name="asciimath" select="../*[local-name() = 'asciimath']"/>
 		<xsl:variable name="latexmath">
 
@@ -6197,7 +6337,7 @@
 		<xsl:value-of select="$asciimath_text"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="mathml_instream_object">
+	<xsl:template name="mathml_instream_object">
 		<xsl:param name="asciimath_text"/>
 		<xsl:param name="mathml_content"/>
 
@@ -6237,11 +6377,11 @@
 		</fo:instream-foreign-object>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_mathml_insteam_object_style">
+	<xsl:template name="refine_mathml_insteam_object_style">
 
 	</xsl:template> <!-- refine_mathml_insteam_object_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:*" mode="mathml_actual_text">
+	<xsl:template match="mathml:*" mode="mathml_actual_text">
 		<!-- <xsl:text>a+b</xsl:text> -->
 		<xsl:text>&lt;</xsl:text>
 		<xsl:value-of select="local-name()"/>
@@ -6262,17 +6402,17 @@
 		<xsl:text>&gt;</xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()" mode="mathml_actual_text">
+	<xsl:template match="text()" mode="mathml_actual_text">
 		<xsl:value-of select="normalize-space()"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="mathml">
+	<xsl:template match="@*|node()" mode="mathml">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="mathml"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:mtext" mode="mathml">
+	<xsl:template match="mathml:mtext" mode="mathml">
 		<xsl:copy>
 			<!-- replace start and end spaces to non-break space -->
 			<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),'(^ )|( $)',' ')"/>
@@ -6294,13 +6434,13 @@
 		</xsl:choose>
 	</xsl:template> -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:math/*[local-name()='unit']" mode="mathml"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:math/*[local-name()='prefix']" mode="mathml"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:math/*[local-name()='dimension']" mode="mathml"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:math/*[local-name()='quantity']" mode="mathml"/>
+	<xsl:template match="mathml:math/*[local-name()='unit']" mode="mathml"/>
+	<xsl:template match="mathml:math/*[local-name()='prefix']" mode="mathml"/>
+	<xsl:template match="mathml:math/*[local-name()='dimension']" mode="mathml"/>
+	<xsl:template match="mathml:math/*[local-name()='quantity']" mode="mathml"/>
 
 	<!-- patch: slash in the mtd wrong rendering -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:mtd/mathml:mo/text()[. = '/']" mode="mathml">
+	<xsl:template match="mathml:mtd/mathml:mo/text()[. = '/']" mode="mathml">
 		<xsl:value-of select="."/><xsl:value-of select="$zero_width_space"/>
 	</xsl:template>
 
@@ -6319,7 +6459,7 @@
 			</mstyle>
 		</math>
 	-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:msup/mathml:mi[. = '‌' or . = ''][not(preceding-sibling::*)][following-sibling::mathml:mtext]" mode="mathml">
+	<xsl:template match="mathml:msup/mathml:mi[. = '‌' or . = ''][not(preceding-sibling::*)][following-sibling::mathml:mtext]" mode="mathml">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<xsl:variable name="next_mtext" select="ancestor::mathml:msup/following-sibling::*[1][self::mathml:msubsup or self::mathml:msub or self::mathml:msup]/mathml:mtext"/>
@@ -6345,7 +6485,7 @@
 				<mn>1</mn>
 			</msup>
 	-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:msup/mathml:mtext[not(preceding-sibling::*)]" mode="mathml">
+	<xsl:template match="mathml:msup/mathml:mtext[not(preceding-sibling::*)]" mode="mathml">
 		<mathml:mrow>
 			<xsl:copy-of select="."/>
 			<mathml:mspace height="1.47ex"/>
@@ -6353,7 +6493,7 @@
 	</xsl:template>
 
 	<!-- add space around vertical line -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:mo[normalize-space(text()) = '|']" mode="mathml">
+	<xsl:template match="mathml:mo[normalize-space(text()) = '|']" mode="mathml">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="mathml"/>
 			<xsl:if test="not(@lspace)">
@@ -6367,7 +6507,7 @@
 	</xsl:template>
 
 	<!-- decrease fontsize for 'Circled Times' char -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:mo[normalize-space(text()) = '⊗']" mode="mathml">
+	<xsl:template match="mathml:mo[normalize-space(text()) = '⊗']" mode="mathml">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="mathml"/>
 			<xsl:if test="not(@fontsize)">
@@ -6378,7 +6518,7 @@
 	</xsl:template>
 
 	<!-- increase space before '(' -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="mathml:mo[normalize-space(text()) = '(']" mode="mathml">
+	<xsl:template match="mathml:mo[normalize-space(text()) = '(']" mode="mathml">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="mathml"/>
 			<xsl:if test="(preceding-sibling::* and not(preceding-sibling::*[1][self::mathml:mo])) or (../preceding-sibling::* and not(../preceding-sibling::*[1][self::mathml:mo]))">
@@ -6403,7 +6543,7 @@
 		<stem type="AsciiMath"><asciimath>x = 1</asciimath></stem>
 		<stem type="AsciiMath"><asciimath>x = 1</asciimath><latexmath>x = 1</latexmath></stem>
 	-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'stem'][@type = 'AsciiMath'][count(*) = 0]/text() | *[local-name() = 'stem'][@type = 'AsciiMath'][*[local-name() = 'asciimath']]" priority="3">
+	<xsl:template match="*[local-name() = 'stem'][@type = 'AsciiMath'][count(*) = 0]/text() | *[local-name() = 'stem'][@type = 'AsciiMath'][*[local-name() = 'asciimath']]" priority="3">
 		<fo:inline xsl:use-attribute-sets="mathml-style">
 
 			<xsl:call-template name="refine_mathml-style"/>
@@ -6423,9 +6563,9 @@
 	<!-- END: math -->
 	<!-- ======================================= -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='localityStack']"/>
+	<xsl:template match="*[local-name()='localityStack']"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='link']" name="link">
+	<xsl:template match="*[local-name()='link']" name="link">
 		<xsl:variable name="target">
 			<xsl:choose>
 				<xsl:when test="@updatetype = 'true'">
@@ -6490,14 +6630,14 @@
 	<!-- ======================== -->
 	<!-- Appendix processing -->
 	<!-- ======================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='appendix']">
+	<xsl:template match="*[local-name()='appendix']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="appendix-style">
 			<xsl:apply-templates select="*[local-name()='title']"/>
 		</fo:block>
 		<xsl:apply-templates select="node()[not(local-name()='title')]"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='appendix']/*[local-name()='title']" priority="2">
+	<xsl:template match="*[local-name()='appendix']/*[local-name()='title']" priority="2">
 		<xsl:variable name="level">
 			<xsl:call-template name="getLevel"/>
 		</xsl:variable>
@@ -6507,21 +6647,21 @@
 	<!-- END Appendix processing -->
 	<!-- ======================== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='appendix']//*[local-name()='example']" priority="2">
+	<xsl:template match="*[local-name()='appendix']//*[local-name()='example']" priority="2">
 		<fo:block id="{@id}" xsl:use-attribute-sets="appendix-example-style">
 			<xsl:apply-templates select="*[local-name()='name']"/>
 		</fo:block>
 		<xsl:apply-templates select="node()[not(local-name()='name')]"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'callout']">
+	<xsl:template match="*[local-name() = 'callout']">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@target) = ''">&lt;<xsl:apply-templates/>&gt;</xsl:when>
 			<xsl:otherwise><fo:basic-link internal-destination="{@target}" fox:alt-text="{@target}">&lt;<xsl:apply-templates/>&gt;</fo:basic-link></xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'annotation']">
+	<xsl:template match="*[local-name() = 'annotation']">
 		<xsl:variable name="annotation-id" select="@id"/>
 		<xsl:variable name="callout" select="//*[@target = $annotation-id]/text()"/>
 		<fo:block id="{$annotation-id}" white-space="nowrap">
@@ -6534,7 +6674,7 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'annotation']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'annotation']/*[local-name() = 'p']">
 		<xsl:param name="callout"/>
 		<fo:inline id="{@id}">
 			<!-- for first p in annotation, put <x> -->
@@ -6543,7 +6683,7 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'xref']">
+	<xsl:template match="*[local-name() = 'xref']">
 		<xsl:call-template name="insert_basic_link">
 			<xsl:with-param name="element">
 				<fo:basic-link internal-destination="{@target}" fox:alt-text="{@target}" xsl:use-attribute-sets="xref-style">
@@ -6560,14 +6700,14 @@
 	</xsl:template>
 
 	<!-- command between two xref points to non-standard bibitem -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()[. = ','][preceding-sibling::node()[1][local-name() = 'sup'][*[local-name() = 'xref'][@type = 'footnote']] and    following-sibling::node()[1][local-name() = 'sup'][*[local-name() = 'xref'][@type = 'footnote']]]">
+	<xsl:template match="text()[. = ','][preceding-sibling::node()[1][local-name() = 'sup'][*[local-name() = 'xref'][@type = 'footnote']] and    following-sibling::node()[1][local-name() = 'sup'][*[local-name() = 'xref'][@type = 'footnote']]]">
 		<xsl:value-of select="."/>
 	</xsl:template>
 
 	<!-- ====== -->
 	<!-- formula  -->
 	<!-- ====== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formula']" name="formula">
+	<xsl:template match="*[local-name() = 'formula']" name="formula">
 		<fo:block-container margin-left="0mm" role="SKIP">
 			<xsl:if test="parent::*[local-name() = 'note']">
 				<xsl:attribute name="margin-left">
@@ -6586,26 +6726,26 @@
 		</fo:block-container>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formula']/*[local-name() = 'dt']/*[local-name() = 'stem']">
+	<xsl:template match="*[local-name() = 'formula']/*[local-name() = 'dt']/*[local-name() = 'stem']">
 		<fo:inline>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'admitted']/*[local-name() = 'stem']">
+	<xsl:template match="*[local-name() = 'admitted']/*[local-name() = 'stem']">
 		<fo:inline>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formula']/*[local-name() = 'name']"> <!-- show in 'stem' template -->
+	<xsl:template match="*[local-name() = 'formula']/*[local-name() = 'name']"> <!-- show in 'stem' template -->
 		<xsl:if test="normalize-space() != ''">
 			<xsl:text>(</xsl:text><xsl:apply-templates/><xsl:text>)</xsl:text>
 		</xsl:if>
 	</xsl:template>
 
 	<!-- stem inside formula with name (with formula's number) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formula'][*[local-name() = 'name']]/*[local-name() = 'stem']">
+	<xsl:template match="*[local-name() = 'formula'][*[local-name() = 'name']]/*[local-name() = 'stem']">
 		<fo:block xsl:use-attribute-sets="formula-style">
 
 			<fo:table table-layout="fixed" width="100%">
@@ -6636,7 +6776,7 @@
 	</xsl:template>
 
 	<!-- stem inside formula without name (without formula's number) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formula'][not(*[local-name() = 'name'])]/*[local-name() = 'stem']">
+	<xsl:template match="*[local-name() = 'formula'][not(*[local-name() = 'name'])]/*[local-name() = 'stem']">
 		<fo:block xsl:use-attribute-sets="formula-style">
 			<fo:block xsl:use-attribute-sets="formula-stem-block-style">
 				<xsl:apply-templates/>
@@ -6647,7 +6787,7 @@
 	<!-- ====== -->
 	<!-- ====== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setBlockSpanAll">
+	<xsl:template name="setBlockSpanAll">
 		<xsl:if test="@columns = 1 or     (local-name() = 'p' and *[@columns = 1])"><xsl:attribute name="span">all</xsl:attribute></xsl:if>
 	</xsl:template>
 
@@ -6656,7 +6796,7 @@
 	<!-- termnote -->
 	<!-- ====== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'note']" name="note">
+	<xsl:template match="*[local-name() = 'note']" name="note">
 
 		<fo:block-container id="{@id}" xsl:use-attribute-sets="note-style" role="SKIP">
 
@@ -6703,11 +6843,11 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_note_block_style">
+	<xsl:template name="refine_note_block_style">
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'note']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'note']/*[local-name() = 'p']">
 		<xsl:variable name="num"><xsl:number/></xsl:variable>
 		<xsl:choose>
 			<xsl:when test="$num = 1"> <!-- display first NOTE's paragraph in the same line with label NOTE -->
@@ -6723,7 +6863,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termnote']">
+	<xsl:template match="*[local-name() = 'termnote']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="termnote-style">
 
 			<xsl:call-template name="setBlockSpanAll"/>
@@ -6752,7 +6892,7 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'note']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'note']/*[local-name() = 'name']">
 		<xsl:param name="sfx"/>
 		<xsl:variable name="suffix">
 			<xsl:choose>
@@ -6770,7 +6910,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termnote']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'termnote']/*[local-name() = 'name']">
 		<xsl:param name="sfx"/>
 		<xsl:variable name="suffix">
 			<xsl:choose>
@@ -6788,7 +6928,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termnote']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'termnote']/*[local-name() = 'p']">
 		<xsl:variable name="num"><xsl:number/></xsl:variable>
 		<xsl:choose>
 			<xsl:when test="$num = 1"> <!-- first paragraph renders in the same line as titlenote name -->
@@ -6811,14 +6951,14 @@
 	<!-- term      -->
 	<!-- ====== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'terms']">
+	<xsl:template match="*[local-name() = 'terms']">
 		<!-- <xsl:message>'terms' <xsl:number/> processing...</xsl:message> -->
 		<fo:block id="{@id}">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'term']">
+	<xsl:template match="*[local-name() = 'term']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="term-style">
 
 			<xsl:if test="parent::*[local-name() = 'term'] and not(preceding-sibling::*[local-name() = 'term'])">
@@ -6828,7 +6968,7 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'term']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'term']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<!-- <xsl:variable name="level">
 				<xsl:call-template name="getLevelTermName"/>
@@ -6847,7 +6987,7 @@
 	<!-- image    -->
 	<!-- ====== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']" name="figure">
+	<xsl:template match="*[local-name() = 'figure']" name="figure">
 		<xsl:variable name="isAdded" select="@added"/>
 		<xsl:variable name="isDeleted" select="@deleted"/>
 		<fo:block-container id="{@id}" xsl:use-attribute-sets="figure-block-style">
@@ -6874,27 +7014,27 @@
 		</fo:block-container>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure'][@class = 'pseudocode']">
+	<xsl:template match="*[local-name() = 'figure'][@class = 'pseudocode']">
 		<fo:block id="{@id}">
 			<xsl:apply-templates select="node()[not(local-name() = 'name')]"/>
 		</fo:block>
 		<xsl:apply-templates select="*[local-name() = 'name']"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure'][@class = 'pseudocode']//*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'figure'][@class = 'pseudocode']//*[local-name() = 'p']">
 		<fo:block xsl:use-attribute-sets="figure-pseudocode-p-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
 	<!-- SOURCE: ... -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'source']" priority="2">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'source']" priority="2">
 
 				<xsl:call-template name="termsource"/>
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'image']">
+	<xsl:template match="*[local-name() = 'image']">
 		<xsl:param name="indent">0</xsl:param>
 		<xsl:variable name="isAdded" select="../@added"/>
 		<xsl:variable name="isDeleted" select="../@deleted"/>
@@ -7038,17 +7178,17 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setImageWidth">
+	<xsl:template name="setImageWidth">
 		<xsl:if test="@width != '' and @width != 'auto' and @width != 'text-width' and @width != 'full-page-width' and @width != 'narrow'">
 			<xsl:value-of select="@width"/>
 		</xsl:if>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setImageHeight">
+	<xsl:template name="setImageHeight">
 		<xsl:if test="@height != '' and @height != 'auto'">
 			<xsl:value-of select="@height"/>
 		</xsl:if>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setImageWidthHeight">
+	<xsl:template name="setImageWidthHeight">
 		<xsl:variable name="width">
 			<xsl:call-template name="setImageWidth"/>
 		</xsl:variable>
@@ -7067,7 +7207,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getImageScale">
+	<xsl:template name="getImageScale">
 		<xsl:param name="indent"/>
 		<xsl:variable name="indent_left">
 			<xsl:choose>
@@ -7094,7 +7234,7 @@
 		<xsl:value-of select="$scale"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="image_src">
+	<xsl:template name="image_src">
 		<xsl:choose>
 			<xsl:when test="@mimetype = 'image/svg+xml' and $images/images/image[@id = current()/@id]">
 				<xsl:value-of select="$images/images/image[@id = current()/@id]/@src"/>
@@ -7117,7 +7257,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'image']" mode="cross_image">
+	<xsl:template match="*[local-name() = 'image']" mode="cross_image">
 		<xsl:choose>
 			<xsl:when test="@mimetype = 'image/svg+xml' and $images/images/image[@id = current()/@id]">
 				<xsl:variable name="src">
@@ -7161,7 +7301,7 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="svg_cross">
+	<xsl:template name="svg_cross">
 		<xsl:param name="width"/>
 		<xsl:param name="height"/>
 		<line xmlns="http://www.w3.org/2000/svg" x1="0" y1="0" x2="{$width}" y2="{$height}" style="stroke: rgb(255, 0, 0); stroke-width:4px; "/>
@@ -7171,15 +7311,15 @@
 	<!-- =================== -->
 	<!-- SVG images processing -->
 	<!-- =================== -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="figure_name_height">14</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="width_effective" select="$pageWidth - $marginLeftRight1 - $marginLeftRight2"/><!-- paper width minus margins -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="height_effective" select="$pageHeight - $marginTop - $marginBottom - $figure_name_height"/><!-- paper height minus margins and title height -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="image_dpi" select="96"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="width_effective_px" select="$width_effective div 25.4 * $image_dpi"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="height_effective_px" select="$height_effective div 25.4 * $image_dpi"/>
+	<xsl:variable name="figure_name_height">14</xsl:variable>
+	<xsl:variable name="width_effective" select="$pageWidth - $marginLeftRight1 - $marginLeftRight2"/><!-- paper width minus margins -->
+	<xsl:variable name="height_effective" select="$pageHeight - $marginTop - $marginBottom - $figure_name_height"/><!-- paper height minus margins and title height -->
+	<xsl:variable name="image_dpi" select="96"/>
+	<xsl:variable name="width_effective_px" select="$width_effective div 25.4 * $image_dpi"/>
+	<xsl:variable name="height_effective_px" select="$height_effective div 25.4 * $image_dpi"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure'][not(*[local-name() = 'image']) and *[local-name() = 'svg']]/*[local-name() = 'name']/*[local-name() = 'bookmark']" priority="2"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure'][not(*[local-name() = 'image'])]/*[local-name() = 'svg']" priority="2" name="image_svg">
+	<xsl:template match="*[local-name() = 'figure'][not(*[local-name() = 'image']) and *[local-name() = 'svg']]/*[local-name() = 'name']/*[local-name() = 'bookmark']" priority="2"/>
+	<xsl:template match="*[local-name() = 'figure'][not(*[local-name() = 'image'])]/*[local-name() = 'svg']" priority="2" name="image_svg">
 		<xsl:param name="name"/>
 
 		<xsl:variable name="svg_content">
@@ -7373,21 +7513,21 @@
 	<!-- ============== -->
 	<!-- svg_update     -->
 	<!-- ============== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="svg_update">
+	<xsl:template match="@*|node()" mode="svg_update">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="svg_update"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'image']/@href" mode="svg_update">
+	<xsl:template match="*[local-name() = 'image']/@href" mode="svg_update">
 		<xsl:attribute name="href" namespace="http://www.w3.org/1999/xlink">
 			<xsl:value-of select="."/>
 		</xsl:attribute>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="regex_starts_with_digit">^[0-9].*</xsl:variable>
+	<xsl:variable name="regex_starts_with_digit">^[0-9].*</xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'svg'][not(@width and @height)]" mode="svg_update">
+	<xsl:template match="*[local-name() = 'svg'][not(@width and @height)]" mode="svg_update">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="svg_update"/>
 			<xsl:variable name="viewbox_">
@@ -7428,7 +7568,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'svg']/@width" mode="svg_update">
+	<xsl:template match="*[local-name() = 'svg']/@width" mode="svg_update">
 		<!-- image[@width]/svg -->
 		<xsl:variable name="parent_image_width" select="normalize-space(ancestor::*[2][local-name() = 'image']/@width)"/>
 		<xsl:attribute name="width">
@@ -7439,7 +7579,7 @@
 		</xsl:attribute>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'svg']/@height" mode="svg_update">
+	<xsl:template match="*[local-name() = 'svg']/@height" mode="svg_update">
 		<!-- image[@height]/svg -->
 		<xsl:variable name="parent_image_height" select="normalize-space(ancestor::*[2][local-name() = 'image']/@height)"/>
 		<xsl:attribute name="height">
@@ -7451,8 +7591,8 @@
 	</xsl:template>
 
 	<!-- regex for 'display: inline-block;' -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="regex_svg_style_notsupported">display(\s|\h)*:(\s|\h)*inline-block(\s|\h)*;</xsl:variable>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'svg']//*[local-name() = 'style']/text()" mode="svg_update">
+	<xsl:variable name="regex_svg_style_notsupported">display(\s|\h)*:(\s|\h)*inline-block(\s|\h)*;</xsl:variable>
+	<xsl:template match="*[local-name() = 'svg']//*[local-name() = 'style']/text()" mode="svg_update">
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.), $regex_svg_style_notsupported, '')"/>
 	</xsl:template>
 
@@ -7461,7 +7601,7 @@
 			stroke="rgb(r,g,b)" stroke-opacity="alpha", and
 			fill="rgba(r, g, b, alpha)" to 
 			fill="rgb(r,g,b)" fill-opacity="alpha" -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*[local-name() = 'stroke' or local-name() = 'fill'][starts-with(normalize-space(.), 'rgba')]" mode="svg_update">
+	<xsl:template match="@*[local-name() = 'stroke' or local-name() = 'fill'][starts-with(normalize-space(.), 'rgba')]" mode="svg_update">
 		<xsl:variable name="components_">
 			<xsl:call-template name="split">
 				<xsl:with-param name="pText" select="substring-before(substring-after(., '('), ')')"/>
@@ -7479,7 +7619,7 @@
 	<!-- ============== -->
 
 	<!-- image with svg and emf -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'image'][*[local-name() = 'svg']]" priority="3">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'image'][*[local-name() = 'svg']]" priority="3">
 		<xsl:variable name="name" select="ancestor::*[local-name() = 'figure']/*[local-name() = 'name']"/>
 		<xsl:for-each select="*[local-name() = 'svg']">
 			<xsl:call-template name="image_svg">
@@ -7489,13 +7629,13 @@
 	</xsl:template>
 
 	<!-- For the structures like: <dt><image src="" mimetype="image/svg+xml" height="" width=""><svg xmlns="http://www.w3.org/2000/svg" ... -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() != 'figure']/*[local-name() = 'image'][*[local-name() = 'svg']]" priority="3">
+	<xsl:template match="*[local-name() != 'figure']/*[local-name() = 'image'][*[local-name() = 'svg']]" priority="3">
 		<xsl:for-each select="*[local-name() = 'svg']">
 			<xsl:call-template name="image_svg"/>
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'image'][@mimetype = 'image/svg+xml' and @src[not(starts-with(., 'data:image/'))]]" priority="2">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'image'][@mimetype = 'image/svg+xml' and @src[not(starts-with(., 'data:image/'))]]" priority="2">
 		<xsl:variable name="svg_content" select="document(@src)"/>
 		<xsl:variable name="name" select="ancestor::*[local-name() = 'figure']/*[local-name() = 'name']"/>
 		<xsl:for-each select="xalan:nodeset($svg_content)/node()">
@@ -7505,17 +7645,17 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="svg_remove_a">
+	<xsl:template match="@*|node()" mode="svg_remove_a">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="svg_remove_a"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'a']" mode="svg_remove_a">
+	<xsl:template match="*[local-name() = 'a']" mode="svg_remove_a">
 		<xsl:apply-templates mode="svg_remove_a"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'a']" mode="svg_imagemap_links">
+	<xsl:template match="*[local-name() = 'a']" mode="svg_imagemap_links">
 		<xsl:param name="scale"/>
 		<xsl:variable name="dest">
 			<xsl:choose>
@@ -7588,7 +7728,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertSVGMapLink">
+	<xsl:template name="insertSVGMapLink">
 		<xsl:param name="left"/>
 		<xsl:param name="top"/>
 		<xsl:param name="width"/>
@@ -7617,46 +7757,46 @@
 	<!-- =================== -->
 
 	<!-- ignore emf processing (Apache FOP doesn't support EMF) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'emf']"/>
+	<xsl:template match="*[local-name() = 'emf']"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'name'] |                *[local-name() = 'table']/*[local-name() = 'name'] |               *[local-name() = 'permission']/*[local-name() = 'name'] |               *[local-name() = 'recommendation']/*[local-name() = 'name'] |               *[local-name() = 'requirement']/*[local-name() = 'name']" mode="contents">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'name'] |                *[local-name() = 'table']/*[local-name() = 'name'] |               *[local-name() = 'permission']/*[local-name() = 'name'] |               *[local-name() = 'recommendation']/*[local-name() = 'name'] |               *[local-name() = 'requirement']/*[local-name() = 'name']" mode="contents">
 		<xsl:apply-templates mode="contents"/>
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'name'] |                *[local-name() = 'table']/*[local-name() = 'name'] |               *[local-name() = 'permission']/*[local-name() = 'name'] |               *[local-name() = 'recommendation']/*[local-name() = 'name'] |               *[local-name() = 'requirement']/*[local-name() = 'name'] |               *[local-name() = 'sourcecode']/*[local-name() = 'name']" mode="bookmarks">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'name'] |                *[local-name() = 'table']/*[local-name() = 'name'] |               *[local-name() = 'permission']/*[local-name() = 'name'] |               *[local-name() = 'recommendation']/*[local-name() = 'name'] |               *[local-name() = 'requirement']/*[local-name() = 'name'] |               *[local-name() = 'sourcecode']/*[local-name() = 'name']" mode="bookmarks">
 		<xsl:apply-templates mode="bookmarks"/>
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure' or local-name() = 'table' or local-name() = 'permission' or local-name() = 'recommendation' or local-name() = 'requirement']/*[local-name() = 'name']/text()" mode="contents" priority="2">
+	<xsl:template match="*[local-name() = 'figure' or local-name() = 'table' or local-name() = 'permission' or local-name() = 'recommendation' or local-name() = 'requirement']/*[local-name() = 'name']/text()" mode="contents" priority="2">
 		<xsl:value-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure' or local-name() = 'table' or local-name() = 'permission' or local-name() = 'recommendation' or local-name() = 'requirement' or local-name() = 'sourcecode']/*[local-name() = 'name']//text()" mode="bookmarks" priority="2">
+	<xsl:template match="*[local-name() = 'figure' or local-name() = 'table' or local-name() = 'permission' or local-name() = 'recommendation' or local-name() = 'requirement' or local-name() = 'sourcecode']/*[local-name() = 'name']//text()" mode="bookmarks" priority="2">
 		<xsl:value-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'add'][starts-with(., $ace_tag)]/text()" mode="bookmarks" priority="3"/>
+	<xsl:template match="*[local-name() = 'add'][starts-with(., $ace_tag)]/text()" mode="bookmarks" priority="3"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="node()" mode="contents">
+	<xsl:template match="node()" mode="contents">
 		<xsl:apply-templates mode="contents"/>
 	</xsl:template>
 
 	<!-- special case: ignore preface/section-title and sections/section-title without @displayorder  -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'preface' or local-name() = 'sections']/*[local-name() = 'p'][@type = 'section-title' and not(@displayorder)]" priority="3" mode="contents"/>
+	<xsl:template match="*[local-name() = 'preface' or local-name() = 'sections']/*[local-name() = 'p'][@type = 'section-title' and not(@displayorder)]" priority="3" mode="contents"/>
 	<!-- process them by demand (mode="contents_no_displayorder") -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p'][@type = 'section-title' and not(@displayorder)]" mode="contents_no_displayorder">
+	<xsl:template match="*[local-name() = 'p'][@type = 'section-title' and not(@displayorder)]" mode="contents_no_displayorder">
 		<xsl:call-template name="contents_section-title"/>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p'][@type = 'section-title']" mode="contents_in_clause">
+	<xsl:template match="*[local-name() = 'p'][@type = 'section-title']" mode="contents_in_clause">
 		<xsl:call-template name="contents_section-title"/>
 	</xsl:template>
 
 	<!-- special case: ignore section-title if @depth different than @depth of parent clause, or @depth of parent clause = 1 -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'clause']/*[local-name() = 'p'][@type = 'section-title' and (@depth != ../*[local-name() = 'title']/@depth or ../*[local-name() = 'title']/@depth = 1)]" priority="3" mode="contents"/>
+	<xsl:template match="*[local-name() = 'clause']/*[local-name() = 'p'][@type = 'section-title' and (@depth != ../*[local-name() = 'title']/@depth or ../*[local-name() = 'title']/@depth = 1)]" priority="3" mode="contents"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p'][@type = 'floating-title' or @type = 'section-title']" priority="2" name="contents_section-title" mode="contents">
+	<xsl:template match="*[local-name() = 'p'][@type = 'floating-title' or @type = 'section-title']" priority="2" name="contents_section-title" mode="contents">
 		<xsl:variable name="level">
 			<xsl:call-template name="getLevel">
 				<xsl:with-param name="depth" select="@depth"/>
@@ -7719,34 +7859,34 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="node()" mode="bookmarks">
+	<xsl:template match="node()" mode="bookmarks">
 		<xsl:apply-templates mode="bookmarks"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'title' or local-name() = 'name']//*[local-name() = 'stem']" mode="contents">
+	<xsl:template match="*[local-name() = 'title' or local-name() = 'name']//*[local-name() = 'stem']" mode="contents">
 		<xsl:apply-templates select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references'][@hidden='true']" mode="contents" priority="3"/>
+	<xsl:template match="*[local-name() = 'references'][@hidden='true']" mode="contents" priority="3"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references']/*[local-name() = 'bibitem']" mode="contents"/>
+	<xsl:template match="*[local-name() = 'references']/*[local-name() = 'bibitem']" mode="contents"/>
 
 	<!-- Note: to enable the addition of character span markup with semantic styling for DIS Word output -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span']" mode="contents">
+	<xsl:template match="*[local-name() = 'span']" mode="contents">
 		<xsl:apply-templates mode="contents"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'stem']" mode="bookmarks">
+	<xsl:template match="*[local-name() = 'stem']" mode="bookmarks">
 		<xsl:apply-templates mode="bookmarks"/>
 	</xsl:template>
 
 	<!-- Note: to enable the addition of character span markup with semantic styling for DIS Word output -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span']" mode="bookmarks">
+	<xsl:template match="*[local-name() = 'span']" mode="bookmarks">
 		<xsl:apply-templates mode="bookmarks"/>
 	</xsl:template>
 
 	<!-- Bookmarks -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="addBookmarks">
+	<xsl:template name="addBookmarks">
 		<xsl:param name="contents"/>
 		<xsl:variable name="contents_nodes" select="xalan:nodeset($contents)"/>
 		<xsl:if test="$contents_nodes//item">
@@ -7849,7 +7989,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertFigureBookmarks">
+	<xsl:template name="insertFigureBookmarks">
 		<xsl:param name="contents"/>
 		<xsl:variable name="contents_nodes" select="xalan:nodeset($contents)"/>
 		<xsl:if test="$contents_nodes/figure">
@@ -7884,7 +8024,7 @@
 
 	</xsl:template> <!-- insertFigureBookmarks -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertTableBookmarks">
+	<xsl:template name="insertTableBookmarks">
 		<xsl:param name="contents"/>
 		<xsl:param name="lang"/>
 		<xsl:variable name="contents_nodes" select="xalan:nodeset($contents)"/>
@@ -7928,7 +8068,7 @@
 	</xsl:template> <!-- insertTableBookmarks -->
 	<!-- End Bookmarks -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLangVersion">
+	<xsl:template name="getLangVersion">
 		<xsl:param name="lang"/>
 		<xsl:param name="doctype" select="''"/>
 		<xsl:param name="title" select="''"/>
@@ -7944,7 +8084,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="item" mode="bookmark">
+	<xsl:template match="item" mode="bookmark">
 		<xsl:choose>
 			<xsl:when test="@id != ''">
 				<fo:bookmark internal-destination="{@id}" starting-state="hide">
@@ -7972,10 +8112,10 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="title" mode="bookmark"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()" mode="bookmark"/>
+	<xsl:template match="title" mode="bookmark"/>
+	<xsl:template match="text()" mode="bookmark"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'name'] |         *[local-name() = 'image']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'name'] |         *[local-name() = 'image']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="figure-name-style">
 
@@ -7986,10 +8126,10 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'fn']" priority="2"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'note']"/>
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'fn']" priority="2"/>
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'note']"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure']/*[local-name() = 'note'][@type = 'units'] |         *[local-name() = 'image']/*[local-name() = 'note'][@type = 'units']" priority="2">
+	<xsl:template match="*[local-name() = 'figure']/*[local-name() = 'note'][@type = 'units'] |         *[local-name() = 'image']/*[local-name() = 'note'][@type = 'units']" priority="2">
 		<fo:block text-align="right" keep-with-next="always">
 			<xsl:apply-templates/>
 		</fo:block>
@@ -7997,7 +8137,7 @@
 
 	<!-- ====== -->
 	<!-- ====== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'title']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'title']" mode="contents_item">
 		<xsl:param name="mode">bookmarks</xsl:param>
 		<xsl:apply-templates mode="contents_item">
 			<xsl:with-param name="mode" select="$mode"/>
@@ -8005,11 +8145,11 @@
 		<!-- <xsl:text> </xsl:text> -->
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getSection">
+	<xsl:template name="getSection">
 		<xsl:value-of select="*[local-name() = 'title']/*[local-name() = 'tab'][1]/preceding-sibling::node()"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getName">
+	<xsl:template name="getName">
 		<xsl:choose>
 			<xsl:when test="*[local-name() = 'title']/*[local-name() = 'tab']">
 				<xsl:copy-of select="*[local-name() = 'title']/*[local-name() = 'tab'][1]/following-sibling::node()"/>
@@ -8020,7 +8160,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertTitleAsListItem">
+	<xsl:template name="insertTitleAsListItem">
 		<xsl:param name="provisional-distance-between-starts" select="'9.5mm'"/>
 		<xsl:variable name="section">
 			<xsl:for-each select="..">
@@ -8051,11 +8191,11 @@
 		</fo:list-block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="extractSection">
+	<xsl:template name="extractSection">
 		<xsl:value-of select="*[local-name() = 'tab'][1]/preceding-sibling::node()"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="extractTitle">
+	<xsl:template name="extractTitle">
 		<xsl:choose>
 				<xsl:when test="*[local-name() = 'tab']">
 					<xsl:apply-templates select="*[local-name() = 'tab'][1]/following-sibling::node()"/>
@@ -8066,61 +8206,61 @@
 			</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'fn']" mode="contents"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'fn']" mode="bookmarks"/>
+	<xsl:template match="*[local-name() = 'fn']" mode="contents"/>
+	<xsl:template match="*[local-name() = 'fn']" mode="bookmarks"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'fn']" mode="contents_item"/>
+	<xsl:template match="*[local-name() = 'fn']" mode="contents_item"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'xref'] | *[local-name() = 'eref']" mode="contents">
+	<xsl:template match="*[local-name() = 'xref'] | *[local-name() = 'eref']" mode="contents">
 		<xsl:value-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'review']" mode="contents_item"/>
+	<xsl:template match="*[local-name() = 'review']" mode="contents_item"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'tab']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'tab']" mode="contents_item">
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'strong']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'strong']" mode="contents_item">
 		<xsl:copy>
 			<xsl:apply-templates mode="contents_item"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'em']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'em']" mode="contents_item">
 		<xsl:copy>
 			<xsl:apply-templates mode="contents_item"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sub']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'sub']" mode="contents_item">
 		<xsl:copy>
 			<xsl:apply-templates mode="contents_item"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sup']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'sup']" mode="contents_item">
 		<xsl:copy>
 			<xsl:apply-templates mode="contents_item"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'stem']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'stem']" mode="contents_item">
 		<xsl:copy-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'br']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'br']" mode="contents_item">
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'name']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'name']" mode="contents_item">
 		<xsl:param name="mode">bookmarks</xsl:param>
 		<xsl:apply-templates mode="contents_item">
 			<xsl:with-param name="mode" select="$mode"/>
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'add']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'add']" mode="contents_item">
 		<xsl:param name="mode">bookmarks</xsl:param>
 		<xsl:choose>
 			<xsl:when test="starts-with(text(), $ace_tag)">
@@ -8134,7 +8274,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()" mode="contents_item">
+	<xsl:template match="text()" mode="contents_item">
 		<xsl:variable name="text">
 			<!-- to split by '_' and other chars -->
 			<text><xsl:call-template name="add-zero-spaces-java"/></text>
@@ -8144,12 +8284,12 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'add'][starts-with(., $ace_tag)]/text()" mode="contents_item" priority="2">
+	<xsl:template match="*[local-name() = 'add'][starts-with(., $ace_tag)]/text()" mode="contents_item" priority="2">
 		<xsl:value-of select="."/>
 	</xsl:template>
 
 	<!-- Note: to enable the addition of character span markup with semantic styling for DIS Word output -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span']" mode="contents_item">
+	<xsl:template match="*[local-name() = 'span']" mode="contents_item">
 		<xsl:apply-templates mode="contents_item"/>
 	</xsl:template>
 
@@ -8157,17 +8297,17 @@
 	<!-- sourcecode  -->
 	<!-- =============== -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="source-highlighter-css_" select="//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'source-highlighter-css']"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="sourcecode_css_" select="java:org.metanorma.fop.Util.parseCSS($source-highlighter-css_)"/>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="sourcecode_css" select="xalan:nodeset($sourcecode_css_)"/>
+	<xsl:variable name="source-highlighter-css_" select="//*[contains(local-name(), '-standard')]/*[local-name() = 'metanorma-extension']/*[local-name() = 'source-highlighter-css']"/>
+	<xsl:variable name="sourcecode_css_" select="java:org.metanorma.fop.Util.parseCSS($source-highlighter-css_)"/>
+	<xsl:variable name="sourcecode_css" select="xalan:nodeset($sourcecode_css_)"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'property']" mode="css">
+	<xsl:template match="*[local-name() = 'property']" mode="css">
 		<xsl:attribute name="{@name}">
 			<xsl:value-of select="@value"/>
 		</xsl:attribute>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="get_sourcecode_attributes">
+	<xsl:template name="get_sourcecode_attributes">
 		<xsl:element name="sourcecode_attributes" use-attribute-sets="sourcecode-style">
 			<xsl:variable name="_font-size">
 				10
@@ -8196,7 +8336,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='sourcecode']" name="sourcecode">
+	<xsl:template match="*[local-name()='sourcecode']" name="sourcecode">
 
 		<xsl:variable name="sourcecode_attributes">
 			<xsl:call-template name="get_sourcecode_attributes"/>
@@ -8267,7 +8407,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='sourcecode']/text() | *[local-name()='sourcecode']//*[local-name()='span']/text()" priority="2">
+	<xsl:template match="*[local-name()='sourcecode']/text() | *[local-name()='sourcecode']//*[local-name()='span']/text()" priority="2">
 		<xsl:choose>
 			<!-- disabled -->
 			<xsl:when test="1 = 2 and normalize-space($syntax-highlight) = 'true' and normalize-space(../@lang) != ''"> <!-- condition for turn on of highlighting -->
@@ -8288,7 +8428,7 @@
 	</xsl:template>
 
 	<!-- add sourcecode highlighting -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='sourcecode']//*[local-name()='span'][@class]" priority="2">
+	<xsl:template match="*[local-name()='sourcecode']//*[local-name()='span'][@class]" priority="2">
 		<xsl:variable name="class" select="@class"/>
 
 		<!-- Example: <1> -->
@@ -8315,7 +8455,7 @@
 	</xsl:template>
 
 	<!-- outer table with line numbers for sourcecode -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode'] |  -->
+	<xsl:template match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode'] |  -->
 		<fo:block>
 			<fo:table width="100%" table-layout="fixed">
 				<xsl:copy-of select="@id"/>
@@ -8327,16 +8467,16 @@
 			</fo:table>
 		</fo:block>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']/*[local-name() = 'tbody']" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode']/*[local-name() = 'tbody'] |  -->
+	<xsl:template match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']/*[local-name() = 'tbody']" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode']/*[local-name() = 'tbody'] |  -->
 		<xsl:apply-templates/>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']//*[local-name()='tr']" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode']//*[local-name()='tr'] |  -->
+	<xsl:template match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']//*[local-name()='tr']" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode']//*[local-name()='tr'] |  -->
 		<fo:table-row>
 			<xsl:apply-templates/>
 		</fo:table-row>
 	</xsl:template>
 	<!-- first td with line numbers -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']//*[local-name()='tr']/*[local-name()='td'][not(preceding-sibling::*)]" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode'] -->
+	<xsl:template match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']//*[local-name()='tr']/*[local-name()='td'][not(preceding-sibling::*)]" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode'] -->
 		<fo:table-cell>
 			<fo:block>
 
@@ -8358,7 +8498,7 @@
 	</xsl:template>
 
 	<!-- second td with sourcecode -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']//*[local-name()='tr']/*[local-name()='td'][preceding-sibling::*]" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode'] -->
+	<xsl:template match="*[local-name() = 'sourcecode'][@linenums = 'true']/*[local-name()='table']//*[local-name()='tr']/*[local-name()='td'][preceding-sibling::*]" priority="2"> <!-- *[local-name()='table'][@type = 'sourcecode'] -->
 		<fo:table-cell>
 			<fo:block role="SKIP">
 				<xsl:apply-templates/>
@@ -8367,7 +8507,7 @@
 	</xsl:template>
 	<!-- END outer table with line numbers for sourcecode -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add_spaces_to_sourcecode">
+	<xsl:template name="add_spaces_to_sourcecode">
 		<xsl:variable name="text_step1">
 			<xsl:call-template name="add-zero-spaces-equal"/>
 		</xsl:variable>
@@ -8405,10 +8545,10 @@
 
 	</xsl:template> <!-- add_spaces_to_sourcecode -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="interspers_tag_open">###interspers123###</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="interspers_tag_close">###/interspers123###</xsl:variable>
+	<xsl:variable name="interspers_tag_open">###interspers123###</xsl:variable>
+	<xsl:variable name="interspers_tag_close">###/interspers123###</xsl:variable>
 	<!-- split string by separator for interspers -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="split_for_interspers">
+	<xsl:template name="split_for_interspers">
 		<xsl:param name="pText" select="."/>
 		<xsl:param name="sep" select="','"/>
 		<!-- word with length more than 30 will be interspersed with zero-width space -->
@@ -8419,7 +8559,7 @@
 		</xsl:call-template>
 	</xsl:template> <!-- end: split string by separator for interspers -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="replace_tag_interspers">
+	<xsl:template name="replace_tag_interspers">
 		<xsl:param name="text"/>
 		<xsl:choose>
 			<xsl:when test="contains($text, $interspers_tag_open)">
@@ -8437,7 +8577,7 @@
 	</xsl:template>
 
 	<!-- insert 'char' between each character in the string -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="interspers">
+	<xsl:template name="interspers">
 		<xsl:param name="str"/>
 		<xsl:param name="char" select="$zero_width_space"/>
 		<xsl:if test="$str != ''">
@@ -8455,17 +8595,17 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="interspers-java">
+	<xsl:template name="interspers-java">
 		<xsl:param name="str"/>
 		<xsl:param name="char" select="$zero_width_space"/>
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new($str),'([^ -.:=_—])',concat('$1', $char))"/> <!-- insert $char after each char excep space, - . : = _ etc. -->
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*" mode="syntax_highlight">
+	<xsl:template match="*" mode="syntax_highlight">
 		<xsl:apply-templates mode="syntax_highlight"/>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="syntax_highlight_styles_">
+	<xsl:variable name="syntax_highlight_styles_">
 		<style class="hljs-addition" xsl:use-attribute-sets="hljs-addition"/>
 		<style class="hljs-attr" xsl:use-attribute-sets="hljs-attr"/>
 		<style class="hljs-attribute" xsl:use-attribute-sets="hljs-attribute"/>
@@ -8515,9 +8655,9 @@
 		<style class="hljs-variable" xsl:use-attribute-sets="hljs-variable"/>
 		<style class="hljs-variable_and_language_" xsl:use-attribute-sets="hljs-variable_and_language_"/>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="syntax_highlight_styles" select="xalan:nodeset($syntax_highlight_styles_)"/>
+	<xsl:variable name="syntax_highlight_styles" select="xalan:nodeset($syntax_highlight_styles_)"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="span" mode="syntax_highlight" priority="2">
+	<xsl:template match="span" mode="syntax_highlight" priority="2">
 		<!-- <fo:inline color="green" font-style="italic"><xsl:apply-templates mode="syntax_highlight"/></fo:inline> -->
 		<fo:inline>
 			<xsl:variable name="classes_">
@@ -8573,13 +8713,13 @@
 		<xsl:apply-templates mode="syntax_highlight"/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()" mode="syntax_highlight" priority="2">
+	<xsl:template match="text()" mode="syntax_highlight" priority="2">
 		<xsl:call-template name="add_spaces_to_sourcecode"/>
 	</xsl:template>
 
 	<!-- end mode="syntax_highlight" -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sourcecode']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'sourcecode']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="sourcecode-name-style">
 				<xsl:apply-templates/>
@@ -8593,7 +8733,7 @@
 	<!-- =============== -->
 	<!-- pre  -->
 	<!-- =============== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='pre']" name="pre">
+	<xsl:template match="*[local-name()='pre']" name="pre">
 		<fo:block xsl:use-attribute-sets="pre-style">
 			<xsl:copy-of select="@id"/>
 			<xsl:choose>
@@ -8624,14 +8764,14 @@
 	<!-- ========== -->
 	<!-- permission -->
 	<!-- ========== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'permission']">
+	<xsl:template match="*[local-name() = 'permission']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="permission-style">
 			<xsl:apply-templates select="*[local-name()='name']"/>
 			<xsl:apply-templates select="node()[not(local-name() = 'name')]"/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'permission']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'permission']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="permission-name-style">
 				<xsl:apply-templates/>
@@ -8640,7 +8780,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'permission']/*[local-name() = 'label']">
+	<xsl:template match="*[local-name() = 'permission']/*[local-name() = 'label']">
 		<fo:block xsl:use-attribute-sets="permission-label-style">
 			<xsl:apply-templates/>
 		</fo:block>
@@ -8651,7 +8791,7 @@
 	<!-- ========== -->
 	<!-- requirement -->
 <!-- ========== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'requirement']">
+	<xsl:template match="*[local-name() = 'requirement']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="requirement-style">
 			<xsl:apply-templates select="*[local-name()='name']"/>
 			<xsl:apply-templates select="*[local-name()='label']"/>
@@ -8661,7 +8801,7 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'requirement']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'requirement']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="requirement-name-style">
 
@@ -8671,19 +8811,19 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'requirement']/*[local-name() = 'label']">
+	<xsl:template match="*[local-name() = 'requirement']/*[local-name() = 'label']">
 		<fo:block xsl:use-attribute-sets="requirement-label-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'requirement']/@obligation">
+	<xsl:template match="*[local-name() = 'requirement']/@obligation">
 			<fo:block>
 				<fo:inline padding-right="3mm">Obligation</fo:inline><xsl:value-of select="."/>
 			</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'requirement']/*[local-name() = 'subject']" priority="2">
+	<xsl:template match="*[local-name() = 'requirement']/*[local-name() = 'subject']" priority="2">
 		<fo:block xsl:use-attribute-sets="subject-style">
 			<xsl:text>Target Type </xsl:text><xsl:apply-templates/>
 		</fo:block>
@@ -8695,14 +8835,14 @@
 	<!-- ========== -->
 	<!-- recommendation -->
 	<!-- ========== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'recommendation']">
+	<xsl:template match="*[local-name() = 'recommendation']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="recommendation-style">
 			<xsl:apply-templates select="*[local-name()='name']"/>
 			<xsl:apply-templates select="node()[not(local-name() = 'name')]"/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'recommendation']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'recommendation']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="recommendation-name-style">
 				<xsl:apply-templates/>
@@ -8711,7 +8851,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'recommendation']/*[local-name() = 'label']">
+	<xsl:template match="*[local-name() = 'recommendation']/*[local-name() = 'label']">
 		<fo:block xsl:use-attribute-sets="recommendation-label-style">
 			<xsl:apply-templates/>
 		</fo:block>
@@ -8723,53 +8863,53 @@
 	<!-- ========== -->
 	<!-- ========== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'subject']">
+	<xsl:template match="*[local-name() = 'subject']">
 		<fo:block xsl:use-attribute-sets="subject-style">
 			<xsl:text>Target Type </xsl:text><xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'div']">
+	<xsl:template match="*[local-name() = 'div']">
 		<fo:block><xsl:apply-templates/></fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'inherit'] | *[local-name() = 'component'][@class = 'inherit'] |           *[local-name() = 'div'][@type = 'requirement-inherit'] |           *[local-name() = 'div'][@type = 'recommendation-inherit'] |           *[local-name() = 'div'][@type = 'permission-inherit']">
+	<xsl:template match="*[local-name() = 'inherit'] | *[local-name() = 'component'][@class = 'inherit'] |           *[local-name() = 'div'][@type = 'requirement-inherit'] |           *[local-name() = 'div'][@type = 'recommendation-inherit'] |           *[local-name() = 'div'][@type = 'permission-inherit']">
 		<fo:block xsl:use-attribute-sets="inherit-style">
 			<xsl:text>Dependency </xsl:text><xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'description'] | *[local-name() = 'component'][@class = 'description'] |           *[local-name() = 'div'][@type = 'requirement-description'] |           *[local-name() = 'div'][@type = 'recommendation-description'] |           *[local-name() = 'div'][@type = 'permission-description']">
+	<xsl:template match="*[local-name() = 'description'] | *[local-name() = 'component'][@class = 'description'] |           *[local-name() = 'div'][@type = 'requirement-description'] |           *[local-name() = 'div'][@type = 'recommendation-description'] |           *[local-name() = 'div'][@type = 'permission-description']">
 		<fo:block xsl:use-attribute-sets="description-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'specification'] | *[local-name() = 'component'][@class = 'specification'] |           *[local-name() = 'div'][@type = 'requirement-specification'] |           *[local-name() = 'div'][@type = 'recommendation-specification'] |           *[local-name() = 'div'][@type = 'permission-specification']">
+	<xsl:template match="*[local-name() = 'specification'] | *[local-name() = 'component'][@class = 'specification'] |           *[local-name() = 'div'][@type = 'requirement-specification'] |           *[local-name() = 'div'][@type = 'recommendation-specification'] |           *[local-name() = 'div'][@type = 'permission-specification']">
 		<fo:block xsl:use-attribute-sets="specification-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'measurement-target'] | *[local-name() = 'component'][@class = 'measurement-target'] |           *[local-name() = 'div'][@type = 'requirement-measurement-target'] |           *[local-name() = 'div'][@type = 'recommendation-measurement-target'] |           *[local-name() = 'div'][@type = 'permission-measurement-target']">
+	<xsl:template match="*[local-name() = 'measurement-target'] | *[local-name() = 'component'][@class = 'measurement-target'] |           *[local-name() = 'div'][@type = 'requirement-measurement-target'] |           *[local-name() = 'div'][@type = 'recommendation-measurement-target'] |           *[local-name() = 'div'][@type = 'permission-measurement-target']">
 		<fo:block xsl:use-attribute-sets="measurement-target-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'verification'] | *[local-name() = 'component'][@class = 'verification'] |           *[local-name() = 'div'][@type = 'requirement-verification'] |           *[local-name() = 'div'][@type = 'recommendation-verification'] |           *[local-name() = 'div'][@type = 'permission-verification']">
+	<xsl:template match="*[local-name() = 'verification'] | *[local-name() = 'component'][@class = 'verification'] |           *[local-name() = 'div'][@type = 'requirement-verification'] |           *[local-name() = 'div'][@type = 'recommendation-verification'] |           *[local-name() = 'div'][@type = 'permission-verification']">
 		<fo:block xsl:use-attribute-sets="verification-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'import'] | *[local-name() = 'component'][@class = 'import'] |           *[local-name() = 'div'][@type = 'requirement-import'] |           *[local-name() = 'div'][@type = 'recommendation-import'] |           *[local-name() = 'div'][@type = 'permission-import']">
+	<xsl:template match="*[local-name() = 'import'] | *[local-name() = 'component'][@class = 'import'] |           *[local-name() = 'div'][@type = 'requirement-import'] |           *[local-name() = 'div'][@type = 'recommendation-import'] |           *[local-name() = 'div'][@type = 'permission-import']">
 		<fo:block xsl:use-attribute-sets="import-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'div'][starts-with(@type, 'requirement-component')] |           *[local-name() = 'div'][starts-with(@type, 'recommendation-component')] |           *[local-name() = 'div'][starts-with(@type, 'permission-component')]">
+	<xsl:template match="*[local-name() = 'div'][starts-with(@type, 'requirement-component')] |           *[local-name() = 'div'][starts-with(@type, 'recommendation-component')] |           *[local-name() = 'div'][starts-with(@type, 'permission-component')]">
 		<fo:block xsl:use-attribute-sets="component-style">
 			<xsl:apply-templates/>
 		</fo:block>
@@ -8781,7 +8921,7 @@
 	<!-- ========== -->
 	<!-- requirement, recommendation, permission table -->
 	<!-- ========== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'table'][@class = 'recommendation' or @class='requirement' or @class='permission']">
+	<xsl:template match="*[local-name() = 'table'][@class = 'recommendation' or @class='requirement' or @class='permission']">
 		<fo:block-container margin-left="0mm" margin-right="0mm" margin-bottom="12pt" role="SKIP">
 			<xsl:if test="ancestor::*[local-name() = 'table'][@class = 'recommendation' or @class='requirement' or @class='permission']">
 				<xsl:attribute name="margin-bottom">0pt</xsl:attribute>
@@ -8815,19 +8955,19 @@
 		</fo:block-container>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='thead']" mode="requirement">
+	<xsl:template match="*[local-name()='thead']" mode="requirement">
 		<fo:table-header>
 			<xsl:apply-templates mode="requirement"/>
 		</fo:table-header>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tbody']" mode="requirement">
+	<xsl:template match="*[local-name()='tbody']" mode="requirement">
 		<fo:table-body>
 			<xsl:apply-templates mode="requirement"/>
 		</fo:table-body>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='tr']" mode="requirement">
+	<xsl:template match="*[local-name()='tr']" mode="requirement">
 		<fo:table-row height="7mm" border-bottom="0.5pt solid grey">
 
 			<xsl:if test="parent::*[local-name()='thead'] or starts-with(*[local-name()='td' or local-name()='th'][1], 'Requirement ') or starts-with(*[local-name()='td' or local-name()='th'][1], 'Recommendation ')">
@@ -8839,7 +8979,7 @@
 		</fo:table-row>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='th']" mode="requirement">
+	<xsl:template match="*[local-name()='th']" mode="requirement">
 		<fo:table-cell text-align="{@align}" display-align="center" padding="1mm" padding-left="2mm"> <!-- border="0.5pt solid black" -->
 			<xsl:call-template name="setTextAlignment">
 				<xsl:with-param name="default">left</xsl:with-param>
@@ -8853,7 +8993,7 @@
 		</fo:table-cell>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='td']" mode="requirement">
+	<xsl:template match="*[local-name()='td']" mode="requirement">
 		<fo:table-cell text-align="{@align}" display-align="center" padding="1mm" padding-left="2mm"> <!-- border="0.5pt solid black" -->
 			<xsl:if test="*[local-name() = 'table'][@class = 'recommendation' or @class='requirement' or @class='permission']">
 				<xsl:attribute name="padding">0mm</xsl:attribute>
@@ -8875,14 +9015,14 @@
 		</fo:table-cell>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p'][@class='RecommendationTitle' or @class = 'RecommendationTestTitle']" priority="2">
+	<xsl:template match="*[local-name() = 'p'][@class='RecommendationTitle' or @class = 'RecommendationTestTitle']" priority="2">
 		<fo:block font-size="11pt">
 
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p2'][ancestor::*[local-name() = 'table'][@class = 'recommendation' or @class='requirement' or @class='permission']]">
+	<xsl:template match="*[local-name() = 'p2'][ancestor::*[local-name() = 'table'][@class = 'recommendation' or @class='requirement' or @class='permission']]">
 		<fo:block>
 			<xsl:apply-templates/>
 		</fo:block>
@@ -8894,7 +9034,7 @@
 	<!-- ====== -->
 	<!-- termexample -->
 	<!-- ====== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termexample']">
+	<xsl:template match="*[local-name() = 'termexample']">
 		<fo:block id="{@id}" xsl:use-attribute-sets="termexample-style">
 			<xsl:call-template name="refine_termexample-style"/>
 			<xsl:call-template name="setBlockSpanAll"/>
@@ -8904,7 +9044,7 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termexample']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'termexample']/*[local-name() = 'name']">
 		<xsl:if test="normalize-space() != ''">
 			<fo:inline xsl:use-attribute-sets="termexample-name-style">
 				<xsl:call-template name="refine_termexample-name-style"/>
@@ -8913,7 +9053,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termexample']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'termexample']/*[local-name() = 'p']">
 		<xsl:variable name="element">inline
 
 
@@ -8947,7 +9087,7 @@
 	     text line 1
 			 text line 2
 	-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'example']">
+	<xsl:template match="*[local-name() = 'example']">
 
 		<fo:block-container id="{@id}" xsl:use-attribute-sets="example-style" role="SKIP">
 
@@ -9042,7 +9182,7 @@
 		</fo:block-container>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'example']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'example']/*[local-name() = 'name']">
 		<xsl:param name="fo_element">block</xsl:param>
 
 		<xsl:choose>
@@ -9066,13 +9206,13 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'table']/*[local-name() = 'example']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'table']/*[local-name() = 'example']/*[local-name() = 'name']">
 		<fo:inline xsl:use-attribute-sets="example-name-style">
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'example']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'example']/*[local-name() = 'p']">
 		<xsl:param name="fo_element">block</xsl:param>
 
 		<xsl:variable name="num"><xsl:number/></xsl:variable>
@@ -9116,7 +9256,7 @@
 	<!-- origin -->
 	<!-- modification -->
 	<!-- ====== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termsource']" name="termsource">
+	<xsl:template match="*[local-name() = 'termsource']" name="termsource">
 		<fo:block xsl:use-attribute-sets="termsource-style">
 
 			<xsl:call-template name="refine_termsource-style"/>
@@ -9155,24 +9295,24 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termsource']/text()[starts-with(., '[SOURCE: Adapted from: ') or     starts-with(., '[SOURCE: Quoted from: ') or     starts-with(., '[SOURCE: Modified from: ')]" priority="2">
+	<xsl:template match="*[local-name() = 'termsource']/text()[starts-with(., '[SOURCE: Adapted from: ') or     starts-with(., '[SOURCE: Quoted from: ') or     starts-with(., '[SOURCE: Modified from: ')]" priority="2">
 		<xsl:text>[</xsl:text><xsl:value-of select="substring-after(., '[SOURCE: ')"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termsource']/text()">
+	<xsl:template match="*[local-name() = 'termsource']/text()">
 		<xsl:if test="normalize-space() != ''">
 			<xsl:value-of select="."/>
 		</xsl:if>
 	</xsl:template>
 
 	<!-- text SOURCE: -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'termsource']/*[local-name() = 'strong'][1][following-sibling::*[1][local-name() = 'origin']]/text()">
+	<xsl:template match="*[local-name() = 'termsource']/*[local-name() = 'strong'][1][following-sibling::*[1][local-name() = 'origin']]/text()">
 		<fo:inline xsl:use-attribute-sets="termsource-text-style">
 			<xsl:value-of select="."/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'origin']">
+	<xsl:template match="*[local-name() = 'origin']">
 		<xsl:call-template name="insert_basic_link">
 			<xsl:with-param name="element">
 				<fo:basic-link internal-destination="{@bibitemid}" fox:alt-text="{@citeas}">
@@ -9188,7 +9328,7 @@
 	</xsl:template>
 
 	<!-- not using, see https://github.com/glossarist/iev-document/issues/23 -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'modification']">
+	<xsl:template match="*[local-name() = 'modification']">
 		<xsl:variable name="title-modified">
 			<xsl:call-template name="getLocalizedString">
 				<xsl:with-param name="key">modified</xsl:with-param>
@@ -9203,11 +9343,11 @@
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'modification']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'modification']/*[local-name() = 'p']">
 		<fo:inline><xsl:apply-templates/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'modification']/text()">
+	<xsl:template match="*[local-name() = 'modification']/text()">
 		<xsl:if test="normalize-space() != ''">
 			<!-- <xsl:value-of select="."/> -->
 			<xsl:call-template name="text"/>
@@ -9222,7 +9362,7 @@
 	<!-- source -->
 	<!-- author  -->
 	<!-- ====== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'quote']">
+	<xsl:template match="*[local-name() = 'quote']">
 		<fo:block-container margin-left="0mm" role="SKIP">
 
 			<xsl:call-template name="setBlockSpanAll"/>
@@ -9256,7 +9396,7 @@
 		</fo:block-container>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'source']">
+	<xsl:template match="*[local-name() = 'source']">
 		<xsl:if test="../*[local-name() = 'author']">
 			<xsl:text>, </xsl:text>
 		</xsl:if>
@@ -9269,22 +9409,22 @@
 		</xsl:call-template>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'author']">
+	<xsl:template match="*[local-name() = 'author']">
 		<xsl:text>— </xsl:text>
 		<xsl:apply-templates/>
 	</xsl:template>
 	<!-- ====== -->
 	<!-- ====== -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitems_">
+	<xsl:variable name="bibitems_">
 		<xsl:for-each select="//*[local-name() = 'bibitem']">
 			<xsl:copy-of select="."/>
 		</xsl:for-each>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitems" select="xalan:nodeset($bibitems_)"/>
+	<xsl:variable name="bibitems" select="xalan:nodeset($bibitems_)"/>
 
 	<!-- get all hidden bibitems to exclude them from eref/origin processing -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitems_hidden_">
+	<xsl:variable name="bibitems_hidden_">
 		<xsl:for-each select="//*[local-name() = 'bibitem'][@hidden='true']">
 			<xsl:copy-of select="."/>
 		</xsl:for-each>
@@ -9292,11 +9432,11 @@
 			<xsl:copy-of select="."/>
 		</xsl:for-each>
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bibitems_hidden" select="xalan:nodeset($bibitems_hidden_)"/>
+	<xsl:variable name="bibitems_hidden" select="xalan:nodeset($bibitems_hidden_)"/>
 	<!-- ====== -->
 	<!-- eref -->
 	<!-- ====== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'eref']" name="eref">
+	<xsl:template match="*[local-name() = 'eref']" name="eref">
 		<xsl:variable name="current_bibitemid" select="@bibitemid"/>
 		<!-- <xsl:variable name="external-destination" select="normalize-space(key('bibitems', $current_bibitemid)/*[local-name() = 'uri'][@type = 'citation'])"/> -->
 		<xsl:variable name="external-destination" select="normalize-space($bibitems/*[local-name() ='bibitem'][@id = $current_bibitemid]/*[local-name() = 'uri'][@type = 'citation'])"/>
@@ -9357,7 +9497,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_basic_link_style">
+	<xsl:template name="refine_basic_link_style">
 
 	</xsl:template> <!-- refine_basic_link_style -->
 
@@ -9366,7 +9506,7 @@
 	<!-- ====== -->
 
 	<!-- Tabulation processing -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'tab']">
+	<xsl:template match="*[local-name() = 'tab']">
 		<!-- zero-space char -->
 		<xsl:variable name="depth">
 			<xsl:call-template name="getLevel">
@@ -9408,7 +9548,7 @@
 
 	</xsl:template> <!-- tab -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertNonBreakSpaces">
+	<xsl:template name="insertNonBreakSpaces">
 		<xsl:param name="count"/>
 		<xsl:if test="$count &gt; 0">
 			<xsl:text> </xsl:text>
@@ -9419,7 +9559,7 @@
 	</xsl:template>
 
 	<!-- Preferred, admitted, deprecated -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'preferred']">
+	<xsl:template match="*[local-name() = 'preferred']">
 		<xsl:variable name="level">
 			<xsl:call-template name="getLevel"/>
 		</xsl:variable>
@@ -9449,24 +9589,24 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'domain']">
+	<xsl:template match="*[local-name() = 'domain']">
 		<fo:inline xsl:use-attribute-sets="domain-style">&lt;<xsl:apply-templates/>&gt;</fo:inline>
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'admitted']">
+	<xsl:template match="*[local-name() = 'admitted']">
 		<fo:block xsl:use-attribute-sets="admitted-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'deprecates']">
+	<xsl:template match="*[local-name() = 'deprecates']">
 		<fo:block xsl:use-attribute-sets="deprecates-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setStyle_preferred">
+	<xsl:template name="setStyle_preferred">
 		<xsl:if test="*[local-name() = 'strong']">
 			<xsl:attribute name="font-weight">normal</xsl:attribute>
 		</xsl:if>
@@ -9474,7 +9614,7 @@
 
 	<!-- regarding ISO 10241-1:2011,  If there is more than one preferred term, each preferred term follows the previous one on a new line. -->
 	<!-- in metanorma xml preferred terms delimited by semicolons -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'preferred']/text()[contains(., ';')] | *[local-name() = 'preferred']/*[local-name() = 'strong']/text()[contains(., ';')]">
+	<xsl:template match="*[local-name() = 'preferred']/text()[contains(., ';')] | *[local-name() = 'preferred']/*[local-name() = 'strong']/text()[contains(., ';')]">
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.), ';', $linebreak)"/>
 	</xsl:template>
 	<!--  End Preferred, admitted, deprecated -->
@@ -9482,16 +9622,16 @@
 	<!-- ========== -->
 	<!-- definition -->
 	<!-- ========== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'definition']">
+	<xsl:template match="*[local-name() = 'definition']">
 		<fo:block xsl:use-attribute-sets="definition-style" role="SKIP">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'definition'][preceding-sibling::*[local-name() = 'domain']]">
+	<xsl:template match="*[local-name() = 'definition'][preceding-sibling::*[local-name() = 'domain']]">
 		<xsl:apply-templates/>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'definition'][preceding-sibling::*[local-name() = 'domain']]/*[local-name() = 'p'][1]">
+	<xsl:template match="*[local-name() = 'definition'][preceding-sibling::*[local-name() = 'domain']]/*[local-name() = 'p'][1]">
 		<fo:inline> <xsl:apply-templates/></fo:inline>
 		<fo:block/>
 	</xsl:template>
@@ -9500,7 +9640,7 @@
 	<!-- ========== -->
 
 	<!-- main sections -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="/*/*[local-name() = 'sections']/*" name="sections_node" priority="2">
+	<xsl:template match="/*/*[local-name() = 'sections']/*" name="sections_node" priority="2">
 
 		<fo:block>
 			<xsl:call-template name="setId"/>
@@ -9513,11 +9653,16 @@
 	</xsl:template>
 
 	<!-- note: @top-level added in mode=" update_xml_step_move_pagebreak" -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sections']/*[local-name() = 'page_sequence']/*[not(@top-level)]" priority="2">
+	<xsl:template match="*[local-name() = 'sections']/*[local-name() = 'page_sequence']/*[not(@top-level)]" priority="2">
 		<xsl:call-template name="sections_node"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="sections_element_style">
+	<!-- page_sequence/sections/clause -->
+	<xsl:template match="*[local-name() = 'page_sequence']/*[local-name() = 'sections']/*[not(@top-level)]" priority="2">
+		<xsl:call-template name="sections_node"/>
+	</xsl:template>
+
+	<xsl:template name="sections_element_style">
 
 			<xsl:variable name="pos"><xsl:number count="csa:sections/csa:clause[not(@type='scope') and not(@type='conformance')]"/></xsl:variable>
 			<xsl:if test="$pos &gt;= 2">
@@ -9526,7 +9671,7 @@
 
 	</xsl:template> <!-- sections_element_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="//*[contains(local-name(), '-standard')]/*[local-name() = 'preface']/*" priority="2" name="preface_node"> <!-- /*/*[local-name() = 'preface']/* -->
+	<xsl:template match="//*[contains(local-name(), '-standard')]/*[local-name() = 'preface']/*" priority="2" name="preface_node"> <!-- /*/*[local-name() = 'preface']/* -->
 
 				<fo:block break-after="page"/>
 
@@ -9536,11 +9681,17 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'preface']/*[local-name() = 'page_sequence']/*" priority="2"> <!-- /*/*[local-name() = 'preface']/* -->
+	<!-- preface/ page_sequence/clause -->
+	<xsl:template match="*[local-name() = 'preface']/*[local-name() = 'page_sequence']/*[not(@top-level)]" priority="2"> <!-- /*/*[local-name() = 'preface']/* -->
 		<xsl:call-template name="preface_node"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'clause'][normalize-space() != '' or *[local-name() = 'figure'] or @id]" name="template_clause"> <!-- if clause isn't empty -->
+	<!-- page_sequence/preface/clause -->
+	<xsl:template match="*[local-name() = 'page_sequence']/*[local-name() = 'preface']/*[not(@top-level)]" priority="2"> <!-- /*/*[local-name() = 'preface']/* -->
+		<xsl:call-template name="preface_node"/>
+	</xsl:template>
+
+	<xsl:template match="*[local-name() = 'clause'][normalize-space() != '' or *[local-name() = 'figure'] or @id]" name="template_clause"> <!-- if clause isn't empty -->
 		<fo:block>
 			<xsl:if test="parent::*[local-name() = 'copyright-statement']">
 				<xsl:attribute name="role">SKIP</xsl:attribute>
@@ -9556,17 +9707,17 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_clause_style">
+	<xsl:template name="refine_clause_style">
 
 	</xsl:template> <!-- refine_clause_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'definitions']">
+	<xsl:template match="*[local-name() = 'definitions']">
 		<fo:block id="{@id}">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'annex'][normalize-space() != '']">
+	<xsl:template match="*[local-name() = 'annex'][normalize-space() != '']">
 		<xsl:choose>
 			<xsl:when test="@continue = 'true'"> <!-- it's using for figure/table on top level for block span -->
 				<fo:block>
@@ -9593,11 +9744,11 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_annex_style">
+	<xsl:template name="refine_annex_style">
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'review']"> <!-- 'review' will be processed in mn2pdf/review.xsl -->
+	<xsl:template match="*[local-name() = 'review']"> <!-- 'review' will be processed in mn2pdf/review.xsl -->
 		<!-- comment 2019-11-29 -->
 		<!-- <fo:block font-weight="bold">Review:</fo:block>
 		<xsl:apply-templates /> -->
@@ -9621,9 +9772,9 @@
 	</xsl:template>
 
 	<!-- https://github.com/metanorma/mn-samples-bsi/issues/312 -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'review'][@type = 'other']"/>
+	<xsl:template match="*[local-name() = 'review'][@type = 'other']"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'name']/text()">
+	<xsl:template match="*[local-name() = 'name']/text()">
 		<!-- 0xA0 to space replacement -->
 		<xsl:value-of select="java:replaceAll(java:java.lang.String.new(.),' ',' ')"/>
 	</xsl:template>
@@ -9631,16 +9782,16 @@
 	<!-- ===================================== -->
 	<!-- Lists processing -->
 	<!-- ===================================== -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="ul_labels_">
+	<xsl:variable name="ul_labels_">
 
 				<label level="1">•</label>
 				<label level="2">-</label><!-- minus -->
 				<label level="3" font-size="75%">o</label> <!-- white circle -->
 
 	</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="ul_labels" select="xalan:nodeset($ul_labels_)"/>
+	<xsl:variable name="ul_labels" select="xalan:nodeset($ul_labels_)"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setULLabel">
+	<xsl:template name="setULLabel">
 		<xsl:variable name="list_level__">
 			<xsl:value-of select="count(ancestor::*[local-name() = 'ul']) + count(ancestor::*[local-name() = 'ol'])"/>
 		</xsl:variable>
@@ -9666,12 +9817,12 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="label" mode="ul_labels">
+	<xsl:template match="label" mode="ul_labels">
 		<xsl:copy-of select="@*[not(local-name() = 'level')]"/>
 		<xsl:value-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getListItemFormat">
+	<xsl:template name="getListItemFormat">
 		<!-- Example: for BSI <?list-type loweralpha?> -->
 		<xsl:variable name="processing_instruction_type" select="normalize-space(../preceding-sibling::*[1]/processing-instruction('list-type'))"/>
 		<xsl:choose>
@@ -9802,7 +9953,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'ul'] | *[local-name() = 'ol']">
+	<xsl:template match="*[local-name() = 'ul'] | *[local-name() = 'ol']">
 		<xsl:param name="indent">0</xsl:param>
 		<xsl:choose>
 			<xsl:when test="parent::*[local-name() = 'note'] or parent::*[local-name() = 'termnote']">
@@ -9837,11 +9988,11 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_list_container_style">
+	<xsl:template name="refine_list_container_style">
 
 	</xsl:template> <!-- refine_list_container_style -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='ul'] | *[local-name()='ol']" mode="list" name="list">
+	<xsl:template match="*[local-name()='ul'] | *[local-name()='ol']" mode="list" name="list">
 
 		<xsl:apply-templates select="*[local-name() = 'name']">
 			<xsl:with-param name="process">true</xsl:with-param>
@@ -9901,11 +10052,11 @@
 		<xsl:apply-templates select="./*[local-name() = 'note']"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="refine_list-style_provisional-distance-between-starts">
+	<xsl:template name="refine_list-style_provisional-distance-between-starts">
 
 	</xsl:template> <!-- refine_list-style_provisional-distance-between-starts -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'ol' or local-name() = 'ul']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'ol' or local-name() = 'ul']/*[local-name() = 'name']">
 		<xsl:param name="process">false</xsl:param>
 		<xsl:if test="$process = 'true'">
 			<fo:block xsl:use-attribute-sets="list-name-style">
@@ -9914,7 +10065,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name()='li']">
+	<xsl:template match="*[local-name()='li']">
 		<xsl:param name="indent">0</xsl:param>
 		<!-- <fo:list-item xsl:use-attribute-sets="list-item-style">
 			<fo:list-item-label end-indent="label-end()"><fo:block>x</fo:block></fo:list-item-label>
@@ -9968,15 +10119,15 @@
 	<!-- Index section processing -->
 	<!-- =================== -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="index" select="document($external_index)"/>
+	<xsl:variable name="index" select="document($external_index)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="bookmark_in_fn">
+	<xsl:variable name="bookmark_in_fn">
 		<xsl:for-each select="//*[local-name() = 'bookmark'][ancestor::*[local-name() = 'fn']]">
 			<bookmark><xsl:value-of select="@id"/></bookmark>
 		</xsl:for-each>
 	</xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="index_add_id">
+	<xsl:template match="@*|node()" mode="index_add_id">
 		<xsl:param name="docid"/>
 		<xsl:copy>
 			<xsl:apply-templates select="@*|node()" mode="index_add_id">
@@ -9985,7 +10136,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'xref']" mode="index_add_id">
+	<xsl:template match="*[local-name() = 'xref']" mode="index_add_id">
 		<xsl:param name="docid"/>
 		<xsl:variable name="id">
 			<xsl:call-template name="generateIndexXrefId">
@@ -10018,20 +10169,20 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="index_update">
+	<xsl:template match="@*|node()" mode="index_update">
 		<xsl:copy>
 				<xsl:apply-templates select="@*|node()" mode="index_update"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']//*[local-name() = 'li']" mode="index_update">
+	<xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'li']" mode="index_update">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="index_update"/>
 		<xsl:apply-templates select="node()[1]" mode="process_li_element"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']//*[local-name() = 'li']/node()" mode="process_li_element" priority="2">
+	<xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'li']/node()" mode="process_li_element" priority="2">
 		<xsl:param name="element"/>
 		<xsl:param name="remove" select="'false'"/>
 		<xsl:param name="target"/>
@@ -10124,7 +10275,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="xref_copy">
+	<xsl:template match="@*|node()" mode="xref_copy">
 		<xsl:param name="target"/>
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="xref_copy"/>
@@ -10135,7 +10286,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="generateIndexXrefId">
+	<xsl:template name="generateIndexXrefId">
 		<xsl:param name="docid"/>
 
 		<xsl:variable name="level" select="count(ancestor::*[local-name() = 'ul'])"/>
@@ -10152,21 +10303,21 @@
 		<xsl:value-of select="concat($docid_curr, '_', $item_number, '_', $xref_number)"/> <!-- $level, '_',  -->
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']/*[local-name() = 'title']" priority="4">
+	<xsl:template match="*[local-name() = 'indexsect']/*[local-name() = 'title']" priority="4">
 		<fo:block xsl:use-attribute-sets="indexsect-title-style">
 			<!-- Index -->
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']/*[local-name() = 'clause']/*[local-name() = 'title']" priority="4">
+	<xsl:template match="*[local-name() = 'indexsect']/*[local-name() = 'clause']/*[local-name() = 'title']" priority="4">
 		<!-- Letter A, B, C, ... -->
 		<fo:block xsl:use-attribute-sets="indexsect-clause-title-style">
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']/*[local-name() = 'clause']" priority="4">
+	<xsl:template match="*[local-name() = 'indexsect']/*[local-name() = 'clause']" priority="4">
 		<xsl:apply-templates/>
 		<fo:block>
 			<xsl:if test="following-sibling::*[local-name() = 'clause']">
@@ -10175,11 +10326,11 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']//*[local-name() = 'ul']" priority="4">
+	<xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'ul']" priority="4">
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']//*[local-name() = 'li']" priority="4">
+	<xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'li']" priority="4">
 		<xsl:variable name="level" select="count(ancestor::*[local-name() = 'ul'])"/>
 		<fo:block start-indent="{5 * $level}mm" text-indent="-5mm">
 
@@ -10187,14 +10338,14 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'indexsect']//*[local-name() = 'li']/text()">
+	<xsl:template match="*[local-name() = 'indexsect']//*[local-name() = 'li']/text()">
 		<!-- to split by '_' and other chars -->
 		<xsl:call-template name="add-zero-spaces-java"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'table']/*[local-name() = 'bookmark']" priority="2"/>
+	<xsl:template match="*[local-name() = 'table']/*[local-name() = 'bookmark']" priority="2"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'bookmark']" name="bookmark">
+	<xsl:template match="*[local-name() = 'bookmark']" name="bookmark">
 		<!-- <fo:inline id="{@id}" font-size="1pt"/> -->
 		<fo:inline id="{@id}" font-size="1pt"><xsl:value-of select="$hair_space"/></fo:inline>
 		<!-- we need to add zero-width space, otherwise this fo:inline is missing in IF xml -->
@@ -10207,7 +10358,7 @@
 	<!-- ============ -->
 	<!-- errata -->
 	<!-- ============ -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'errata']">
+	<xsl:template match="*[local-name() = 'errata']">
 		<!-- <row>
 					<date>05-07-2013</date>
 					<type>Editorial</type>
@@ -10233,13 +10384,13 @@
 		</fo:table>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'errata']/*[local-name() = 'row']">
+	<xsl:template match="*[local-name() = 'errata']/*[local-name() = 'row']">
 		<fo:table-row>
 			<xsl:apply-templates/>
 		</fo:table-row>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'errata']/*[local-name() = 'row']/*">
+	<xsl:template match="*[local-name() = 'errata']/*[local-name() = 'row']/*">
 		<fo:table-cell border="1pt solid black" padding-left="1mm" padding-top="0.5mm">
 			<fo:block role="SKIP"><xsl:apply-templates/></fo:block>
 		</fo:table-cell>
@@ -10255,16 +10406,16 @@
 	<!-- ========================================================== -->
 	<!-- Reference sections (Normative References and Bibliography) -->
 	<!-- ========================================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references'][@hidden='true']" priority="3"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'bibitem'][@hidden='true']" priority="3">
+	<xsl:template match="*[local-name() = 'references'][@hidden='true']" priority="3"/>
+	<xsl:template match="*[local-name() = 'bibitem'][@hidden='true']" priority="3">
 		<xsl:param name="skip" select="normalize-space(preceding-sibling::*[1][local-name() = 'bibitem'] and 1 = 1)"/>
 
 	</xsl:template>
 	<!-- don't display bibitem with @id starts with '_hidden', that was introduced for references integrity -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'bibitem'][starts-with(@id, 'hidden_bibitem_')]" priority="3"/>
+	<xsl:template match="*[local-name() = 'bibitem'][starts-with(@id, 'hidden_bibitem_')]" priority="3"/>
 
 	<!-- Normative references -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references'][@normative='true']" priority="2">
+	<xsl:template match="*[local-name() = 'references'][@normative='true']" priority="2">
 
 		<fo:block id="{@id}">
 			<xsl:apply-templates/>
@@ -10273,7 +10424,7 @@
 	</xsl:template>
 
 	<!-- Bibliography (non-normative references) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references']">
+	<xsl:template match="*[local-name() = 'references']">
 		<xsl:if test="not(ancestor::*[local-name() = 'annex'])">
 
 					<fo:block break-after="page"/>
@@ -10297,12 +10448,12 @@
 
 	</xsl:template> <!-- references -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'bibitem']">
+	<xsl:template match="*[local-name() = 'bibitem']">
 		<xsl:call-template name="bibitem"/>
 	</xsl:template>
 
 	<!-- Normative references -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references'][@normative='true']/*[local-name() = 'bibitem']" name="bibitem" priority="2">
+	<xsl:template match="*[local-name() = 'references'][@normative='true']/*[local-name() = 'bibitem']" name="bibitem" priority="2">
 
 				<fo:block id="{@id}" xsl:use-attribute-sets="bibitem-normative-style">
 
@@ -10312,7 +10463,7 @@
 	</xsl:template> <!-- bibitem -->
 
 	<!-- Bibliography (non-normative references) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'references'][not(@normative='true')]/*[local-name() = 'bibitem']" name="bibitem_non_normative" priority="2">
+	<xsl:template match="*[local-name() = 'references'][not(@normative='true')]/*[local-name() = 'bibitem']" name="bibitem_non_normative" priority="2">
 		<xsl:param name="skip" select="normalize-space(preceding-sibling::*[1][local-name() = 'bibitem'] and 1 = 1)"/> <!-- current bibiitem is non-first -->
 
 				<!-- start CSA bibitem processing -->
@@ -10324,7 +10475,7 @@
 
 	</xsl:template> <!-- references[not(@normative='true')]/bibitem -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertListItem_Bibitem">
+	<xsl:template name="insertListItem_Bibitem">
 		<xsl:choose>
 			<xsl:when test="@hidden = 'true'"><!-- skip --></xsl:when>
 			<xsl:otherwise>
@@ -10354,7 +10505,7 @@
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="processBibitem">
+	<xsl:template name="processBibitem">
 		<xsl:param name="biblio_tag_part">both</xsl:param>
 
 				<!-- start bibitem processing -->
@@ -10370,20 +10521,20 @@
 
 	</xsl:template> <!-- processBibitem (bibitem) -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'title']" mode="title">
+	<xsl:template match="*[local-name() = 'title']" mode="title">
 		<fo:inline><xsl:apply-templates/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'bibitem']/*[local-name() = 'docidentifier']"/>
+	<xsl:template match="*[local-name() = 'bibitem']/*[local-name() = 'docidentifier']"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'formattedref']">
+	<xsl:template match="*[local-name() = 'formattedref']">
 		<!-- <xsl:if test="$namespace = 'unece' or $namespace = 'unece-rec'">
 			<xsl:text>, </xsl:text>
 		</xsl:if> -->
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'biblio-tag']">
+	<xsl:template match="*[local-name() = 'biblio-tag']">
 		<xsl:param name="biblio_tag_part">both</xsl:param>
 		<xsl:choose>
 			<xsl:when test="$biblio_tag_part = 'first' and *[local-name() = 'tab']">
@@ -10398,7 +10549,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'biblio-tag']/*[local-name() = 'tab']" priority="2">
+	<xsl:template match="*[local-name() = 'biblio-tag']/*[local-name() = 'tab']" priority="2">
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
@@ -10413,23 +10564,23 @@
 	<!-- =================== -->
 	<!-- Form's elements processing -->
 	<!-- =================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']">
+	<xsl:template match="*[local-name() = 'form']">
 		<fo:block>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'label']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'label']">
 		<fo:inline><xsl:apply-templates/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'text' or @type = 'date' or @type = 'file' or @type = 'password']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'text' or @type = 'date' or @type = 'file' or @type = 'password']">
 		<fo:inline>
 			<xsl:call-template name="text_input"/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="text_input">
+	<xsl:template name="text_input">
 		<xsl:variable name="count">
 			<xsl:choose>
 				<xsl:when test="normalize-space(@maxlength) != ''"><xsl:value-of select="@maxlength"/></xsl:when>
@@ -10444,7 +10595,7 @@
 		<xsl:text> </xsl:text>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'button']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'button']">
 		<xsl:variable name="caption">
 			<xsl:choose>
 				<xsl:when test="normalize-space(@value) != ''"><xsl:value-of select="@value"/></xsl:when>
@@ -10454,7 +10605,7 @@
 		<fo:inline>[<xsl:value-of select="$caption"/>]</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'checkbox']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'checkbox']">
 		<fo:inline padding-right="1mm">
 			<fo:instream-foreign-object fox:alt-text="Box" baseline-shift="-10%">
 				<xsl:attribute name="height">3.5mm</xsl:attribute>
@@ -10468,7 +10619,7 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'radio']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'input'][@type = 'radio']">
 		<fo:inline padding-right="1mm">
 			<fo:instream-foreign-object fox:alt-text="Box" baseline-shift="-10%">
 				<xsl:attribute name="height">3.5mm</xsl:attribute>
@@ -10483,13 +10634,13 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'select']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'select']">
 		<fo:inline>
 			<xsl:call-template name="text_input"/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'form']//*[local-name() = 'textarea']">
+	<xsl:template match="*[local-name() = 'form']//*[local-name() = 'textarea']">
 		<fo:block-container border="1pt solid black" width="50%">
 			<fo:block> </fo:block>
 		</fo:block-container>
@@ -10503,7 +10654,7 @@
 	<!-- Table of Contents (ToC) processing -->
 	<!-- =================== -->
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="toc_level">
+	<xsl:variable name="toc_level">
 		<!-- https://www.metanorma.org/author/ref/document-attributes/ -->
 		<xsl:variable name="pdftoclevels" select="normalize-space(//*[local-name() = 'metanorma-extension']/*[local-name() = 'presentation-metadata'][*[local-name() = 'name']/text() = 'PDF TOC Heading Levels']/*[local-name() = 'value'])"/> <!-- :toclevels-pdf  Number of table of contents levels to render in PDF output; used to override :toclevels:-->
 		<xsl:variable name="toclevels" select="normalize-space(//*[local-name() = 'metanorma-extension']/*[local-name() = 'presentation-metadata'][*[local-name() = 'name']/text() = 'TOC Heading Levels']/*[local-name() = 'value'])"/> <!-- Number of table of contents levels to render -->
@@ -10516,7 +10667,7 @@
 		</xsl:choose>
 	</xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'toc']">
+	<xsl:template match="*[local-name() = 'toc']">
 		<xsl:param name="colwidths"/>
 		<xsl:variable name="colwidths_">
 			<xsl:choose>
@@ -10549,17 +10700,17 @@
 		</fo:block>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'toc']//*[local-name() = 'li']" priority="2">
+	<xsl:template match="*[local-name() = 'toc']//*[local-name() = 'li']" priority="2">
 		<fo:table-row min-height="5mm">
 			<xsl:apply-templates/>
 		</fo:table-row>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'toc']//*[local-name() = 'li']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'toc']//*[local-name() = 'li']/*[local-name() = 'p']">
 		<xsl:apply-templates/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'toc']//*[local-name() = 'xref']" priority="3">
+	<xsl:template match="*[local-name() = 'toc']//*[local-name() = 'xref']" priority="3">
 		<!-- <xref target="cgpm9th1948r6">1.6.3<tab/>&#8220;9th CGPM, 1948:<tab/>decision to establish the SI&#8221;</xref> -->
 		<xsl:variable name="target" select="@target"/>
 		<xsl:for-each select="*[local-name() = 'tab']">
@@ -10598,20 +10749,20 @@
 	<!-- ================================== -->
 	<!-- calculate ToC table columns widths -->
 	<!-- ================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*" mode="toc_table_width">
+	<xsl:template match="*" mode="toc_table_width">
 		<xsl:apply-templates mode="toc_table_width"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'clause'][@type = 'toc']/*[local-name() = 'title']" mode="toc_table_width"/>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'clause'][not(@type = 'toc')]/*[local-name() = 'title']" mode="toc_table_width"/>
+	<xsl:template match="*[local-name() = 'clause'][@type = 'toc']/*[local-name() = 'title']" mode="toc_table_width"/>
+	<xsl:template match="*[local-name() = 'clause'][not(@type = 'toc')]/*[local-name() = 'title']" mode="toc_table_width"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'li']" mode="toc_table_width">
+	<xsl:template match="*[local-name() = 'li']" mode="toc_table_width">
 		<tr>
 			<xsl:apply-templates mode="toc_table_width"/>
 		</tr>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'xref']" mode="toc_table_width">
+	<xsl:template match="*[local-name() = 'xref']" mode="toc_table_width">
 		<!-- <xref target="cgpm9th1948r6">1.6.3<tab/>&#8220;9th CGPM, 1948:<tab/>decision to establish the SI&#8221;</xref> -->
 		<xsl:for-each select="*[local-name() = 'tab']">
 			<xsl:variable name="current_id" select="generate-id()"/>
@@ -10633,7 +10784,7 @@
 	<!-- =================== -->
 
 	<!-- insert fo:basic-link, if external-destination or internal-destination is non-empty, otherwise insert fo:inline -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insert_basic_link">
+	<xsl:template name="insert_basic_link">
 		<xsl:param name="element"/>
 		<xsl:variable name="element_node" select="xalan:nodeset($element)"/>
 		<xsl:variable name="external-destination" select="normalize-space(count($element_node/fo:basic-link/@external-destination[. != '']) = 1)"/>
@@ -10653,13 +10804,13 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'variant-title']"/> <!-- [@type = 'sub'] -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'variant-title'][@type = 'sub']" mode="subtitle">
+	<xsl:template match="*[local-name() = 'variant-title']"/> <!-- [@type = 'sub'] -->
+	<xsl:template match="*[local-name() = 'variant-title'][@type = 'sub']" mode="subtitle">
 		<fo:inline padding-right="5mm"> </fo:inline>
 		<fo:inline><xsl:apply-templates/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'blacksquare']" name="blacksquare">
+	<xsl:template match="*[local-name() = 'blacksquare']" name="blacksquare">
 		<fo:inline padding-right="2.5mm" baseline-shift="5%">
 			<fo:instream-foreign-object content-height="2mm" content-width="2mm" fox:alt-text="Quad">
 					<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" viewBox="0 0 2 2">
@@ -10669,18 +10820,18 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@language">
+	<xsl:template match="@language">
 		<xsl:copy-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p'][@type = 'floating-title' or @type = 'section-title']" priority="4">
+	<xsl:template match="*[local-name() = 'p'][@type = 'floating-title' or @type = 'section-title']" priority="4">
 		<xsl:call-template name="title"/>
 	</xsl:template>
 
 	<!-- ================ -->
 	<!-- Admonition -->
 	<!-- ================ -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'admonition']">
+	<xsl:template match="*[local-name() = 'admonition']">
 
 		 <!-- text in the box -->
 				<fo:block-container id="{@id}" xsl:use-attribute-sets="admonition-style">
@@ -10701,7 +10852,7 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="displayAdmonitionName">
+	<xsl:template name="displayAdmonitionName">
 		<xsl:param name="sep"/> <!-- Example: ' - ' -->
 		<!-- <xsl:choose>
 			<xsl:when test="$namespace = 'nist-cswp' or $namespace = 'nist-sp'">
@@ -10728,7 +10879,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'admonition']/*[local-name() = 'name']">
+	<xsl:template match="*[local-name() = 'admonition']/*[local-name() = 'name']">
 		<xsl:apply-templates/>
 	</xsl:template>
 
@@ -10745,7 +10896,7 @@
 		</xsl:if>
 	</xsl:template> -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'admonition']/*[local-name() = 'p']">
+	<xsl:template match="*[local-name() = 'admonition']/*[local-name() = 'p']">
 		 <!-- processing for admonition/p found in the template for 'p' -->
 				<xsl:call-template name="paragraph"/>
 
@@ -10759,7 +10910,7 @@
 	<!-- Update xml -->
 	<!-- ===================================== -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="updateXML">
+	<xsl:template name="updateXML">
 		<xsl:if test="$debug = 'true'"><xsl:message>START updated_xml_step1</xsl:message></xsl:if>
 		<xsl:variable name="startTime1" select="java:getTime(java:java.util.Date.new())"/>
 
@@ -10836,14 +10987,14 @@
 	<!--   - Remove image/emf (EMF vector image for Word) -->
 	<!--   - add @id, redundant for table auto-layout algorithm -->
 	<!-- =========================================================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="update_xml_step1">
+	<xsl:template match="@*|node()" mode="update_xml_step1">
 		<xsl:copy>
 			<xsl:apply-templates select="@*|node()" mode="update_xml_step1"/>
 		</xsl:copy>
 	</xsl:template>
 
 	<!-- change section's order based on @displayorder value -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'preface']" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'preface']" mode="update_xml_step1">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 
@@ -10874,7 +11025,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sections']" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'sections']" mode="update_xml_step1">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 
@@ -10906,7 +11057,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'bibliography']" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'bibliography']" mode="update_xml_step1">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<!-- copy all elements from bibliography except 'Normative references' (moved to 'sections') -->
@@ -10918,17 +11069,17 @@
 	</xsl:template>
 
 	<!-- Example with 'class': <span class="stdpublisher">ISO</span> <span class="stddocNumber">10303</span>-<span class="stddocPartNumber">1</span>:<span class="stdyear">1994</span> -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span'][@style or @class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']" mode="update_xml_step1" priority="2">
+	<xsl:template match="*[local-name() = 'span'][@style or @class = 'stdpublisher' or @class = 'stddocNumber' or @class = 'stddocPartNumber' or @class = 'stdyear']" mode="update_xml_step1" priority="2">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<xsl:apply-templates mode="update_xml_step1"/>
 		</xsl:copy>
 	</xsl:template>
 	<!-- Note: to enable the addition of character span markup with semantic styling for DIS Word output -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'span']" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'span']" mode="update_xml_step1">
 		<xsl:apply-templates mode="update_xml_step1"/>
 	</xsl:template>
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'sections']/*[local-name() = 'p'][starts-with(@class, 'zzSTDTitle')]/*[local-name() = 'span'][@class] | *[local-name() = 'sourcecode']//*[local-name() = 'span'][@class]" mode="update_xml_step1" priority="2">
+	<xsl:template match="*[local-name() = 'sections']/*[local-name() = 'p'][starts-with(@class, 'zzSTDTitle')]/*[local-name() = 'span'][@class] | *[local-name() = 'sourcecode']//*[local-name() = 'span'][@class]" mode="update_xml_step1" priority="2">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<xsl:apply-templates mode="update_xml_step1"/>
@@ -10936,20 +11087,20 @@
 	</xsl:template>
 
 	<!-- remove semantic xml -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'metanorma-extension']/*[local-name() = 'metanorma']/*[local-name() = 'source']" mode="update_xml_step1"/>
+	<xsl:template match="*[local-name() = 'metanorma-extension']/*[local-name() = 'metanorma']/*[local-name() = 'source']" mode="update_xml_step1"/>
 
 	<!-- remove image/emf -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'image']/*[local-name() = 'emf']" mode="update_xml_step1"/>
+	<xsl:template match="*[local-name() = 'image']/*[local-name() = 'emf']" mode="update_xml_step1"/>
 
 	<!-- remove preprocess-xslt -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'preprocess-xslt']" mode="update_xml_step1"/>
+	<xsl:template match="*[local-name() = 'preprocess-xslt']" mode="update_xml_step1"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'stem'] |        *[local-name() = 'image'] |        *[local-name() = 'sourcecode'] |        *[local-name() = 'bibdata'] |        *[local-name() = 'localized-strings']" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'stem'] |        *[local-name() = 'image'] |        *[local-name() = 'sourcecode'] |        *[local-name() = 'bibdata'] |        *[local-name() = 'localized-strings']" mode="update_xml_step1">
 		<xsl:copy-of select="."/>
 	</xsl:template>
 
 	<!-- add @id, mandatory for table auto-layout algorithm -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'dl' or local-name() = 'table'][not(@id)]" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'dl' or local-name() = 'table'][not(@id)]" mode="update_xml_step1">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<xsl:call-template name="add_id"/>
@@ -10958,9 +11109,9 @@
 	</xsl:template>
 
 	<!-- prevent empty thead processing in XSL-FO, remove it -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'table']/*[local-name() = 'thead'][count(*) = 0]" mode="update_xml_step1"/>
+	<xsl:template match="*[local-name() = 'table']/*[local-name() = 'thead'][count(*) = 0]" mode="update_xml_step1"/>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add_id">
+	<xsl:template name="add_id">
 		<xsl:if test="not(@id)">
 			<!-- add @id - first element with @id plus '_element_name' -->
 			<xsl:attribute name="id"><xsl:value-of select="(.//*[@id])[1]/@id"/>_<xsl:value-of select="local-name()"/></xsl:attribute>
@@ -10968,7 +11119,7 @@
 	</xsl:template>
 
 	<!-- optimization: remove clause if table_only_with_id isn't empty and clause doesn't contain table or dl with table_only_with_id -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'clause' or local-name() = 'p' or local-name() = 'definitions' or local-name() = 'annex']" mode="update_xml_step1">
+	<xsl:template match="*[local-name() = 'clause' or local-name() = 'p' or local-name() = 'definitions' or local-name() = 'annex']" mode="update_xml_step1">
 		<xsl:choose>
 			<xsl:when test="($table_only_with_id != '' or $table_only_with_ids != '') and local-name() = 'p' and (ancestor::*[local-name() = 'table' or local-name() = 'dl' or local-name() = 'toc'])">
 				<xsl:copy>
@@ -11004,15 +11155,18 @@
 	<!-- =========================================================================== -->
 	<!-- STEP MOVE PAGEBREAK: move <pagebreak/> at top level under 'preface' and 'sections' -->
 	<!-- =========================================================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="update_xml_step_move_pagebreak">
+	<xsl:template match="@*|node()" mode="update_xml_step_move_pagebreak">
+		<xsl:param name="page_sequence_at_top">false</xsl:param>
 		<xsl:copy>
-			<xsl:apply-templates select="@*|node()" mode="update_xml_step_move_pagebreak"/>
+			<xsl:apply-templates select="@*|node()" mode="update_xml_step_move_pagebreak">
+				<xsl:with-param name="page_sequence_at_top" select="$page_sequence_at_top"/>
+			</xsl:apply-templates>
 		</xsl:copy>
 	</xsl:template>
 
 	<!-- replace 'pagebreak' by closing tags + page_sequence and  opening page_sequence + tags -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'pagebreak'][not(following-sibling::*[1][local-name() = 'pagebreak'])]" mode="update_xml_step_move_pagebreak">
-
+	<xsl:template match="*[local-name() = 'pagebreak'][not(following-sibling::*[1][local-name() = 'pagebreak'])]" mode="update_xml_step_move_pagebreak">
+		<xsl:param name="page_sequence_at_top"/>
 		<!-- <xsl:choose>
 			<xsl:when test="ancestor::*[local-name() = 'sections']">
 			
@@ -11036,7 +11190,9 @@
 			<xsl:variable name="orientation" select="normalize-space(@orientation)"/>
 
 			<xsl:variable name="tree_">
-				<xsl:call-template name="makeAncestorsElementsTree"/>
+				<xsl:call-template name="makeAncestorsElementsTree">
+					<xsl:with-param name="page_sequence_at_top" select="$page_sequence_at_top"/>
+				</xsl:call-template>
 			</xsl:variable>
 			<xsl:variable name="tree" select="xalan:nodeset($tree_)"/>
 
@@ -11057,16 +11213,30 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="makeAncestorsElementsTree">
-		<xsl:for-each select="ancestor::*[ancestor::*[local-name() = 'preface'] or ancestor::*[local-name() = 'sections'] or ancestor-or-self::*[local-name() = 'annex']]">
-			<element pos="{position()}">
-				<xsl:copy-of select="@*[local-name() != 'id']"/>
-				<xsl:value-of select="name()"/>
-			</element>
-		</xsl:for-each>
+	<xsl:template name="makeAncestorsElementsTree">
+		<xsl:param name="page_sequence_at_top"/>
+
+		<xsl:choose>
+			<xsl:when test="$page_sequence_at_top = 'true'">
+				<xsl:for-each select="ancestor::*[ancestor::*[contains(local-name(), '-standard')]]">
+					<element pos="{position()}">
+						<xsl:copy-of select="@*[local-name() != 'id']"/>
+						<xsl:value-of select="name()"/>
+					</element>
+				</xsl:for-each>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:for-each select="ancestor::*[ancestor::*[local-name() = 'preface'] or ancestor::*[local-name() = 'sections'] or ancestor-or-self::*[local-name() = 'annex']]">
+					<element pos="{position()}">
+						<xsl:copy-of select="@*[local-name() != 'id']"/>
+						<xsl:value-of select="name()"/>
+					</element>
+				</xsl:for-each>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertClosingElements">
+	<xsl:template name="insertClosingElements">
 		<xsl:param name="tree"/>
 		<xsl:for-each select="$tree//element">
 			<xsl:sort data-type="number" order="descending" select="@pos"/>
@@ -11079,7 +11249,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertOpeningElements">
+	<xsl:template name="insertOpeningElements">
 		<xsl:param name="tree"/>
 		<xsl:for-each select="$tree//element">
 			<xsl:text disable-output-escaping="yes">&lt;</xsl:text>
@@ -11100,12 +11270,15 @@
 	</xsl:template>
 
 	<!-- move full page width figures, tables at top level -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'figure' or local-name() = 'table'][normalize-space(@width) != 'text-width']" mode="update_xml_step_move_pagebreak">
+	<xsl:template match="*[local-name() = 'figure' or local-name() = 'table'][normalize-space(@width) != 'text-width']" mode="update_xml_step_move_pagebreak">
+		<xsl:param name="page_sequence_at_top">false</xsl:param>
 		<xsl:choose>
 			<xsl:when test="$layout_columns != 1">
 
 				<xsl:variable name="tree_">
-				<xsl:call-template name="makeAncestorsElementsTree"/>
+					<xsl:call-template name="makeAncestorsElementsTree">
+						<xsl:with-param name="page_sequence_at_top" select="$page_sequence_at_top"/>
+					</xsl:call-template>
 				</xsl:variable>
 				<xsl:variable name="tree" select="xalan:nodeset($tree_)"/>
 
@@ -11141,18 +11314,18 @@
 	<!-- keep-together_within-line for: a.b, aaa.b, a.bbb, .b  in table's cell ONLY  -->
 	<!-- =========================================================================== -->
 	<!-- Example: <keep-together_within-line>ISO 10303-51</keep-together_within-line> -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="update_xml_enclose_keep-together_within-line">
+	<xsl:template match="@*|node()" mode="update_xml_enclose_keep-together_within-line">
 		<xsl:copy>
 			<xsl:apply-templates select="@*|node()" mode="update_xml_enclose_keep-together_within-line"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="express_reference_separators">_.\</xsl:variable>
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="express_reference_characters" select="concat($upper,$lower,'1234567890',$express_reference_separators)"/>
+	<xsl:variable name="express_reference_separators">_.\</xsl:variable>
+	<xsl:variable name="express_reference_characters" select="concat($upper,$lower,'1234567890',$express_reference_separators)"/>
 
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="element_name_keep-together_within-line">keep-together_within-line</xsl:variable>
+	<xsl:variable name="element_name_keep-together_within-line">keep-together_within-line</xsl:variable>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="text()[not(ancestor::*[local-name() = 'bibdata'] or      ancestor::*[local-name() = 'link'][not(contains(.,' '))] or      ancestor::*[local-name() = 'sourcecode'] or      ancestor::*[local-name() = 'math'] or     ancestor::*[local-name() = 'svg'] or     starts-with(., 'http://') or starts-with(., 'https://') or starts-with(., 'www.') )]" name="keep_together_standard_number" mode="update_xml_enclose_keep-together_within-line">
+	<xsl:template match="text()[not(ancestor::*[local-name() = 'bibdata'] or      ancestor::*[local-name() = 'link'][not(contains(.,' '))] or      ancestor::*[local-name() = 'sourcecode'] or      ancestor::*[local-name() = 'math'] or     ancestor::*[local-name() = 'svg'] or     starts-with(., 'http://') or starts-with(., 'https://') or starts-with(., 'www.') )]" name="keep_together_standard_number" mode="update_xml_enclose_keep-together_within-line">
 
 		<!-- enclose standard's number into tag 'keep-together_within-line' -->
 		<xsl:variable name="tag_keep-together_within-line_open">###<xsl:value-of select="$element_name_keep-together_within-line"/>###</xsl:variable>
@@ -11226,11 +11399,11 @@
 
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'stem'] | *[local-name() = 'image']" mode="update_xml_enclose_keep-together_within-line">
+	<xsl:template match="*[local-name() = 'stem'] | *[local-name() = 'image']" mode="update_xml_enclose_keep-together_within-line">
 		<xsl:copy-of select="."/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="replace_text_tags">
+	<xsl:template name="replace_text_tags">
 		<xsl:param name="tag_open"/>
 		<xsl:param name="tag_close"/>
 		<xsl:param name="text"/>
@@ -11261,13 +11434,13 @@
 	<!-- Make linear XML (need for landscape orientation) -->
 	<!-- ===================================== -->
 	<!-- ===================================== -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="@*|node()" mode="linear_xml">
+	<xsl:template match="@*|node()" mode="linear_xml">
 		<xsl:copy>
 			<xsl:apply-templates select="@*|node()" mode="linear_xml"/>
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="processing-instruction()" mode="linear_xml">
+	<xsl:template match="processing-instruction()" mode="linear_xml">
 		<xsl:copy-of select="."/>
 	</xsl:template>
 
@@ -11281,7 +11454,7 @@
 			<title>...</title>
 			<p>...</p>
 		-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'foreword'] |            *[local-name() = 'foreword']//*[local-name() = 'clause'] |            *[local-name() = 'preface']//*[local-name() = 'clause'][not(@type = 'corrigenda') and not(@type = 'policy') and not(@type = 'related-refs')] |            *[local-name() = 'introduction'] |            *[local-name() = 'introduction']//*[local-name() = 'clause'] |            *[local-name() = 'sections']//*[local-name() = 'clause'] |             *[local-name() = 'annex'] |             *[local-name() = 'annex']//*[local-name() = 'clause'] |             *[local-name() = 'references'][not(@hidden = 'true')] |            *[local-name() = 'bibliography']/*[local-name() = 'clause'] |             *[local-name() = 'colophon'] |             *[local-name() = 'colophon']//*[local-name() = 'clause'] |             *[local-name()='sections']//*[local-name()='terms'] |             *[local-name()='sections']//*[local-name()='definitions'] |            *[local-name()='annex']//*[local-name()='definitions']" mode="linear_xml" name="clause_linear">
+	<xsl:template match="*[local-name() = 'foreword'] |            *[local-name() = 'foreword']//*[local-name() = 'clause'] |            *[local-name() = 'preface']//*[local-name() = 'clause'][not(@type = 'corrigenda') and not(@type = 'policy') and not(@type = 'related-refs')] |            *[local-name() = 'introduction'] |            *[local-name() = 'introduction']//*[local-name() = 'clause'] |            *[local-name() = 'sections']//*[local-name() = 'clause'] |             *[local-name() = 'annex'] |             *[local-name() = 'annex']//*[local-name() = 'clause'] |             *[local-name() = 'references'][not(@hidden = 'true')] |            *[local-name() = 'bibliography']/*[local-name() = 'clause'] |             *[local-name() = 'colophon'] |             *[local-name() = 'colophon']//*[local-name() = 'clause'] |             *[local-name()='sections']//*[local-name()='terms'] |             *[local-name()='sections']//*[local-name()='definitions'] |            *[local-name()='annex']//*[local-name()='definitions']" mode="linear_xml" name="clause_linear">
 
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="linear_xml"/>
@@ -11296,7 +11469,7 @@
 		<xsl:apply-templates mode="linear_xml"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'term']" mode="linear_xml" priority="2">
+	<xsl:template match="*[local-name() = 'term']" mode="linear_xml" priority="2">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="linear_xml"/>
 			<xsl:attribute name="keep-with-next">always</xsl:attribute>
@@ -11310,7 +11483,7 @@
 		<xsl:apply-templates select="*[local-name() = 'term']" mode="linear_xml"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'introduction']//*[local-name() = 'title'] |     *[local-name() = 'foreword']//*[local-name() = 'title'] |     *[local-name() = 'preface']//*[local-name() = 'title'] |     *[local-name() = 'sections']//*[local-name() = 'title'] |     *[local-name() = 'annex']//*[local-name() = 'title'] |     *[local-name() = 'bibliography']/*[local-name() = 'clause']/*[local-name() = 'title'] |     *[local-name() = 'references']/*[local-name() = 'title'] |     *[local-name() = 'colophon']//*[local-name() = 'title']" mode="linear_xml" priority="2">
+	<xsl:template match="*[local-name() = 'introduction']//*[local-name() = 'title'] |     *[local-name() = 'foreword']//*[local-name() = 'title'] |     *[local-name() = 'preface']//*[local-name() = 'title'] |     *[local-name() = 'sections']//*[local-name() = 'title'] |     *[local-name() = 'annex']//*[local-name() = 'title'] |     *[local-name() = 'bibliography']/*[local-name() = 'clause']/*[local-name() = 'title'] |     *[local-name() = 'references']/*[local-name() = 'title'] |     *[local-name() = 'colophon']//*[local-name() = 'title']" mode="linear_xml" priority="2">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="linear_xml"/>
 
@@ -11353,7 +11526,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'li']" mode="linear_xml" priority="2">
+	<xsl:template match="*[local-name() = 'li']" mode="linear_xml" priority="2">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="linear_xml"/>
 
@@ -11374,7 +11547,7 @@
 
 	<!-- add @to = figure, table, clause -->
 	<!-- add @depth = from  -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'xref']" mode="linear_xml">
+	<xsl:template match="*[local-name() = 'xref']" mode="linear_xml">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="linear_xml"/>
 			<xsl:variable name="target" select="@target"/>
@@ -11388,7 +11561,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[not(ancestor::*[local-name() = 'sourcecode'])]/*[local-name() = 'p' or local-name() = 'strong' or local-name() = 'em']/text()" mode="linear_xml">
+	<xsl:template match="*[not(ancestor::*[local-name() = 'sourcecode'])]/*[local-name() = 'p' or local-name() = 'strong' or local-name() = 'em']/text()" mode="linear_xml">
 		<xsl:choose>
 			<xsl:when test="contains(., $non_breaking_hyphen)">
 				<xsl:call-template name="replaceChar">
@@ -11401,7 +11574,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="replaceChar">
+	<xsl:template name="replaceChar">
 		<xsl:param name="text"/>
 		<xsl:param name="replace"/>
 		<xsl:param name="by"/>
@@ -11424,7 +11597,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'inlineChar']">
+	<xsl:template match="*[local-name() = 'inlineChar']">
 		<fo:inline><xsl:value-of select="."/></fo:inline>
 	</xsl:template>
 
@@ -11434,7 +11607,7 @@
 			<p id="_8e5cf917-f75a-4a49-b0aa-1714cb6cf954">Formerly denoted as 15 % (m/m).</p>
 		</fn>
 	-->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'fn'][not(ancestor::*[(local-name() = 'table' or local-name() = 'figure')] and not(ancestor::*[local-name() = 'name']))]" mode="linear_xml" name="linear_xml_fn">
+	<xsl:template match="*[local-name() = 'fn'][not(ancestor::*[(local-name() = 'table' or local-name() = 'figure')] and not(ancestor::*[local-name() = 'name']))]" mode="linear_xml" name="linear_xml_fn">
 		<xsl:variable name="p_fn_">
 			<xsl:call-template name="get_fn_list"/>
 			<!-- <xsl:choose>
@@ -11472,7 +11645,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'p'][@type = 'section-title']" priority="3" mode="linear_xml">
+	<xsl:template match="*[local-name() = 'p'][@type = 'section-title']" priority="3" mode="linear_xml">
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="linear_xml"/>
 			<xsl:if test="@depth = '1'">
@@ -11488,11 +11661,11 @@
 	<!-- ===================================== -->
 
 	<!-- for correct rendering combining chars -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*[local-name() = 'lang_none']">
+	<xsl:template match="*[local-name() = 'lang_none']">
 		<fo:inline xml:lang="none"><xsl:value-of select="."/></fo:inline>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="printEdition">
+	<xsl:template name="printEdition">
 		<xsl:variable name="edition_i18n" select="normalize-space((//*[contains(local-name(), '-standard')])[1]/*[local-name() = 'bibdata']/*[local-name() = 'edition'][normalize-space(@language) != ''])"/>
 
 		<xsl:choose>
@@ -11520,7 +11693,7 @@
 	</xsl:template>
 
 	<!-- convert YYYY-MM-DD to 'Month YYYY' or 'Month DD, YYYY' or DD Month YYYY -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="convertDate">
+	<xsl:template name="convertDate">
 		<xsl:param name="date"/>
 		<xsl:param name="format" select="'short'"/>
 		<xsl:variable name="year" select="substring($date, 1, 4)"/>
@@ -11558,7 +11731,7 @@
 	</xsl:template> <!-- convertDate -->
 
 	<!-- return Month's name by number -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getMonthByNum">
+	<xsl:template name="getMonthByNum">
 		<xsl:param name="num"/>
 		<xsl:param name="lang">en</xsl:param>
 		<xsl:param name="lowercase">false</xsl:param> <!-- return 'january' instead of 'January' -->
@@ -11607,7 +11780,7 @@
 	</xsl:template> <!-- getMonthByNum -->
 
 	<!-- return Month's name by number from localized strings -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getMonthLocalizedByNum">
+	<xsl:template name="getMonthLocalizedByNum">
 		<xsl:param name="num"/>
 		<xsl:variable name="monthStr">
 			<xsl:choose>
@@ -11630,7 +11803,7 @@
 		</xsl:call-template>
 	</xsl:template> <!-- getMonthLocalizedByNum -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertKeywords">
+	<xsl:template name="insertKeywords">
 		<xsl:param name="sorting" select="'true'"/>
 		<xsl:param name="meta" select="'false'"/>
 		<xsl:param name="charAtEnd" select="'.'"/>
@@ -11658,7 +11831,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertKeyword">
+	<xsl:template name="insertKeyword">
 		<xsl:param name="charAtEnd"/>
 		<xsl:param name="charDelim"/>
 		<xsl:param name="meta"/>
@@ -11676,7 +11849,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="addPDFUAmeta">
+	<xsl:template name="addPDFUAmeta">
 		<pdf:catalog xmlns:pdf="http://xmlgraphics.apache.org/fop/extensions/pdf">
 			<pdf:dictionary type="normal" key="ViewerPreferences">
 				<pdf:boolean key="DisplayDocTitle">true</pdf:boolean>
@@ -11748,7 +11921,7 @@
 		</xsl:for-each>
 	</xsl:template> <!-- addPDFUAmeta -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getId">
+	<xsl:template name="getId">
 		<xsl:choose>
 			<xsl:when test="../@id">
 				<xsl:value-of select="../@id"/>
@@ -11760,7 +11933,7 @@
 	</xsl:template>
 
 	<!-- Get or calculate depth of the element -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLevel">
+	<xsl:template name="getLevel">
 		<xsl:param name="depth"/>
 		<xsl:choose>
 			<xsl:when test="normalize-space(@depth) != ''">
@@ -11807,7 +11980,7 @@
 	</xsl:template> <!-- getLevel -->
 
 	<!-- Get or calculate depth of term's name -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLevelTermName">
+	<xsl:template name="getLevelTermName">
 		<xsl:choose>
 			<xsl:when test="normalize-space(../@depth) != ''">
 				<xsl:value-of select="../@depth"/>
@@ -11830,7 +12003,7 @@
 	</xsl:template> <!-- getLevelTermName -->
 
 	<!-- split string by separator -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="split">
+	<xsl:template name="split">
 		<xsl:param name="pText" select="."/>
 		<xsl:param name="sep" select="','"/>
 		<xsl:param name="normalize-space" select="'true'"/>
@@ -11856,15 +12029,15 @@
 		</xsl:if>
 	</xsl:template> <!-- split -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getDocumentId">
+	<xsl:template name="getDocumentId">
 		<xsl:call-template name="getLang"/><xsl:value-of select="//*[local-name() = 'p'][1]/@id"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getDocumentId_fromCurrentNode">
+	<xsl:template name="getDocumentId_fromCurrentNode">
 		<xsl:call-template name="getLang_fromCurrentNode"/><xsl:value-of select=".//*[local-name() = 'p'][1]/@id"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="namespaceCheck">
+	<xsl:template name="namespaceCheck">
 		<xsl:variable name="documentNS" select="namespace-uri(/*)"/>
 		<xsl:variable name="XSLNS">
 
@@ -11876,7 +12049,7 @@
 		</xsl:if>
 	</xsl:template> <!-- namespaceCheck -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLanguage">
+	<xsl:template name="getLanguage">
 		<xsl:param name="lang"/>
 		<xsl:variable name="language" select="java:toLowerCase(java:java.lang.String.new($lang))"/>
 		<xsl:choose>
@@ -11888,7 +12061,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setId">
+	<xsl:template name="setId">
 		<xsl:param name="prefix"/>
 		<xsl:attribute name="id">
 			<xsl:choose>
@@ -11902,7 +12075,7 @@
 		</xsl:attribute>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="add-letter-spacing">
+	<xsl:template name="add-letter-spacing">
 		<xsl:param name="text"/>
 		<xsl:param name="letter-spacing" select="'0.15'"/>
 		<xsl:if test="string-length($text) &gt; 0">
@@ -11921,7 +12094,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="repeat">
+	<xsl:template name="repeat">
 		<xsl:param name="char" select="'*'"/>
 		<xsl:param name="count"/>
 		<xsl:if test="$count &gt; 0">
@@ -11933,7 +12106,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getLocalizedString">
+	<xsl:template name="getLocalizedString">
 		<xsl:param name="key"/>
 		<xsl:param name="formatted">false</xsl:param>
 		<xsl:param name="lang"/>
@@ -11989,7 +12162,7 @@
 		</xsl:choose>
 	</xsl:template> <!-- getLocalizedString -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setTrackChangesStyles">
+	<xsl:template name="setTrackChangesStyles">
 		<xsl:param name="isAdded"/>
 		<xsl:param name="isDeleted"/>
 		<xsl:choose>
@@ -12018,15 +12191,15 @@
 	</xsl:template> <!-- setTrackChangesStyles -->
 
 	<!--  see https://xmlgraphics.apache.org/fop/2.5/complexscripts.html#bidi_controls-->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="LRM" select="'‎'"/> <!-- U+200E - LEFT-TO-RIGHT MARK (LRM) -->
-	<xsl:variable xmlns:redirect="http://xml.apache.org/xalan/redirect" name="RLM" select="'‏'"/> <!-- U+200F - RIGHT-TO-LEFT MARK (RLM) -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setWritingMode">
+	<xsl:variable name="LRM" select="'‎'"/> <!-- U+200E - LEFT-TO-RIGHT MARK (LRM) -->
+	<xsl:variable name="RLM" select="'‏'"/> <!-- U+200F - RIGHT-TO-LEFT MARK (RLM) -->
+	<xsl:template name="setWritingMode">
 		<xsl:if test="$lang = 'ar'">
 			<xsl:attribute name="writing-mode">rl-tb</xsl:attribute>
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setAlignment">
+	<xsl:template name="setAlignment">
 		<xsl:param name="align" select="normalize-space(@align)"/>
 		<xsl:choose>
 			<xsl:when test="$lang = 'ar' and $align = 'left'">start</xsl:when>
@@ -12037,7 +12210,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setTextAlignment">
+	<xsl:template name="setTextAlignment">
 		<xsl:param name="default">left</xsl:param>
 		<xsl:variable name="align" select="normalize-space(@align)"/>
 		<xsl:attribute name="text-align">
@@ -12056,7 +12229,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setBlockAttributes">
+	<xsl:template name="setBlockAttributes">
 		<xsl:param name="text_align_default">left</xsl:param>
 		<xsl:call-template name="setTextAlignment">
 			<xsl:with-param name="default" select="$text_align_default"/>
@@ -12064,7 +12237,7 @@
 		<xsl:call-template name="setKeepAttributes"/>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setKeepAttributes">
+	<xsl:template name="setKeepAttributes">
 		<!-- https://www.metanorma.org/author/topics/document-format/text/#avoiding-page-breaks -->
 		<!-- Example: keep-lines-together="true" -->
 		<xsl:if test="@keep-lines-together = 'true'">
@@ -12078,7 +12251,7 @@
 
 	<!-- insert cover page image -->
 		<!-- background cover image -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="insertBackgroundPageImage">
+	<xsl:template name="insertBackgroundPageImage">
 		<xsl:param name="number">1</xsl:param>
 		<xsl:param name="name">coverpage-image</xsl:param>
 		<xsl:variable name="num" select="number($number)"/>
@@ -12114,7 +12287,7 @@
 		</fo:block-container>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getImageURL">
+	<xsl:template name="getImageURL">
 		<xsl:param name="src"/>
 		<xsl:choose>
 			<xsl:when test="starts-with($src, 'data:image')">
@@ -12126,7 +12299,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="getSVG">
+	<xsl:template name="getSVG">
 		<xsl:choose>
 			<xsl:when test="*[local-name() = 'svg']">
 				<xsl:apply-templates select="*[local-name() = 'svg']" mode="svg_update"/>
@@ -12142,7 +12315,7 @@
 
 	<!-- END: insert cover page image -->
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="number-to-words">
+	<xsl:template name="number-to-words">
 		<xsl:param name="number"/>
 		<xsl:param name="first"/>
 		<xsl:if test="$number != ''">
@@ -12341,7 +12514,7 @@
 	</xsl:template> <!-- number-to-words -->
 
 	<!-- st for 1, nd for 2, rd for 3, th for 4, 5, 6, ... -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="number-to-ordinal">
+	<xsl:template name="number-to-ordinal">
 		<xsl:param name="number"/>
 		<xsl:param name="curr_lang"/>
 		<xsl:choose>
@@ -12363,7 +12536,7 @@
 	</xsl:template> <!-- number-to-ordinal -->
 
 	<!-- add the attribute fox:alt-text, required for PDF/UA -->
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="setAltText">
+	<xsl:template name="setAltText">
 		<xsl:param name="value"/>
 		<xsl:attribute name="fox:alt-text">
 			<xsl:choose>
@@ -12375,7 +12548,7 @@
 		</xsl:attribute>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" name="substring-after-last">
+	<xsl:template name="substring-after-last">
 		<xsl:param name="value"/>
 		<xsl:param name="delimiter"/>
 		<xsl:choose>
@@ -12391,7 +12564,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template xmlns:redirect="http://xml.apache.org/xalan/redirect" match="*" mode="print_as_xml">
+	<xsl:template match="*" mode="print_as_xml">
 		<xsl:param name="level">0</xsl:param>
 
 		<fo:block margin-left="{2*$level}mm">
