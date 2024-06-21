@@ -13,7 +13,6 @@ htmlstylesheet: lib/isodoc/csa/html/htmlstyle.scss
 html_normalfontsize: "1.2em"
 html_monospacefontsize: "1.0em"
 html_footnotefontsize: "0.9em"
-scripts: lib/isodoc/csa/html/scripts.html
 i18nyaml: lib/isodoc/csa/i18n-en.yaml
 word_bodyfont: 'Lato,Arial,sans-serif'
 word_headerfont: 'Lato,Arial,sans-serif'
