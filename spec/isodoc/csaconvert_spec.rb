@@ -145,7 +145,7 @@ RSpec.describe IsoDoc::Csa do
     html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
       .gsub(/^.*<body/m, "<body")
       .gsub(%r{</body>.*}m, "</body>")
-    expect(xmlpp(html)).to be_equivalent_to xmlpp(output)
+    expect(Xml::C14n.format(html)).to be_equivalent_to Xml::C14n.format(output)
   end
 
   it "processes keyword" do
@@ -159,7 +159,7 @@ RSpec.describe IsoDoc::Csa do
       .gsub(/^.*<body/m, "<body")
       .gsub(%r{</body>.*}m, "</body>")
 
-    expect(xmlpp(html)).to be_equivalent_to xmlpp(<<~"OUTPUT")
+    expect(Xml::C14n.format(html)).to be_equivalent_to Xml::C14n.format(<<~"OUTPUT")
       #{HTML_HDR}
            <br/>
            <div>
@@ -216,13 +216,13 @@ RSpec.describe IsoDoc::Csa do
               </div>
             </body>
     OUTPUT
-    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
-      .convert("test", input, true)))).to be_equivalent_to xmlpp(presxml)
-    expect(xmlpp(IsoDoc::Csa::HtmlConvert.new({})
+      .convert("test", input, true)))).to be_equivalent_to Xml::C14n.format(presxml)
+    expect(Xml::C14n.format(IsoDoc::Csa::HtmlConvert.new({})
       .convert("test", presxml, true)
       .gsub(/^.*<body/m, "<body")
-      .gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to xmlpp(html)
+      .gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to Xml::C14n.format(html)
   end
 
   it "processes section names" do
@@ -363,9 +363,9 @@ RSpec.describe IsoDoc::Csa do
        </bibliography>
        </csa-standard>
     OUTPUT
-    expect(xmlpp(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
-      .convert("test", input, true)))).to be_equivalent_to xmlpp(output)
+      .convert("test", input, true)))).to be_equivalent_to Xml::C14n.format(output)
   end
 
   it "injects JS into blank html" do
