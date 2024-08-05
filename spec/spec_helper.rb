@@ -10,6 +10,7 @@ require "metanorma-csa"
 require "rspec/matchers"
 require "equivalent-xml"
 require "htmlentities"
+require "xml-c14n"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
