@@ -58,4 +58,7 @@ stage_abbreviations:
   published:
   withdrawn:
 logo_path: ""
-
+fonts_manifest:
+  Lato:
+  STIX Two Math:
+  Source Code Pro:
