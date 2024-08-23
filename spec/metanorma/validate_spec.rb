@@ -36,7 +36,7 @@ RSpec.describe Metanorma::Csa do
 
       text
     INPUT
-    expect(File.read("test.err.html")).to include "pizza is not a legal document type"
+    expect(File.read("test.err.html")).to include("pizza is not a legal document type")
   end
 
   it "Warns of illegal status" do
@@ -53,7 +53,7 @@ RSpec.describe Metanorma::Csa do
 
     FileUtils.rm_rf "test.err.html"
     Asciidoctor.convert(input, backend: :csa, header_footer: true)
-    expect(File.read("test.err.html")).to include "pizza is not a recognised status"
+    expect(File.read("test.err.html")).to include("pizza is not a recognised status")
   end
 
   it "Warns of illegal role" do
@@ -70,6 +70,6 @@ RSpec.describe Metanorma::Csa do
 
       text
     INPUT
-    expect(File.read("test.err.html")).to include "pokemon-man is not a recognised role"
+    expect(File.read("test.err.html")).to include("pokemon-man is not a recognised role")
   end
 end
