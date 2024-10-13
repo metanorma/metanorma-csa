@@ -65,6 +65,7 @@ RSpec.describe IsoDoc::Csa do
         </copyright>
         <ext>
         <doctype>standard</doctype>
+        <flavor>csa</flavor>
         <editorialgroup>
           <committee type="A">TC</committee>
         </editorialgroup>
@@ -100,7 +101,7 @@ RSpec.describe IsoDoc::Csa do
         :implementeddate=>"XXX",
         :issueddate=>"XXX",
         :lang=>"en",
-        :metadata_extensions=>{"doctype"=>"standard", "editorialgroup"=>{"committee_type"=>"A", "committee"=>"TC"}},
+        :metadata_extensions=>{"doctype"=>"standard", "flavor"=>"csa", "editorialgroup"=>{"committee_type"=>"A", "committee"=>"TC"}},
         :obsoleteddate=>"XXX",
         :publisheddate=>"XXX",
         :publisher=>"Ribose",

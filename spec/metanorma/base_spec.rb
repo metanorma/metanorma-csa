@@ -136,6 +136,7 @@ RSpec.describe Metanorma::Csa do
         </copyright>
         <ext>
         <doctype>standard</doctype>
+        <flavor>csa</flavor>
         <editorialgroup>
           <committee type="A">TC</committee>
           <committee type="B">TC1</committee>
@@ -220,6 +221,7 @@ RSpec.describe Metanorma::Csa do
           </copyright>
           <ext>
           <doctype>standard</doctype>
+        <flavor>csa</flavor>
           </ext>
         </bibdata>
                  <metanorma-extension>
@@ -300,6 +302,7 @@ RSpec.describe Metanorma::Csa do
           </copyright>
           <ext>
           <doctype>standard</doctype>
+        <flavor>csa</flavor>
           </ext>
         </bibdata>
                  <metanorma-extension>
@@ -381,6 +384,7 @@ RSpec.describe Metanorma::Csa do
           </copyright>
           <ext>
           <doctype>standard</doctype>
+        <flavor>csa</flavor>
           </ext>
         </bibdata>
                  <metanorma-extension>

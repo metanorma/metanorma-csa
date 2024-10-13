@@ -137,6 +137,7 @@ BLANK_HDR = <<~"HDR"
     </copyright>
     <ext>
            <doctype>standard</doctype>
+           <flavor>csa</flavor>
    </ext>
   </bibdata>
            <metanorma-extension>
