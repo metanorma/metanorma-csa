@@ -127,7 +127,7 @@ RSpec.describe IsoDoc::Csa do
   it "processes pre" do
     input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
-      <preface><foreword displayorder="1">
+        <preface><foreword displayorder="1"><title>Foreword</title>
       <pre>ABC</pre>
       </foreword></preface>
       </csa-standard>
@@ -152,7 +152,8 @@ RSpec.describe IsoDoc::Csa do
   it "processes keyword" do
     input = <<~INPUT
       <csa-standard xmlns="https://open.ribose.com/standards/csa">
-        <preface><foreword displayorder="1"><keyword>ABC</keyword></foreword></preface>
+        <preface><foreword displayorder="1"><title>Foreword</title>
+        <keyword>ABC</keyword></foreword></preface>
       </csa-standard>
     INPUT
 
@@ -160,7 +161,7 @@ RSpec.describe IsoDoc::Csa do
       .gsub(/^.*<body/m, "<body")
       .gsub(%r{</body>.*}m, "</body>")
 
-    expect(Xml::C14n.format(html)).to be_equivalent_to Xml::C14n.format(<<~"OUTPUT")
+    output = <<~OUTPUT
       #{HTML_HDR}
            <br/>
            <div>
@@ -170,6 +171,7 @@ RSpec.describe IsoDoc::Csa do
          </div>
        </body>
     OUTPUT
+    expect(Xml::C14n.format(html)).to be_equivalent_to Xml::C14n.format(output)
   end
 
   it "processes simple terms & definitions" do
@@ -219,11 +221,13 @@ RSpec.describe IsoDoc::Csa do
     OUTPUT
     expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
-      .convert("test", input, true)))).to be_equivalent_to Xml::C14n.format(presxml)
+      .convert("test", input, true))))
+      .to be_equivalent_to Xml::C14n.format(presxml)
     expect(Xml::C14n.format(IsoDoc::Csa::HtmlConvert.new({})
       .convert("test", presxml, true)
       .gsub(/^.*<body/m, "<body")
-      .gsub(%r{</body>.*}m, "</body>"))).to be_equivalent_to Xml::C14n.format(html)
+      .gsub(%r{</body>.*}m, "</body>")))
+      .to be_equivalent_to Xml::C14n.format(html)
   end
 
   it "processes section names" do
@@ -322,14 +326,24 @@ RSpec.describe IsoDoc::Csa do
          <preferred>Term2</preferred>
        </term>
        </terms>
-       <definitions id="K"><title>2.2.</title>
+       <definitions id="K">
+            <title depth="2">
+               2.2.
+               <tab/>
+               Symbols
+            </title>
          <dl>
          <dt>Symbol</dt>
          <dd>Definition</dd>
          </dl>
        </definitions>
        </clause>
-       <definitions id="L" displayorder="6"><title>3.</title>
+       <definitions id="L" displayorder="6">
+         <title depth="1">
+            3.
+            <tab/>
+            Symbols
+         </title>
          <dl>
          <dt>Symbol</dt>
          <dd>Definition</dd>
@@ -366,7 +380,8 @@ RSpec.describe IsoDoc::Csa do
     OUTPUT
     expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
-      .convert("test", input, true)))).to be_equivalent_to Xml::C14n.format(output)
+      .convert("test", input, true))))
+      .to be_equivalent_to Xml::C14n.format(output)
   end
 
   it "injects JS into blank html" do
