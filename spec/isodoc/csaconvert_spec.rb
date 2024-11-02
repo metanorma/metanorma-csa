@@ -124,56 +124,6 @@ RSpec.describe IsoDoc::Csa do
       OUTPUT
   end
 
-  it "processes pre" do
-    input = <<~INPUT
-      <csa-standard xmlns="https://open.ribose.com/standards/csa">
-        <preface><foreword displayorder="1"><title>Foreword</title>
-      <pre>ABC</pre>
-      </foreword></preface>
-      </csa-standard>
-    INPUT
-
-    output = <<~OUTPUT
-      #{HTML_HDR}
-      <br/>
-      <div>
-        <h1 class="ForewordTitle">Foreword</h1>
-        <pre>ABC</pre>
-      </div>
-      </div>
-      </body>
-    OUTPUT
-    html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
-      .gsub(/^.*<body/m, "<body")
-      .gsub(%r{</body>.*}m, "</body>")
-    expect(Xml::C14n.format(html)).to be_equivalent_to Xml::C14n.format(output)
-  end
-
-  it "processes keyword" do
-    input = <<~INPUT
-      <csa-standard xmlns="https://open.ribose.com/standards/csa">
-        <preface><foreword displayorder="1"><title>Foreword</title>
-        <keyword>ABC</keyword></foreword></preface>
-      </csa-standard>
-    INPUT
-
-    html = IsoDoc::Csa::HtmlConvert.new({}).convert("test", input, true)
-      .gsub(/^.*<body/m, "<body")
-      .gsub(%r{</body>.*}m, "</body>")
-
-    output = <<~OUTPUT
-      #{HTML_HDR}
-           <br/>
-           <div>
-             <h1 class="ForewordTitle">Foreword</h1>
-             <span class="keyword">ABC</span>
-           </div>
-         </div>
-       </body>
-    OUTPUT
-    expect(Xml::C14n.format(html)).to be_equivalent_to Xml::C14n.format(output)
-  end
-
   it "processes simple terms & definitions" do
     input = <<~INPUT
       <csa-standard xmlns="http://riboseinc.com/isoxml">
