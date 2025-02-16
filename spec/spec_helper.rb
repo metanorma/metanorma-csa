@@ -102,7 +102,7 @@ BOILERPLATE
 
 BLANK_HDR = <<~"HDR"
   <?xml version="1.0" encoding="UTF-8"?>
-  <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+  <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
   <bibdata type="standard">
    <title language="en" format="text/plain">Document title</title>
    <docidentifier primary="true" type='CSA'>:#{Time.now.year}</docidentifier>

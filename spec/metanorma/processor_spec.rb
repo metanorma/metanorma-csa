@@ -29,7 +29,7 @@ RSpec.describe Metanorma::Csa::Processor do
     output = <<~OUTPUT
           #{BLANK_HDR}
       <sections/>
-      </csa-standard>
+      </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(processor.input_to_isodoc(input, nil))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -38,7 +38,7 @@ RSpec.describe Metanorma::Csa::Processor do
   it "generates HTML from IsoDoc XML" do
     FileUtils.rm_f "test.xml"
     processor.output(<<~INPUT, "test.xml", "test.html", :html)
-      <csa-standard xmlns="http://riboseinc.com/isoxml">
+      <metanorma xmlns="http://riboseinc.com/isoxml">
         <sections>
         <terms id="H" obligation="normative" displayorder="1">
           <fmt-title>1.<tab/>Terms, Definitions, Symbols and Abbreviated Terms</fmt-title>
@@ -48,7 +48,7 @@ RSpec.describe Metanorma::Csa::Processor do
         </term>
         </terms>
         </sections>
-      </csa-standard>
+      </metanorma>
     INPUT
     test_html = File.read("test.html", encoding: "utf-8")
       .gsub(/^.*<main/m, "<main")

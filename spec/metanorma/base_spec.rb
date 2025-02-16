@@ -14,7 +14,7 @@ RSpec.describe Metanorma::Csa do
     expect(Xml::C14n.format(strip_guid(input))).to be_equivalent_to Xml::C14n.format(<<~"OUTPUT")
       #{BLANK_HDR}
       <sections/>
-      </csa-standard>
+      </metanorma>
     OUTPUT
   end
 
@@ -31,7 +31,7 @@ RSpec.describe Metanorma::Csa do
     output = <<~OUTPUT
           #{BLANK_HDR}
       <sections/>
-      </csa-standard>
+      </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -74,7 +74,7 @@ RSpec.describe Metanorma::Csa do
       :role_2: contributor
     INPUT
     output = <<~OUTPUT
-      <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+      <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
       <bibdata type="standard">
       <title language="en" format="text/plain">Main Title</title>
       <docidentifier primary="true" type="CSA">1000(wd):2001</docidentifier>
@@ -163,7 +163,7 @@ RSpec.describe Metanorma::Csa do
          </metanorma-extension>
           #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
       <sections/>
-      </csa-standard>
+      </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -185,7 +185,7 @@ RSpec.describe Metanorma::Csa do
       :title: Main Title
     INPUT
     output = <<~OUTPUT
-        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
           <docidentifier primary="true" type="CSA">1000(cd):#{Time.now.year}</docidentifier>
@@ -244,7 +244,7 @@ RSpec.describe Metanorma::Csa do
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
         <sections/>
-        </csa-standard>
+        </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -266,7 +266,7 @@ RSpec.describe Metanorma::Csa do
       :title: Main Title
     INPUT
     output = <<~OUTPUT
-        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
           <docidentifier primary="true" type="CSA">1000(d):#{Time.now.year}</docidentifier>
@@ -325,7 +325,7 @@ RSpec.describe Metanorma::Csa do
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
         <sections/>
-        </csa-standard>
+        </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -348,7 +348,7 @@ RSpec.describe Metanorma::Csa do
       :title: Main Title
     INPUT
     output = <<~OUTPUT
-        <csa-standard xmlns="https://www.metanorma.org/ns/csa" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
           <docidentifier primary="true" type="CSA">1000:2001</docidentifier>
@@ -407,7 +407,7 @@ RSpec.describe Metanorma::Csa do
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
         <sections/>
-        </csa-standard>
+        </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -436,7 +436,7 @@ RSpec.describe Metanorma::Csa do
        Amen</pre>
        </figure>
        </sections>
-       </csa-standard>
+       </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
@@ -459,7 +459,7 @@ RSpec.describe Metanorma::Csa do
          <clause id="_" obligation="normative">
            <title>Section 1</title>
          </clause></sections>
-         </csa-standard>
+         </metanorma>
     OUTPUT
     expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
       .to be_equivalent_to Xml::C14n.format(output)
