@@ -74,7 +74,7 @@ RSpec.describe Metanorma::Csa do
       :role_2: contributor
     INPUT
     output = <<~OUTPUT
-      <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
+      <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
       <bibdata type="standard">
       <title language="en" format="text/plain">Main Title</title>
       <docidentifier primary="true" type="CSA">1000(wd):2001</docidentifier>
@@ -185,7 +185,7 @@ RSpec.describe Metanorma::Csa do
       :title: Main Title
     INPUT
     output = <<~OUTPUT
-        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
           <docidentifier primary="true" type="CSA">1000(cd):#{Time.now.year}</docidentifier>
@@ -266,7 +266,7 @@ RSpec.describe Metanorma::Csa do
       :title: Main Title
     INPUT
     output = <<~OUTPUT
-        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
           <docidentifier primary="true" type="CSA">1000(d):#{Time.now.year}</docidentifier>
@@ -348,7 +348,7 @@ RSpec.describe Metanorma::Csa do
       :title: Main Title
     INPUT
     output = <<~OUTPUT
-        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}">
+        <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
         <bibdata type="standard">
           <title language="en" format="text/plain">Main Title</title>
           <docidentifier primary="true" type="CSA">1000:2001</docidentifier>
