@@ -429,7 +429,7 @@ RSpec.describe Metanorma::Csa do
     output = <<~OUTPUT
       #{BLANK_HDR}
       <sections>
-        <figure id="id">
+        <figure id="_" anchor="id">
           <name>Figure 1</name>
           <pre id="_">This is a literal
 
@@ -456,7 +456,7 @@ RSpec.describe Metanorma::Csa do
            <title>Foreword</title>
            <p id="_">This is a preamble</p>
          </foreword></preface><sections>
-         <clause id="_" obligation="normative">
+         <clause id="_" anchor="_section_1" obligation="normative">
            <title>Section 1</title>
          </clause></sections>
          </metanorma>
