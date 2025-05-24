@@ -456,7 +456,7 @@ RSpec.describe Metanorma::Csa do
            <title>Foreword</title>
            <p id="_">This is a preamble</p>
          </foreword></preface><sections>
-         <clause id="_" anchor="_section_1" obligation="normative">
+         <clause id="_" obligation="normative">
            <title>Section 1</title>
          </clause></sections>
          </metanorma>
