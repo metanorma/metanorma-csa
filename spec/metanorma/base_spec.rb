@@ -11,7 +11,7 @@ RSpec.describe Metanorma::Csa do
   it "processes a blank document" do
     input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa,
                                                     header_footer: true)
-    expect(Xml::C14n.format(strip_guid(input))).to be_equivalent_to Xml::C14n.format(<<~"OUTPUT")
+    expect(Canon.format_xml(strip_guid(input))).to be_equivalent_to Canon.format_xml(<<~"OUTPUT")
       #{BLANK_HDR}
       <sections/>
       </metanorma>
@@ -33,8 +33,8 @@ RSpec.describe Metanorma::Csa do
       <sections/>
       </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
     expect(File.exist?("test.html")).to be true
     expect(File.exist?("test.pdf")).to be true
   end
@@ -165,8 +165,8 @@ RSpec.describe Metanorma::Csa do
       <sections/>
       </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "processes committee-draft" do
@@ -246,8 +246,8 @@ RSpec.describe Metanorma::Csa do
         <sections/>
         </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "processes draft-standard" do
@@ -327,8 +327,8 @@ RSpec.describe Metanorma::Csa do
         <sections/>
         </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "ignores unrecognised status" do
@@ -409,8 +409,8 @@ RSpec.describe Metanorma::Csa do
         <sections/>
         </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "processes figures" do
@@ -438,8 +438,8 @@ RSpec.describe Metanorma::Csa do
        </sections>
        </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "strips inline header" do
@@ -461,8 +461,8 @@ RSpec.describe Metanorma::Csa do
          </clause></sections>
          </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "uses default fonts" do

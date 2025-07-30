@@ -31,8 +31,8 @@ RSpec.describe Metanorma::Csa::Processor do
       <sections/>
       </metanorma>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(processor.input_to_isodoc(input, nil))))
-      .to be_equivalent_to Xml::C14n.format(output)
+    expect(Canon.format_xml(strip_guid(processor.input_to_isodoc(input, nil))))
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "generates HTML from IsoDoc XML" do
@@ -53,7 +53,7 @@ RSpec.describe Metanorma::Csa::Processor do
     test_html = File.read("test.html", encoding: "utf-8")
       .gsub(/^.*<main/m, "<main")
       .gsub(%r{</main>.*}m, "</main>")
-    expect(Xml::C14n.format(strip_guid(test_html))).to be_equivalent_to Xml::C14n.format(strip_guid(<<~OUTPUT))
+    expect(Canon.format_xml(strip_guid(test_html))).to be_equivalent_to Canon.format_xml(strip_guid(<<~OUTPUT))
       <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
         <div id="H"><h1 id="_">
              <a class="anchor" href="#H"/>

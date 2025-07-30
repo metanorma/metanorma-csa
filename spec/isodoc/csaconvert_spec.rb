@@ -518,10 +518,10 @@ RSpec.describe IsoDoc::Csa do
          </bibliography>
       </csa-standard>
     OUTPUT
-    expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(Canon.format_xml(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
       .convert("test", input, true))))
-      .to be_equivalent_to Xml::C14n.format(output)
+      .to be_equivalent_to Canon.format_xml(output)
   end
 
   it "injects JS into blank html" do
@@ -627,10 +627,10 @@ RSpec.describe IsoDoc::Csa do
           </preface>
        </iso-standard>
     INPUT
-    expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(Canon.format_xml(strip_guid(IsoDoc::Csa::PresentationXMLConvert
         .new(presxml_options)
         .convert("test", input, true))))
-      .to be_equivalent_to Xml::C14n.format(presxml)
+      .to be_equivalent_to Canon.format_xml(presxml)
   end
 
   it "processes ordered lists" do
@@ -743,9 +743,9 @@ RSpec.describe IsoDoc::Csa do
          </preface>
       </iso-standard>
     INPUT
-    expect(Xml::C14n.format(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(Canon.format_xml(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
       .convert("test", input, true))))
-      .to be_equivalent_to Xml::C14n.format(presxml)
+      .to be_equivalent_to Canon.format_xml(presxml)
   end
 end
