@@ -71,6 +71,7 @@ RSpec.describe IsoDoc::Csa do
         </editorialgroup>
         </ext>
       </bibdata>
+      <metanorma-extension><semantic-metadata><stage-published>false</stage-published></semantic-metadata></metanorma-extension>
       <sections/>
       </csa-standard>
     INPUT
