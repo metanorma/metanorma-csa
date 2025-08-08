@@ -107,6 +107,28 @@ RSpec.describe Metanorma::Csa do
                      </name>
                    </person>
                  </contributor>
+      <contributor>
+         <role type="author">
+            <description>committee</description>
+         </role>
+         <organization>
+            <name>Cloud Security Alliance</name>
+            <subdivision type="Technical committee" subtype="A">
+               <name>TC</name>
+            </subdivision>
+         </organization>
+      </contributor>
+      <contributor>
+         <role type="author">
+            <description>committee</description>
+         </role>
+         <organization>
+            <name>Cloud Security Alliance</name>
+            <subdivision type="Technical committee" subtype="B">
+               <name>TC1</name>
+            </subdivision>
+         </organization>
+      </contributor>
         <contributor>
           <role type="publisher"/>
           <organization>
