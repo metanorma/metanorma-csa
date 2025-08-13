@@ -50,6 +50,8 @@ published_stages:
   - published
   - withdrawn
 default_stage: published
+committee_types:
+  - technical-committee
 stage_abbreviations:
   proposal:
   working-draft: wd
