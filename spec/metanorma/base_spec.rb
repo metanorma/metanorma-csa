@@ -159,10 +159,6 @@ RSpec.describe Metanorma::Csa do
         <ext>
         <doctype>standard</doctype>
         <flavor>csa</flavor>
-        <editorialgroup>
-          <committee type="A">TC</committee>
-          <committee type="B">TC1</committee>
-        </editorialgroup>
         </ext>
       </bibdata>
                <metanorma-extension>
