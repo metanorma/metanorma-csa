@@ -28,20 +28,6 @@ module Metanorma
         end
       end
 
-      def metadata_committee(node, xml)
-        node.attr("technical-committee") or return
-        xml.editorialgroup do |a|
-          a.committee node.attr("technical-committee"),
-                      **attr_code(type: node.attr("technical-committee-type"))
-          i = 2
-          while node.attr("technical-committee_#{i}")
-            a.committee node.attr("technical-committee_#{i}"),
-                        **attr_code(type: node.attr("technical-committee-type_#{i}"))
-            i += 1
-          end
-        end
-      end
-
       def title_validate(_root)
         nil
       end
