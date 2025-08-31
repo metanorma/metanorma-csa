@@ -2218,9 +2218,15 @@
 	<xsl:attribute-set name="license-statement-style">
 	</xsl:attribute-set> <!-- license-statement-style -->
 
+	<xsl:template name="refine_license-statement-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="license-statement-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 	</xsl:attribute-set> <!-- license-statement-title-style -->
+
+	<xsl:template name="refine_license-statement-title-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="license-statement-p-style">
 	</xsl:attribute-set> <!-- license-statement-p-style -->
@@ -2232,12 +2238,26 @@
 	<xsl:attribute-set name="legal-statement-style">
 	</xsl:attribute-set> <!-- legal-statement-style -->
 
+	<xsl:template name="refine_legal-statement-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="legal-statement-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 	</xsl:attribute-set> <!-- legal-statement-title-style -->
 
+	<xsl:template name="refine_legal-statement-title-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="legal-statement-p-style">
 	</xsl:attribute-set> <!-- legal-statement-p-style -->
+
+	<xsl:template name="refine_legal-statement-p-style">
+		<xsl:if test="@align">
+			<xsl:attribute name="text-align">
+				<xsl:value-of select="@align"/>
+			</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
 
 	<xsl:attribute-set name="feedback-statement-style">
 	</xsl:attribute-set> <!-- feedback-statement-style -->
@@ -2249,8 +2269,15 @@
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 	</xsl:attribute-set> <!-- feedback-statement-title-style -->
 
+	<xsl:template name="refine_feedback-statement-title-style">
+
+	</xsl:template>
+
 	<xsl:attribute-set name="feedback-statement-p-style">
 	</xsl:attribute-set> <!-- feedback-statement-p-style -->
+
+	<xsl:template name="refine_feedback-statement-p-style">
+	</xsl:template>
 
 	<!-- End boilerplate sections styles -->
 
@@ -2277,6 +2304,7 @@
 
 	<xsl:template match="mn:license-statement">
 		<fo:block xsl:use-attribute-sets="license-statement-style">
+			<xsl:call-template name="refine_license-statement-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template> <!-- license-statement -->
@@ -2294,6 +2322,7 @@
 	<xsl:template match="mn:legal-statement">
 		<xsl:param name="isLegacy">false</xsl:param>
 		<fo:block xsl:use-attribute-sets="legal-statement-style">
+			<xsl:call-template name="refine_legal-statement-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template> <!-- legal-statement -->
@@ -2463,6 +2492,27 @@
 	<xsl:attribute-set name="sourcecode-container-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_sourcecode-container-style">
+		<xsl:if test="not(ancestor::mn:li) or ancestor::mn:example">
+			<xsl:attribute name="margin-left">0mm</xsl:attribute>
+		</xsl:if>
+
+		<xsl:if test="ancestor::mn:example">
+			<xsl:attribute name="margin-right">0mm</xsl:attribute>
+		</xsl:if>
+
+		<xsl:copy-of select="@id"/>
+
+		<xsl:if test="parent::mn:note">
+			<xsl:attribute name="margin-left">
+				<xsl:choose>
+					<xsl:when test="not(ancestor::mn:table)"><xsl:value-of select="$note-body-indent"/></xsl:when>
+					<xsl:otherwise><xsl:value-of select="$note-body-indent-table"/></xsl:otherwise>
+				</xsl:choose>
+			</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
+
 	<xsl:attribute-set name="sourcecode-style">
 		<xsl:attribute name="white-space">pre</xsl:attribute>
 		<xsl:attribute name="wrap-option">wrap</xsl:attribute>
@@ -2483,6 +2533,9 @@
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 		<xsl:attribute name="keep-with-previous">always</xsl:attribute>
 	</xsl:attribute-set> <!-- sourcecode-name-style -->
+
+	<xsl:template name="refine_sourcecode-name-style">
+	</xsl:template>
 
 	<xsl:template name="add-zero-spaces-equal">
 		<xsl:param name="text" select="."/>
@@ -2571,24 +2624,8 @@
 			<xsl:otherwise>
 				<fo:block-container xsl:use-attribute-sets="sourcecode-container-style" role="SKIP">
 
-					<xsl:if test="not(ancestor::mn:li) or ancestor::mn:example">
-						<xsl:attribute name="margin-left">0mm</xsl:attribute>
-					</xsl:if>
+					<xsl:call-template name="refine_sourcecode-container-style"/>
 
-					<xsl:if test="ancestor::mn:example">
-						<xsl:attribute name="margin-right">0mm</xsl:attribute>
-					</xsl:if>
-
-					<xsl:copy-of select="@id"/>
-
-					<xsl:if test="parent::mn:note">
-						<xsl:attribute name="margin-left">
-							<xsl:choose>
-								<xsl:when test="not(ancestor::mn:table)"><xsl:value-of select="$note-body-indent"/></xsl:when>
-								<xsl:otherwise><xsl:value-of select="$note-body-indent-table"/></xsl:otherwise>
-							</xsl:choose>
-						</xsl:attribute>
-					</xsl:if>
 					<fo:block-container margin-left="0mm" role="SKIP">
 
 						<fo:block xsl:use-attribute-sets="sourcecode-style">
@@ -2915,6 +2952,7 @@
 	<xsl:template match="mn:sourcecode/mn:fmt-name">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="sourcecode-name-style">
+				<xsl:call-template name="refine_sourcecode-name-style"/>
 				<xsl:apply-templates/>
 			</fo:block>
 		</xsl:if>
@@ -2963,11 +3001,30 @@
 		<xsl:attribute name="margin-bottom">6pt</xsl:attribute>
 		<xsl:attribute name="font-family"><xsl:value-of select="$font_noto_sans_mono"/></xsl:attribute>
 		<xsl:attribute name="line-height">113%</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- pre-style -->
+
+	<xsl:template name="refine_pre-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="tt-style">
 		<xsl:attribute name="font-family"><xsl:value-of select="$font_noto_sans_mono"/></xsl:attribute>
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_tt-style">
+		<xsl:variable name="_font-size">10 <!-- inherit -->
+		</xsl:variable>
+		<xsl:variable name="font-size" select="normalize-space($_font-size)"/>
+		<xsl:if test="$font-size != ''">
+			<xsl:attribute name="font-size">
+				<xsl:choose>
+					<xsl:when test="$font-size = 'inherit'"><xsl:value-of select="$font-size"/></xsl:when>
+					<xsl:when test="contains($font-size, '%')"><xsl:value-of select="$font-size"/></xsl:when>
+					<xsl:when test="ancestor::mn:note or ancestor::mn:example"><xsl:value-of select="$font-size * 0.91"/>pt</xsl:when>
+					<xsl:otherwise><xsl:value-of select="$font-size"/>pt</xsl:otherwise>
+				</xsl:choose>
+			</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
 
 	<xsl:variable name="color-added-text">
 		<xsl:text>rgb(0, 255, 0)</xsl:text>
@@ -2981,9 +3038,14 @@
 				<xsl:attribute name="padding-bottom">0.5mm</xsl:attribute> -->
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_add-style">
+	</xsl:template>
+
 	<xsl:variable name="add-style">
-			<add-style xsl:use-attribute-sets="add-style"/>
-		</xsl:variable>
+		<add-style xsl:use-attribute-sets="add-style">
+			<xsl:call-template name="refine_add-style"/>
+		</add-style>
+	</xsl:variable>
 	<xsl:template name="append_add-style">
 		<xsl:copy-of select="xalan:nodeset($add-style)/add-style/@*"/>
 	</xsl:template>
@@ -2996,24 +3058,77 @@
 		<xsl:attribute name="text-decoration">line-through</xsl:attribute>
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_del-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="strong-style">
+		<xsl:attribute name="font-weight">bold</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_strong_style">
+		<xsl:if test="ancestor::*['preferred']">
+			<xsl:attribute name="role">SKIP</xsl:attribute>
+		</xsl:if>
+	</xsl:template> <!-- refine_strong_style -->
+
+	<xsl:attribute-set name="em-style">
+		<xsl:attribute name="font-style">italic</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_em_style">
+	</xsl:template> <!-- refine_em_style -->
+
+	<xsl:attribute-set name="sup-style">
+		<xsl:attribute name="font-size">80%</xsl:attribute>
+		<xsl:attribute name="vertical-align">super</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_sup-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="sub-style">
+		<xsl:attribute name="font-size">80%</xsl:attribute>
+		<xsl:attribute name="vertical-align">sub</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_sub-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="underline-style">
+		<xsl:attribute name="text-decoration">underline</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_underline-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="hi-style">
+		<xsl:attribute name="background-color">yellow</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_hi-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="strike-style">
+		<xsl:attribute name="text-decoration">line-through</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_strike-style">
+	</xsl:template>
+
 	<xsl:template match="mn:br">
 		<xsl:value-of select="$linebreak"/>
 	</xsl:template>
 
-		<xsl:template match="mn:em">
-		<fo:inline font-style="italic">
-			<xsl:call-template name="refine_italic_style"/>
+	<xsl:template match="mn:em">
+		<fo:inline xsl:use-attribute-sets="em-style">
+			<xsl:call-template name="refine_em_style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template name="refine_italic_style">
-	</xsl:template>
-
 	<xsl:template match="mn:strong | *[local-name()='b']">
 		<xsl:param name="split_keep-within-line"/>
-		<fo:inline font-weight="bold">
-
+		<fo:inline xsl:use-attribute-sets="strong-style">
 			<xsl:call-template name="refine_strong_style"/>
 
 			<xsl:apply-templates>
@@ -3022,44 +3137,27 @@
 		</fo:inline>
 	</xsl:template>
 
-	<xsl:template name="refine_strong_style">
-		<xsl:if test="ancestor::*['preferred']">
-			<xsl:attribute name="role">SKIP</xsl:attribute>
-		</xsl:if>
-	</xsl:template>
-
 	<xsl:template match="*[local-name()='padding']">
 		<fo:inline padding-right="{@value}"> </fo:inline>
 	</xsl:template>
 
 	<xsl:template match="mn:sup">
-		<fo:inline font-size="80%" vertical-align="super">
+		<fo:inline xsl:use-attribute-sets="sup-style">
+			<xsl:call-template name="refine_sup-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
 	<xsl:template match="mn:sub">
-		<fo:inline font-size="80%" vertical-align="sub">
+		<fo:inline xsl:use-attribute-sets="sub-style">
+			<xsl:call-template name="refine_sub-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
 
 	<xsl:template match="mn:tt">
 		<fo:inline xsl:use-attribute-sets="tt-style">
-
-			<xsl:variable name="_font-size">10 <!-- inherit -->
-			</xsl:variable>
-			<xsl:variable name="font-size" select="normalize-space($_font-size)"/>
-			<xsl:if test="$font-size != ''">
-				<xsl:attribute name="font-size">
-					<xsl:choose>
-						<xsl:when test="$font-size = 'inherit'"><xsl:value-of select="$font-size"/></xsl:when>
-						<xsl:when test="contains($font-size, '%')"><xsl:value-of select="$font-size"/></xsl:when>
-						<xsl:when test="ancestor::mn:note or ancestor::mn:example"><xsl:value-of select="$font-size * 0.91"/>pt</xsl:when>
-						<xsl:otherwise><xsl:value-of select="$font-size"/>pt</xsl:otherwise>
-					</xsl:choose>
-				</xsl:attribute>
-			</xsl:if>
+			<xsl:call-template name="refine_tt-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template> <!-- tt -->
@@ -3078,7 +3176,8 @@
 	</xsl:template>
 
 	<xsl:template match="mn:underline">
-		<fo:inline text-decoration="underline">
+		<fo:inline xsl:use-attribute-sets="underline-style">
+			<xsl:call-template name="refine_underline-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
@@ -3236,6 +3335,7 @@
 
 	<xsl:template match="mn:del">
 		<fo:inline xsl:use-attribute-sets="del-style">
+			<xsl:call-template name="refine_del-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
@@ -3245,7 +3345,8 @@
 
 	<!-- highlight text -->
 	<xsl:template match="mn:hi | mn:span[@class = 'fmt-hi']" priority="3">
-		<fo:inline background-color="yellow">
+		<fo:inline xsl:use-attribute-sets="hi-style">
+			<xsl:call-template name="refine_hi-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
@@ -3331,7 +3432,8 @@
   </xsl:template>
 
 	<xsl:template match="mn:strike">
-		<fo:inline text-decoration="line-through">
+		<fo:inline xsl:use-attribute-sets="strike-style">
+			<xsl:call-template name="refine_strike-style"/>
 			<xsl:apply-templates/>
 		</fo:inline>
 	</xsl:template>
@@ -3411,6 +3513,7 @@
 
 	<xsl:template match="mn:pre" name="pre">
 		<fo:block xsl:use-attribute-sets="pre-style">
+			<xsl:call-template name="refine_pre-style"/>
 			<xsl:copy-of select="@id"/>
 			<xsl:choose>
 
@@ -3441,21 +3544,39 @@
 	<xsl:attribute-set name="permission-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_permission-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="permission-name-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_permission-name-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="permission-label-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_permission-label-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="requirement-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_requirement-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="requirement-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_requirement-name-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="requirement-label-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_requirement-label-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="subject-style">
 	</xsl:attribute-set>
@@ -3484,11 +3605,20 @@
 	<xsl:attribute-set name="recommendation-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_recommendation-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="recommendation-name-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_recommendation-name-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="recommendation-label-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_recommendation-label-style">
+	</xsl:template>
 
 	<!-- ========== -->
 	<!-- permission -->
@@ -3496,6 +3626,7 @@
 	<xsl:template match="mn:permission">
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="permission-style">
+			<xsl:call-template name="refine_permission-style"/>
 			<xsl:apply-templates select="mn:fmt-name"/>
 			<xsl:apply-templates select="node()[not(self::mn:fmt-name)]"/>
 		</fo:block>
@@ -3504,6 +3635,7 @@
 	<xsl:template match="mn:permission/mn:fmt-name">
 		<xsl:if test="normalize-space() != ''">
 			<fo:block xsl:use-attribute-sets="permission-name-style">
+				<xsl:call-template name="refine_permission-name-style"/>
 				<xsl:apply-templates/>
 			</fo:block>
 		</xsl:if>
@@ -3511,6 +3643,7 @@
 
 	<xsl:template match="mn:permission/mn:label">
 		<fo:block xsl:use-attribute-sets="permission-label-style">
+			<xsl:call-template name="refine_permission-label-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -3523,6 +3656,7 @@
 	<xsl:template match="mn:requirement">
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="requirement-style">
+			<xsl:call-template name="refine_requirement-style"/>
 			<xsl:apply-templates select="mn:fmt-name"/>
 			<xsl:apply-templates select="mn:label"/>
 			<xsl:apply-templates select="@obligation"/>
@@ -3535,6 +3669,7 @@
 		<xsl:if test="normalize-space() != ''">
 
 			<fo:block xsl:use-attribute-sets="requirement-name-style">
+				<xsl:call-template name="refine_requirement-name-style"/>
 				<xsl:apply-templates/>
 			</fo:block>
 		</xsl:if>
@@ -3542,6 +3677,7 @@
 
 	<xsl:template match="mn:requirement/mn:label">
 		<fo:block xsl:use-attribute-sets="requirement-label-style">
+			<xsl:call-template name="refine_requirement-label-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -3567,6 +3703,7 @@
 	<xsl:template match="mn:recommendation">
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="recommendation-style">
+			<xsl:call-template name="refine_recommendation-style"/>
 			<xsl:apply-templates select="mn:fmt-name"/>
 			<xsl:apply-templates select="node()[not(self::mn:fmt-name)]"/>
 		</fo:block>
@@ -3576,6 +3713,7 @@
 		<xsl:if test="normalize-space() != ''">
 
 			<fo:block xsl:use-attribute-sets="recommendation-name-style">
+				<xsl:call-template name="refine_recommendation-name-style"/>
 				<xsl:apply-templates/>
 			</fo:block>
 		</xsl:if>
@@ -3583,6 +3721,7 @@
 
 	<xsl:template match="mn:recommendation/mn:label">
 		<fo:block xsl:use-attribute-sets="recommendation-label-style">
+			<xsl:call-template name="refine_recommendation-label-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -3763,13 +3902,22 @@
 	<xsl:attribute-set name="term-style">
 	</xsl:attribute-set> <!-- term-style -->
 
+	<xsl:template name="refine_term-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="term-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 		<xsl:attribute name="font-weight">bold</xsl:attribute>
 	</xsl:attribute-set> <!-- term-name-style -->
 
-		<xsl:attribute-set name="preferred-block-style">
+	<xsl:template name="refine_term-name-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="preferred-block-style">
 	</xsl:attribute-set> <!-- preferred-block-style -->
+
+	<xsl:template name="refine_preferred-block-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="preferred-term-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
@@ -3777,21 +3925,42 @@
 		<xsl:attribute name="line-height">1</xsl:attribute>
 	</xsl:attribute-set> <!-- preferred-term-style -->
 
+	<xsl:template name="refine_preferred-term-style">
+		<xsl:if test="mn:strong">
+			<xsl:attribute name="font-weight">normal</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
+
 	<xsl:attribute-set name="domain-style">
 	</xsl:attribute-set> <!-- domain-style -->
+
+	<xsl:template name="refine_domain-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="admitted-style">
 	</xsl:attribute-set> <!-- admitted-style -->
 
+	<xsl:template name="refine_admitted-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="deprecates-style">
 	</xsl:attribute-set> <!-- deprecates-style -->
+
+	<xsl:template name="refine_deprecates-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="related-block-style" use-attribute-sets="preferred-block-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_related-block-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="definition-style">
 		<xsl:attribute name="space-after">6pt</xsl:attribute>
 	</xsl:attribute-set> <!-- definition-style -->
+
+	<xsl:template name="refine_definition-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="termsource-style">
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
@@ -3804,10 +3973,16 @@
 	<xsl:attribute-set name="termsource-text-style">
 	</xsl:attribute-set> <!-- termsource-text-style -->
 
+	<xsl:template name="refine_termsource-text-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="origin-style">
 		<xsl:attribute name="color">rgb(33, 94, 159)</xsl:attribute>
 		<xsl:attribute name="text-decoration">underline</xsl:attribute>
 	</xsl:attribute-set> <!-- origin-style -->
+
+	<xsl:template name="refine_origin-style">
+	</xsl:template>
 
 	<!-- ====== -->
 	<!-- term      -->
@@ -3824,9 +3999,8 @@
 	<xsl:template match="mn:term">
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="term-style">
+			<xsl:call-template name="refine_term-style"/>
 
-			<xsl:if test="parent::mn:term and not(preceding-sibling::mn:term)">
-			</xsl:if>
 			<xsl:apply-templates select="node()[not(self::mn:fmt-name)]"/>
 		</fo:block>
 	</xsl:template>
@@ -3902,6 +4076,7 @@
 	<!-- text SOURCE: -->
 	<xsl:template match="mn:fmt-termsource/mn:strong[1][following-sibling::*[1][self::mn:fmt-origin]]/text()">
 		<fo:inline xsl:use-attribute-sets="termsource-text-style">
+			<xsl:call-template name="refine_termsource-text-style"/>
 			<xsl:value-of select="."/>
 		</fo:inline>
 	</xsl:template>
@@ -3914,6 +4089,7 @@
 						<xsl:attribute name="fox:alt-text"><xsl:value-of select="@bibitemid"/></xsl:attribute>
 					</xsl:if>
 					<fo:inline xsl:use-attribute-sets="origin-style">
+						<xsl:call-template name="refine_origin-style"/>
 						<xsl:apply-templates/>
 					</fo:inline>
 				</fo:basic-link>
@@ -3968,9 +4144,12 @@
 		</xsl:variable>
 		<fo:block font-size="{normalize-space($font-size)}" role="H{$levelTerm}" xsl:use-attribute-sets="preferred-block-style">
 
+			<xsl:call-template name="refine_preferred-block-style"/>
+
 			<xsl:if test="parent::mn:term and not(preceding-sibling::mn:fmt-preferred)"> <!-- if first preffered in term, then display term's name -->
 
 				<fo:block xsl:use-attribute-sets="term-name-style" role="SKIP">
+					<xsl:call-template name="refine_term-name-style"/>
 
 					<xsl:for-each select="ancestor::mn:term[1]/mn:fmt-name"><!-- change context -->
 						<xsl:call-template name="setIDforNamedDestination"/>
@@ -3981,7 +4160,7 @@
 			</xsl:if>
 
 			<fo:block xsl:use-attribute-sets="preferred-term-style" role="SKIP">
-				<xsl:call-template name="setStyle_preferred"/>
+				<xsl:call-template name="refine_preferred-term-style"/>
 
 				<xsl:apply-templates/>
 			</fo:block>
@@ -4002,20 +4181,16 @@
 
 	<xsl:template match="mn:fmt-admitted">
 		<fo:block xsl:use-attribute-sets="admitted-style">
+			<xsl:call-template name="refine_admitted-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
 
 	<xsl:template match="mn:fmt-deprecates">
 		<fo:block xsl:use-attribute-sets="deprecates-style">
+			<xsl:call-template name="refine_deprecates-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
-	</xsl:template>
-
-	<xsl:template name="setStyle_preferred">
-		<xsl:if test="mn:strong">
-			<xsl:attribute name="font-weight">normal</xsl:attribute>
-		</xsl:if>
 	</xsl:template>
 
 	<!-- regarding ISO 10241-1:2011,  If there is more than one preferred term, each preferred term follows the previous one on a new line. -->
@@ -4027,6 +4202,7 @@
 
 	<xsl:template match="mn:fmt-related">
 		<fo:block role="SKIP" xsl:use-attribute-sets="related-block-style">
+			<xsl:call-template name="refine_related-block-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -4041,6 +4217,7 @@
 	<!-- ========== -->
 	<xsl:template match="mn:fmt-definition">
 		<fo:block xsl:use-attribute-sets="definition-style" role="SKIP">
+			<xsl:call-template name="refine_definition-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -4089,6 +4266,9 @@
 		<xsl:attribute name="margin-left">12.5mm</xsl:attribute>
 		<xsl:attribute name="margin-right">12.5mm</xsl:attribute>
 	</xsl:attribute-set> <!-- example-body-style -->
+
+	<xsl:template name="refine_example-body-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="example-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
@@ -4192,6 +4372,7 @@
 						</fo:block>
 
 						<fo:block-container xsl:use-attribute-sets="example-body-style" role="SKIP">
+							<xsl:call-template name="refine_example-body-style"/>
 							<fo:block-container margin-left="0mm" margin-right="0mm" role="SKIP">
 								<xsl:variable name="example_body">
 									<xsl:apply-templates select="node()[not(self::mn:fmt-name)]">
@@ -4254,6 +4435,7 @@
 						<xsl:if test="*[not(self::mn:fmt-name)][position() &gt; 1]">
 							<!-- display further elements in blocks -->
 							<fo:block-container xsl:use-attribute-sets="example-body-style" role="SKIP">
+								<xsl:call-template name="refine_example-body-style"/>
 								<fo:block-container margin-left="0mm" margin-right="0mm" role="SKIP">
 									<xsl:apply-templates select="*[not(self::mn:fmt-name)][position() &gt; 1]">
 										<xsl:with-param name="fo_element" select="'block'"/>
@@ -4479,6 +4661,9 @@
 		<!-- <xsl:attribute name="padding-right">5mm</xsl:attribute> -->
 	</xsl:attribute-set> <!-- table-fn-number-style -->
 
+	<xsl:template name="refine_table-fn-number-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="table-fmt-fn-label-style">
 		<xsl:attribute name="font-size">80%</xsl:attribute>
 	</xsl:attribute-set> <!-- table-fmt-fn-label-style -->
@@ -4486,30 +4671,12 @@
 	<xsl:template name="refine_table-fmt-fn-label-style">
 	</xsl:template>
 
-	<xsl:attribute-set name="fn-container-body-style">
-		<xsl:attribute name="text-indent">0</xsl:attribute>
-		<xsl:attribute name="start-indent">0</xsl:attribute>
-	</xsl:attribute-set>
-
 	<xsl:attribute-set name="table-fn-body-style">
 	</xsl:attribute-set>
 
-	<xsl:attribute-set name="figure-fn-number-style">
-		<xsl:attribute name="padding-right">5mm</xsl:attribute>
-	</xsl:attribute-set> <!-- figure-fn-number-style -->
-
-	<xsl:attribute-set name="figure-fmt-fn-label-style">
-		<xsl:attribute name="font-size">80%</xsl:attribute>
-		<xsl:attribute name="vertical-align">super</xsl:attribute>
-	</xsl:attribute-set> <!-- figure-fmt-fn-label-style -->
-
-	<xsl:template name="refine_figure-fmt-fn-label-style">
+	<xsl:template name="refine_table-fn-body-style">
 	</xsl:template>
 
-	<xsl:attribute-set name="figure-fn-body-style">
-		<xsl:attribute name="text-align">justify</xsl:attribute>
-		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
-	</xsl:attribute-set>
 	<!-- ========================== -->
 	<!-- END Table styles -->
 	<!-- ========================== -->
@@ -5786,6 +5953,7 @@
 					</xsl:apply-templates>
 
 					<fo:inline xsl:use-attribute-sets="table-fn-body-style">
+						<xsl:call-template name="refine_table-fn-body-style"/>
 						<!-- <xsl:copy-of select="./node()"/> -->
 						<xsl:apply-templates/>
 					</fo:inline>
@@ -5804,6 +5972,7 @@
 		<xsl:param name="process">false</xsl:param>
 		<xsl:if test="$process = 'true'">
 			<fo:inline xsl:use-attribute-sets="table-fn-number-style" role="SKIP">
+				<xsl:call-template name="refine_table-fn-number-style"/>
 
 				<!-- tab is padding-right -->
 				<xsl:apply-templates select=".//mn:tab">
@@ -6675,8 +6844,17 @@
 	<xsl:attribute-set name="dl-block-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_dl-block-style">
+		<xsl:if test="@key = 'true' and ancestor::mn:figure">
+			<xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
+
 	<xsl:attribute-set name="dt-row-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_dt-row-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="dt-cell-style">
 	</xsl:attribute-set>
@@ -6695,6 +6873,9 @@
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 		<xsl:attribute name="margin-bottom">6pt</xsl:attribute>
 	</xsl:attribute-set> <!-- dl-name-style -->
+
+	<xsl:template name="refine_dl-name-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="dd-cell-style">
 		<xsl:attribute name="padding-left">2mm</xsl:attribute>
@@ -6734,9 +6915,7 @@
 		<!-- <dl><xsl:copy-of select="."/></dl> -->
 		<fo:block-container xsl:use-attribute-sets="dl-block-style" role="SKIP">
 
-			<xsl:if test="@key = 'true' and ancestor::mn:figure">
-				<xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-			</xsl:if>
+			<xsl:call-template name="refine_dl-block-style"/>
 
 			<xsl:call-template name="setBlockSpanAll"/>
 			<xsl:if test="not(ancestor::mn:quote)">
@@ -7032,6 +7211,8 @@
 		<xsl:if test="$process = 'true'">
 			<fo:block xsl:use-attribute-sets="dl-name-style">
 
+				<xsl:call-template name="refine_dl-name-style"/>
+
 				<xsl:apply-templates/>
 			</fo:block>
 		</xsl:if>
@@ -7220,6 +7401,8 @@
 		<xsl:param name="split_keep-within-line"/>
 
 		<fo:table-row xsl:use-attribute-sets="dt-row-style">
+			<xsl:call-template name="refine_dt-row-style"/>
+
 			<xsl:call-template name="insert_dt_cell">
 				<xsl:with-param name="key_iso" select="$key_iso"/>
 				<xsl:with-param name="split_keep-within-line" select="$split_keep-within-line"/>
@@ -7429,8 +7612,14 @@
 	<xsl:attribute-set name="appendix-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_appendix-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="appendix-example-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_appendix-example-style">
+	</xsl:template>
 
 	<!-- ======================== -->
 	<!-- Appendix processing -->
@@ -7438,6 +7627,7 @@
 	<xsl:template match="mn:appendix">
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="appendix-style">
+			<xsl:call-template name="refine_appendix-style"/>
 			<xsl:apply-templates select="mn:fmt-title"/>
 		</fo:block>
 		<xsl:apply-templates select="node()[not(self::mn:fmt-title)]"/>
@@ -7456,6 +7646,7 @@
 	<xsl:template match="mn:appendix//mn:example" priority="2">
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="appendix-example-style">
+			<xsl:call-template name="refine_appendix-example-style"/>
 			<xsl:apply-templates select="mn:fmt-name"/>
 		</fo:block>
 		<xsl:apply-templates select="node()[not(self::mn:fmt-name)]"/>
@@ -7463,7 +7654,16 @@
 
 	<xsl:attribute-set name="xref-style">
 		<xsl:attribute name="text-decoration">underline</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- xref-style -->
+
+	<xsl:template name="refine_xref-style">
+		<xsl:if test="string-length(normalize-space()) &lt; 30 and not(contains(normalize-space(), 'http://')) and not(contains(normalize-space(), 'https://')) and not(ancestor::*[self::mn:table or self::mn:dl])">
+			<xsl:attribute name="keep-together.within-line">always</xsl:attribute>
+		</xsl:if>
+		<xsl:if test="parent::mn:add">
+			<xsl:call-template name="append_add-style"/>
+		</xsl:if>
+	</xsl:template> <!-- refine_xref-style -->
 
 	<xsl:template match="mn:fmt-xref">
 		<xsl:call-template name="insert_basic_link">
@@ -7472,12 +7672,8 @@
 					<xsl:call-template name="getAltText"/>
 				</xsl:variable>
 				<fo:basic-link internal-destination="{@target}" fox:alt-text="{$alt_text}" xsl:use-attribute-sets="xref-style">
-					<xsl:if test="string-length(normalize-space()) &lt; 30 and not(contains(normalize-space(), 'http://')) and not(contains(normalize-space(), 'https://')) and not(ancestor::*[self::mn:table or self::mn:dl])">
-						<xsl:attribute name="keep-together.within-line">always</xsl:attribute>
-					</xsl:if>
-					<xsl:if test="parent::mn:add">
-						<xsl:call-template name="append_add-style"/>
-					</xsl:if>
+					<xsl:call-template name="refine_xref-style"/>
+
 					<xsl:apply-templates/>
 				</fo:basic-link>
 			</xsl:with-param>
@@ -7590,17 +7786,17 @@
 		<xsl:attribute name="margin-top">12pt</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 		<xsl:attribute name="line-height">115%</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- note-style -->
 
 	<xsl:template name="refine_note-style">
-	</xsl:template>
+	</xsl:template> <!-- refine_note-style -->
 
 	<xsl:variable name="note-body-indent">10mm</xsl:variable>
 	<xsl:variable name="note-body-indent-table">5mm</xsl:variable>
 
 	<xsl:attribute-set name="note-name-style">
 		<xsl:attribute name="padding-right">4mm</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- note-name-style -->
 
 	<xsl:template name="refine_note-name-style">
 	</xsl:template> <!-- refine_note-name-style -->
@@ -7615,7 +7811,7 @@
 	<xsl:attribute-set name="note-p-style">
 		<xsl:attribute name="margin-top">12pt</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- note-p-style -->
 
 	<xsl:template name="refine_note-p-style">
 	</xsl:template>
@@ -7623,19 +7819,22 @@
 	<xsl:attribute-set name="termnote-style">
 		<xsl:attribute name="font-size">10pt</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- termnote-style -->
 
 	<xsl:template name="refine_termnote-style">
 	</xsl:template> <!-- refine_termnote-style -->
 
 	<xsl:attribute-set name="termnote-name-style">
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- termnote-name-style -->
 
 	<xsl:template name="refine_termnote-name-style">
 	</xsl:template>
 
 	<xsl:attribute-set name="termnote-p-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_termnote-p-style">
+	</xsl:template>
 
 	<!-- ====== -->
 	<!-- note      -->
@@ -7798,11 +7997,13 @@
 		<xsl:choose>
 			<xsl:when test="$num = 1"> <!-- first paragraph renders in the same line as titlenote name -->
 				<fo:inline xsl:use-attribute-sets="termnote-p-style">
+					<xsl:call-template name="refine_termnote-p-style"/>
 					<xsl:apply-templates/>
 				</fo:inline>
 			</xsl:when>
 			<xsl:otherwise>
 				<fo:block xsl:use-attribute-sets="termnote-p-style">
+					<xsl:call-template name="refine_termnote-p-style"/>
 					<xsl:apply-templates/>
 				</fo:block>
 			</xsl:otherwise>
@@ -7817,7 +8018,7 @@
 		<xsl:attribute name="margin-right">12mm</xsl:attribute>
 		<xsl:attribute name="margin-top">12pt</xsl:attribute>
 		<xsl:attribute name="margin-left">13mm</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- quote-style -->
 
 	<xsl:template name="refine_quote-style">
 	</xsl:template>
@@ -7826,6 +8027,9 @@
 		<xsl:attribute name="text-align">right</xsl:attribute>
 		<xsl:attribute name="margin-right">25mm</xsl:attribute>
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_quote-source-style">
+	</xsl:template>
 
 	<!-- ====== -->
 	<!-- quote -->
@@ -7855,6 +8059,7 @@
 				</fo:block-container>
 				<xsl:if test="mn:author or mn:fmt-source or mn:attribution">
 					<fo:block xsl:use-attribute-sets="quote-source-style">
+						<xsl:call-template name="refine_quote-source-style"/>
 						<!-- — ISO, ISO 7301:2011, Clause 1 -->
 						<xsl:apply-templates select="mn:author"/>
 						<xsl:apply-templates select="mn:fmt-source"/>
@@ -7917,6 +8122,9 @@
 	<xsl:attribute-set name="figure-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_figure-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="figure-name-style">
 		<xsl:attribute name="role">Caption</xsl:attribute>
 		<xsl:attribute name="font-size">11pt</xsl:attribute>
@@ -7925,7 +8133,7 @@
 		<xsl:attribute name="margin-top">12pt</xsl:attribute>
 		<xsl:attribute name="space-after">6pt</xsl:attribute>
 		<xsl:attribute name="keep-with-previous">always</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- figure-name-style -->
 
 	<xsl:template name="refine_figure-name-style">
 	</xsl:template> <!-- refine_figure-name-style -->
@@ -7933,7 +8141,7 @@
 	<xsl:attribute-set name="image-style">
 		<xsl:attribute name="role">SKIP</xsl:attribute>
 		<xsl:attribute name="text-align">center</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- image-style -->
 
 	<xsl:template name="refine_image-style">
 	</xsl:template>
@@ -7943,13 +8151,50 @@
 		<xsl:attribute name="content-height">100%</xsl:attribute>
 		<xsl:attribute name="scaling">uniform</xsl:attribute>
 		<xsl:attribute name="content-height">scale-to-fit</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- image-graphic-style -->
+
+	<xsl:template name="refine_image-graphic-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="figure-source-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_figure-source-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="figure-pseudocode-p-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_figure-pseudocode-p-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="figure-fn-number-style">
+		<xsl:attribute name="padding-right">5mm</xsl:attribute>
+	</xsl:attribute-set> <!-- figure-fn-number-style -->
+
+	<xsl:template name="refine_figure-fn-number-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="figure-fmt-fn-label-style">
+		<xsl:attribute name="font-size">80%</xsl:attribute>
+		<xsl:attribute name="vertical-align">super</xsl:attribute>
+	</xsl:attribute-set> <!-- figure-fmt-fn-label-style -->
+
+	<xsl:template name="refine_figure-fmt-fn-label-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="figure-fn-body-style">
+		<xsl:attribute name="text-align">justify</xsl:attribute>
+		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_figure-fn-body-style">
+		<xsl:variable name="key_iso">
+		</xsl:variable>
+		<xsl:if test="normalize-space($key_iso) = 'true'">
+			<xsl:attribute name="margin-bottom">0</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
 
 	<!-- ============================ -->
 	<!-- figure's footnotes rendering -->
@@ -8063,9 +8308,8 @@
 									</fo:table-cell>
 									<fo:table-cell>
 										<fo:block xsl:use-attribute-sets="figure-fn-body-style">
-											<xsl:if test="normalize-space($key_iso) = 'true'">
-												<xsl:attribute name="margin-bottom">0</xsl:attribute>
-											</xsl:if>
+											<xsl:call-template name="refine_figure-fn-body-style"/>
+
 											<!-- <xsl:copy-of select="./node()"/> -->
 											<xsl:apply-templates/>
 										</fo:block>
@@ -8083,6 +8327,7 @@
 		<xsl:param name="process">false</xsl:param>
 		<xsl:if test="$process = 'true'">
 			<fo:inline xsl:use-attribute-sets="figure-fn-number-style" role="SKIP">
+				<xsl:call-template name="refine_figure-fn-number-style"/>
 				<xsl:attribute name="padding-right">0mm</xsl:attribute>
 
 				<!-- tab is padding-right -->
@@ -8120,6 +8365,7 @@
 			<xsl:attribute name="font-size">10pt</xsl:attribute>
 		</xsl:if>
 		<fo:inline xsl:use-attribute-sets="figure-fn-number-style figure-fmt-fn-label-style"> <!-- id="{@id}"  -->
+			<xsl:call-template name="refine_figure-fn-number-style"/>
 			<!-- <xsl:value-of select="@reference"/> -->
 			<xsl:apply-templates/>
 		</fo:inline>
@@ -8165,6 +8411,8 @@
 
 			<fo:block xsl:use-attribute-sets="figure-style" role="SKIP">
 
+				<xsl:call-template name="refine_figure-style"/>
+
 				<xsl:for-each select="mn:fmt-name"> <!-- set context -->
 					<xsl:call-template name="setIDforNamedDestination"/>
 				</xsl:for-each>
@@ -8208,6 +8456,7 @@
 
 	<xsl:template match="mn:figure[@class = 'pseudocode']//mn:p">
 		<fo:block xsl:use-attribute-sets="figure-pseudocode-p-style">
+			<xsl:call-template name="refine_figure-pseudocode-p-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -8336,6 +8585,8 @@
 											<attributes xsl:use-attribute-sets="image-graphic-style"/>
 										</xsl:variable>
 										<xsl:copy-of select="xalan:nodeset($image-graphic-style_attributes)/attributes/@*"/>
+
+										<xsl:call-template name="refine_image-graphic-style"/>
 
 										<xsl:if test="not(@mimetype = 'image/svg+xml') and not(ancestor::mn:table)">
 											<xsl:variable name="scale">
@@ -9036,6 +9287,9 @@
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 	</xsl:attribute-set> <!-- formula-style -->
 
+	<xsl:template name="refine_formula-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="formula-stem-block-style">
 		<xsl:attribute name="text-align">center</xsl:attribute>
 		<xsl:attribute name="text-align">left</xsl:attribute>
@@ -9105,6 +9359,8 @@
 	<!-- stem inside formula with name (with formula's number) -->
 	<xsl:template match="mn:formula[mn:fmt-name]/mn:fmt-stem">
 		<fo:block xsl:use-attribute-sets="formula-style">
+
+			<xsl:call-template name="refine_formula-style"/>
 
 			<fo:table table-layout="fixed" width="100%">
 				<fo:table-column column-width="95%"/>
@@ -9525,6 +9781,9 @@
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
 	</xsl:attribute-set> <!-- list-name-style -->
 
+	<xsl:template name="refine_list-name-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="list-item-style">
 	</xsl:attribute-set>
 
@@ -9824,6 +10083,7 @@
 		<xsl:param name="process">false</xsl:param>
 		<xsl:if test="$process = 'true'">
 			<fo:block xsl:use-attribute-sets="list-name-style">
+				<xsl:call-template name="refine_list-name-style"/>
 				<xsl:apply-templates/>
 			</fo:block>
 		</xsl:if>
@@ -9884,11 +10144,24 @@
 	<!-- END Lists processing -->
 	<!-- ===================================== -->
 
+	<xsl:attribute-set name="footnote-separator-leader-style">
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_footnote-separator-leader-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="fn-container-body-style">
+		<xsl:attribute name="text-indent">0</xsl:attribute>
+		<xsl:attribute name="start-indent">0</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_fn-container-body-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="fn-reference-style">
 		<xsl:attribute name="font-size">80%</xsl:attribute>
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
-
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- fn-reference-style -->
 
 	<xsl:template name="refine_fn-reference-style">
 		<!-- https://github.com/metanorma/metanorma-ieee/issues/595 -->
@@ -9899,11 +10172,17 @@
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_fn-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="fn-num-style">
 		<xsl:attribute name="keep-with-previous.within-line">always</xsl:attribute>
 		<xsl:attribute name="font-size">65%</xsl:attribute>
 		<xsl:attribute name="vertical-align">super</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- fn-num-style -->
+
+	<xsl:template name="refine_fn-num-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="fn-body-style">
 		<xsl:attribute name="font-weight">normal</xsl:attribute>
@@ -9915,7 +10194,7 @@
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 		<xsl:attribute name="color">rgb(168, 170, 173)</xsl:attribute>
 		<xsl:attribute name="text-align">left</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- fn-body-style" -->
 
 	<xsl:template name="refine_fn-body-style">
 	</xsl:template> <!-- refine_fn-body-style -->
@@ -9979,10 +10258,12 @@
 					<xsl:choose>
 						<xsl:when test="ancestor::mn:bibitem">
 							<fn_styles xsl:use-attribute-sets="bibitem-note-fn-style">
+								<xsl:call-template name="refine_bibitem-note-fn-style"/>
 							</fn_styles>
 						</xsl:when>
 						<xsl:otherwise>
 							<fn_styles xsl:use-attribute-sets="fn-num-style">
+								<xsl:call-template name="refine_fn-num-style"/>
 							</fn_styles>
 						</xsl:otherwise>
 					</xsl:choose>
@@ -10020,10 +10301,12 @@
 			<xsl:when test="$p_fn//fn[@gen_id = $gen_id] or normalize-space(@skip_footnote_body) = 'false' or $footnote_body_from_table = 'true'">
 
 				<fo:footnote xsl:use-attribute-sets="fn-style" role="SKIP">
+					<xsl:call-template name="refine_fn-style"/>
 					<xsl:copy-of select="$footnote_inline"/>
 					<fo:footnote-body role="Note">
 
 						<fo:block-container xsl:use-attribute-sets="fn-container-body-style" role="SKIP">
+							<xsl:call-template name="refine_fn-container-body-style"/>
 
 							<xsl:variable name="fn_block">
 								<xsl:call-template name="refine_fn-body-style"/>
@@ -10125,12 +10408,18 @@
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 	</xsl:attribute-set> <!-- admonition-style -->
 
+	<xsl:template name="refine_admonition-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="admonition-container-style">
 		<xsl:attribute name="margin-left">0mm</xsl:attribute>
 		<xsl:attribute name="margin-right">0mm</xsl:attribute>
 		<xsl:attribute name="padding">2mm</xsl:attribute>
 		<xsl:attribute name="padding-top">3mm</xsl:attribute>
 	</xsl:attribute-set> <!-- admonition-container-style -->
+
+	<xsl:template name="refine_admonition-container-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="admonition-name-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
@@ -10141,9 +10430,16 @@
 		<xsl:attribute name="text-align">center</xsl:attribute>
 	</xsl:attribute-set> <!-- admonition-name-style -->
 
+	<xsl:template name="refine_admonition-name-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="admonition-p-style">
 		<xsl:attribute name="font-style">italic</xsl:attribute>
 	</xsl:attribute-set> <!-- admonition-p-style -->
+
+	<xsl:template name="refine_admonition-p-style">
+	</xsl:template>
+
 	<!-- end admonition -->
 
 	<!-- ================ -->
@@ -10153,8 +10449,12 @@
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block-container id="{@id}" xsl:use-attribute-sets="admonition-style">
 
+			<xsl:call-template name="refine_admonition-style"/>
+
 			<xsl:call-template name="setBlockSpanAll"/>
 					<fo:block-container xsl:use-attribute-sets="admonition-container-style" role="SKIP">
+
+						<xsl:call-template name="refine_admonition-container-style"/>
 								<fo:block-container margin-left="0mm" margin-right="0mm" role="SKIP">
 									<fo:block>
 										<xsl:apply-templates select="node()[not(self::mn:fmt-name)]"/>
@@ -10217,6 +10517,13 @@
 	<!-- END Admonition -->
 	<!-- ================ -->
 
+	<xsl:attribute-set name="references-non-normative-title-style">
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_references-non-normative-title-style">
+
+	</xsl:template>
+
 	<!-- bibitem in Normative References (references/@normative="true") -->
 	<xsl:attribute-set name="bibitem-normative-style">
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
@@ -10225,16 +10532,25 @@
 		<xsl:attribute name="line-height">145%</xsl:attribute>
 	</xsl:attribute-set> <!-- bibitem-normative-style -->
 
+	<xsl:template name="refine_bibitem-normative-style">
+	</xsl:template>
+
 	<!-- bibitem in Normative References (references/@normative="true"), renders as list -->
 	<xsl:attribute-set name="bibitem-normative-list-style">
 		<xsl:attribute name="provisional-distance-between-starts">12mm</xsl:attribute>
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 	</xsl:attribute-set> <!-- bibitem-normative-list-style -->
 
+	<xsl:template name="refine_bibitem-normative-list-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="bibitem-non-normative-style">
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 		<xsl:attribute name="line-height">145%</xsl:attribute>
 	</xsl:attribute-set> <!-- bibitem-non-normative-style -->
+
+	<xsl:template name="refine_bibitem-non-normative-style">
+	</xsl:template>
 
 	<!-- bibitem in bibliography section (references/@normative="false"), renders as list -->
 	<xsl:attribute-set name="bibitem-non-normative-list-style">
@@ -10242,16 +10558,28 @@
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 	</xsl:attribute-set> <!-- bibitem-non-normative-list-style -->
 
+	<xsl:template name="refine_bibitem-non-normative-list-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="bibitem-non-normative-list-item-style">
 		<xsl:attribute name="margin-bottom">12pt</xsl:attribute>
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_bibitem-non-normative-list-item-style">
+	</xsl:template>
 
 	<!-- bibitem in bibliography section (references/@normative="false"), list body -->
 	<xsl:attribute-set name="bibitem-normative-list-body-style">
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_bibitem-normative-list-body-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="bibitem-non-normative-list-body-style">
 	</xsl:attribute-set> <!-- bibitem-non-normative-list-body-style -->
+
+	<xsl:template name="refine_bibitem-non-normative-list-body-style">
+	</xsl:template>
 
 	<!-- footnote reference number for bibitem, in the text  -->
 	<xsl:attribute-set name="bibitem-note-fn-style">
@@ -10259,6 +10587,9 @@
 		<xsl:attribute name="font-size">65%</xsl:attribute>
 		<xsl:attribute name="vertical-align">super</xsl:attribute>
 	</xsl:attribute-set> <!-- bibitem-note-fn-style -->
+
+	<xsl:template name="refine_bibitem-note-fn-style">
+	</xsl:template>
 
 	<!-- footnote number on the page bottom -->
 	<xsl:attribute-set name="bibitem-note-fn-number-style">
@@ -10279,6 +10610,9 @@
 	<xsl:attribute-set name="references-non-normative-style">
 		<xsl:attribute name="line-height">145%</xsl:attribute>
 	</xsl:attribute-set> <!-- references-non-normative-style -->
+
+	<xsl:template name="refine_references-non-normative-style">
+	</xsl:template>
 
 		<!-- ======================= -->
 	<!-- Bibliography rendering -->
@@ -10321,6 +10655,7 @@
 		<xsl:apply-templates select="mn:fmt-title[@columns = 1]"/>
 
 		<fo:block xsl:use-attribute-sets="references-non-normative-style">
+			<xsl:call-template name="refine_references-non-normative-style"/>
 			<xsl:apply-templates select="node()[not(self::mn:fmt-title and @columns = 1)]"/>
 		</fo:block>
 	</xsl:template> <!-- references -->
@@ -10334,6 +10669,8 @@
 		<xsl:param name="skip" select="normalize-space(preceding-sibling::*[1][self::mn:bibitem] and 1 = 1)"/> <!-- current bibiitem is non-first -->
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="bibitem-normative-style">
+			<xsl:call-template name="refine_bibitem-normative-style"/>
+
 			<xsl:call-template name="processBibitem"/>
 		</fo:block>
 
@@ -10345,6 +10682,7 @@
 		<!-- start CSA bibitem processing -->
 		<xsl:call-template name="setNamedDestination"/>
 		<fo:block id="{@id}" xsl:use-attribute-sets="bibitem-non-normative-style">
+			<xsl:call-template name="refine_bibitem-non-normative-style"/>
 			<xsl:apply-templates select="mn:biblio-tag"/>
 			<xsl:apply-templates select="mn:formattedref"/>
 			<!-- <xsl:call-template name="processBibliographyNote"/> -->
@@ -10363,6 +10701,8 @@
 			<xsl:otherwise>
 				<xsl:call-template name="setNamedDestination"/>
 				<fo:list-item id="{@id}" xsl:use-attribute-sets="bibitem-non-normative-list-item-style">
+					<xsl:call-template name="refine_bibitem-non-normative-list-item-style"/>
+
 					<fo:list-item-label end-indent="label-end()">
 						<fo:block role="SKIP">
 							<fo:inline role="SKIP">
@@ -10374,6 +10714,7 @@
 					</fo:list-item-label>
 					<fo:list-item-body start-indent="body-start()">
 						<fo:block xsl:use-attribute-sets="bibitem-non-normative-list-body-style"> <!-- role="SKIP" -->
+							<xsl:call-template name="refine_bibitem-non-normative-list-body-style"/>
 							<xsl:call-template name="processBibitem">
 								<xsl:with-param name="biblio_tag_part">last</xsl:with-param>
 							</xsl:call-template>
@@ -10616,11 +10957,17 @@
 	<!-- Index section styles -->
 	<xsl:attribute-set name="indexsect-title-style">
 		<xsl:attribute name="role">H1</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- indexsect-title-style -->
+
+	<xsl:template name="refine_indexsect-title-style">
+	</xsl:template>
 
 	<xsl:attribute-set name="indexsect-clause-title-style">
 		<xsl:attribute name="keep-with-next">always</xsl:attribute>
-	</xsl:attribute-set>
+	</xsl:attribute-set> <!-- indexsect-clause-title-style -->
+
+	<xsl:template name="refine_indexsect-clause-title-style">
+	</xsl:template>
 	<!-- End Index section styles -->
 
 	<!-- =================== -->
@@ -10814,6 +11161,7 @@
 
 	<xsl:template match="mn:indexsect/mn:fmt-title | mn:indexsect/mn:title" priority="4">
 		<fo:block xsl:use-attribute-sets="indexsect-title-style">
+			<xsl:call-template name="refine_indexsect-title-style"/>
 			<!-- Index -->
 			<xsl:apply-templates/>
 		</fo:block>
@@ -10822,6 +11170,7 @@
 	<xsl:template match="mn:indexsect/mn:clause/mn:fmt-title | mn:indexsect/mn:clause/mn:title" priority="4">
 		<!-- Letter A, B, C, ... -->
 		<fo:block xsl:use-attribute-sets="indexsect-clause-title-style">
+			<xsl:call-template name="refine_indexsect-clause-title-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
 	</xsl:template>
@@ -11033,8 +11382,14 @@
 		<xsl:attribute name="leader-pattern">dots</xsl:attribute>
 	</xsl:attribute-set> <!-- END: toc-leader-style -->
 
+	<xsl:template name="refine_toc-leader-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="toc-pagenumber-style">
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_toc-pagenumber-style">
+	</xsl:template>
 
 	<!-- List of Figures, Tables -->
 	<xsl:attribute-set name="toc-listof-title-style">
@@ -11048,12 +11403,18 @@
 		<xsl:attribute name="provisional-distance-between-starts">10mm</xsl:attribute>
 	</xsl:attribute-set>
 
+	<xsl:template name="refine_toc-listof-item-block-style">
+	</xsl:template>
+
 	<xsl:attribute-set name="toc-listof-item-style">
 		<xsl:attribute name="role">TOCI</xsl:attribute>
 		<xsl:attribute name="text-align-last">justify</xsl:attribute>
 		<xsl:attribute name="margin-left">12mm</xsl:attribute>
 		<xsl:attribute name="text-indent">-12mm</xsl:attribute>
 	</xsl:attribute-set>
+
+	<xsl:template name="refine_toc-listof-item-style">
+	</xsl:template>
 
 	<xsl:template name="processPrefaceSectionsDefault_Contents">
 		<xsl:variable name="nodes_preface_">
@@ -12162,23 +12523,55 @@
 	<!-- Ruby text (CJK languages) rendering -->
 	<!-- ===================================== -->
 	<!-- ===================================== -->
+
+	<xsl:attribute-set name="ruby-style">
+		<xsl:attribute name="text-indent">0mm</xsl:attribute>
+		<xsl:attribute name="last-line-end-indent">0mm</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_ruby-style">
+		<xsl:if test="not(ancestor::mn:ruby)">
+			<xsl:attribute name="alignment-baseline">central</xsl:attribute>
+		</xsl:if>
+		<xsl:variable name="rt_text" select="mn:rt"/>
+		<xsl:variable name="rb_text" select=".//mn:rb[not(mn:ruby)]"/>
+		<!-- Example: width="2em"  -->
+		<xsl:variable name="text_rt_width" select="java:org.metanorma.fop.Util.getStringWidthByFontSize($rt_text, $font_main, 6)"/>
+		<xsl:variable name="text_rb_width" select="java:org.metanorma.fop.Util.getStringWidthByFontSize($rb_text, $font_main, 10)"/>
+		<xsl:variable name="text_width">
+			<xsl:choose>
+				<xsl:when test="$text_rt_width &gt;= $text_rb_width"><xsl:value-of select="$text_rt_width"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="$text_rb_width"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:attribute name="width"><xsl:value-of select="$text_width div 10"/>em</xsl:attribute>
+	</xsl:template> <!-- refine_ruby-style -->
+
+	<xsl:attribute-set name="rb-style">
+		<xsl:attribute name="line-height">1em</xsl:attribute>
+		<xsl:attribute name="text-align">center</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_rb-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="rt-style">
+		<xsl:attribute name="font-size">0.5em</xsl:attribute>
+		<xsl:attribute name="text-align">center</xsl:attribute>
+		<xsl:attribute name="line-height">1.2em</xsl:attribute>
+		<xsl:attribute name="space-before">-1.4em</xsl:attribute>
+		<xsl:attribute name="space-before.conditionality">retain</xsl:attribute>
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_rt-style">
+		<xsl:if test="ancestor::mn:ruby[last()]//mn:ruby or     ancestor::mn:rb">
+			<xsl:attribute name="space-before">0em</xsl:attribute>
+		</xsl:if>
+	</xsl:template>
+
 	<xsl:template match="mn:ruby">
-		<fo:inline-container text-indent="0mm" last-line-end-indent="0mm">
-			<xsl:if test="not(ancestor::mn:ruby)">
-				<xsl:attribute name="alignment-baseline">central</xsl:attribute>
-			</xsl:if>
-			<xsl:variable name="rt_text" select="mn:rt"/>
-			<xsl:variable name="rb_text" select=".//mn:rb[not(mn:ruby)]"/>
-			<!-- Example: width="2em"  -->
-			<xsl:variable name="text_rt_width" select="java:org.metanorma.fop.Util.getStringWidthByFontSize($rt_text, $font_main, 6)"/>
-			<xsl:variable name="text_rb_width" select="java:org.metanorma.fop.Util.getStringWidthByFontSize($rb_text, $font_main, 10)"/>
-			<xsl:variable name="text_width">
-				<xsl:choose>
-					<xsl:when test="$text_rt_width &gt;= $text_rb_width"><xsl:value-of select="$text_rt_width"/></xsl:when>
-					<xsl:otherwise><xsl:value-of select="$text_rb_width"/></xsl:otherwise>
-				</xsl:choose>
-			</xsl:variable>
-			<xsl:attribute name="width"><xsl:value-of select="$text_width div 10"/>em</xsl:attribute>
+		<fo:inline-container xsl:use-attribute-sets="ruby-style">
+			<xsl:call-template name="refine_ruby-style"/>
 
 			<xsl:choose>
 				<xsl:when test="ancestor::mn:ruby">
@@ -12196,17 +12589,14 @@
 	</xsl:template>
 
 	<xsl:template match="mn:rb">
-		<fo:block line-height="1em" text-align="center"><xsl:apply-templates/></fo:block>
+		<fo:block xsl:use-attribute-sets="rb-style"><xsl:call-template name="refine_rb-style"/><xsl:apply-templates/></fo:block>
 	</xsl:template>
 
 	<xsl:template match="mn:rt">
-		<fo:block font-size="0.5em" text-align="center" line-height="1.2em" space-before="-1.4em" space-before.conditionality="retain"> <!--  -->
-			<xsl:if test="ancestor::mn:ruby[last()]//mn:ruby or      ancestor::mn:rb">
-				<xsl:attribute name="space-before">0em</xsl:attribute>
-			</xsl:if>
+		<fo:block xsl:use-attribute-sets="rt-style"> <!--  -->
+			<xsl:call-template name="refine_rt-style"/>
 			<xsl:apply-templates/>
 		</fo:block>
-
 	</xsl:template>
 
 	<!-- ===================================== -->
@@ -12214,6 +12604,18 @@
 	<!-- END: Ruby text (CJK languages) rendering -->
 	<!-- ===================================== -->
 	<!-- ===================================== -->
+
+	<xsl:attribute-set name="annex-title-style">
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_annex-title-style">
+	</xsl:template>
+
+	<xsl:attribute-set name="p-zzSTDTitle1-style">
+	</xsl:attribute-set>
+
+	<xsl:template name="refine_p-zzSTDTitle1-style">
+	</xsl:template>
 
 	<xsl:template name="processPrefaceSectionsDefault">
 		<xsl:for-each select="/*/mn:preface/*[not(self::mn:note or self::mn:admonition)]">
