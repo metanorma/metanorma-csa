@@ -11,16 +11,6 @@ module IsoDoc
         Metanorma::Csa.configuration
       end
 
-      def title(isoxml, _out)
-        main = isoxml.at(ns("//bibdata/title[@language='en']"))
-          &.children&.to_xml
-        set(:doctitle, main)
-      end
-
-      def subtitle(_isoxml, _out)
-        nil
-      end
-
       def author(isoxml, _out)
         set(:tc, "XXXX")
         tc = isoxml.at(ns("//bibdata/contributor[role/description = 'committee']/organization/subdivision[@type = 'Technical committee']/name"))
