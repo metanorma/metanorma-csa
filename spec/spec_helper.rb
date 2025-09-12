@@ -105,7 +105,7 @@ BLANK_HDR = <<~"HDR"
   <?xml version="1.0" encoding="UTF-8"?>
   <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
   <bibdata type="standard">
-   <title language="en" format="text/plain">Document title</title>
+   <title language="en" type="main">Document title</title>
    <docidentifier primary="true" type='CSA'>:#{Time.now.year}</docidentifier>
     <contributor>
       <role type="author"/>

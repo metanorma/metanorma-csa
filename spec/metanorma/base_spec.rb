@@ -76,7 +76,7 @@ RSpec.describe Metanorma::Csa do
     output = <<~OUTPUT
       <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
       <bibdata type="standard">
-      <title language="en" format="text/plain">Main Title</title>
+      <title language="en" type="main">Main Title</title>
       <docidentifier primary="true" type="CSA">1000(wd):2001</docidentifier>
       <docnumber>1000</docnumber>
         <contributor>
@@ -208,7 +208,7 @@ RSpec.describe Metanorma::Csa do
     output = <<~OUTPUT
         <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
         <bibdata type="standard">
-          <title language="en" format="text/plain">Main Title</title>
+          <title language="en" type="main">Main Title</title>
           <docidentifier primary="true" type="CSA">1000(cd):#{Time.now.year}</docidentifier>
           <docnumber>1000</docnumber>
           <contributor>
@@ -292,7 +292,7 @@ RSpec.describe Metanorma::Csa do
     output = <<~OUTPUT
         <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
         <bibdata type="standard">
-          <title language="en" format="text/plain">Main Title</title>
+          <title language="en" type="main">Main Title</title>
           <docidentifier primary="true" type="CSA">1000(d):#{Time.now.year}</docidentifier>
           <docnumber>1000</docnumber>
           <contributor>
@@ -377,7 +377,7 @@ RSpec.describe Metanorma::Csa do
     output = <<~OUTPUT
         <metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="#{Metanorma::Csa::VERSION}" flavor="csa">
         <bibdata type="standard">
-          <title language="en" format="text/plain">Main Title</title>
+          <title language="en" type="main">Main Title</title>
           <docidentifier primary="true" type="CSA">1000:2001</docidentifier>
           <docnumber>1000</docnumber>
           <contributor>
