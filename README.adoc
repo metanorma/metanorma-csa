@@ -6,6 +6,9 @@ image:https://github.com/metanorma/metanorma-csa/workflows/rake/badge.svg["Build
 image:https://img.shields.io/github/issues-pr-raw/metanorma/metanorma-csa.svg["Pull Requests", link="https://github.com/metanorma/metanorma-csa/pulls"]
 image:https://img.shields.io/github/commits-since/metanorma/metanorma-csa/latest.svg["Commits since latest",link="https://github.com/metanorma/metanorma-csa/releases"]
 
+*NOTE: This gem is no longer supported. The Cloud Security Alliance is now supported by Metanorma
+as a taste, rather than as a separate flavour: see https://github.com/metanorma/metanorma-taste[]*
+
 == Functionality
 
 This gem processes https://www.metanorma.com/[Metanorma documents] following
