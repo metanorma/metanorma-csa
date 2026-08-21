@@ -20,6 +20,9 @@ module Metanorma
   end
 end
 
+require "metanorma/csa/registers"
+Metanorma::Csa::Registers.setup
+
 # OCP adoption: ONE registration in the metanorma-core flavor table
 require "metanorma-core"
 require "metanorma/iso/html"
