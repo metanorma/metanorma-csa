@@ -10,4 +10,3 @@ if defined? Metanorma::Registry
   require_relative "metanorma/csa"
   Metanorma::Registry.instance.register(Metanorma::Csa::Processor)
 end
-require "metanorma/csa/document"
