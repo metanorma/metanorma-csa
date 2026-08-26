@@ -9,6 +9,7 @@ end
 
 module Metanorma
   module Csa::Document
+    autoload :Root, "metanorma/csa/document/root"
   end
 end
 
@@ -32,5 +33,8 @@ Metanorma::Core::Flavors.register(Metanorma::Core::Flavor.new(
   gem: "metanorma-csa",
   model_root: Metanorma::Csa::Document::Root,
   pubid_module: :"Pubid::Csa",
-  renderers: { html: Metanorma::Iso::Html::Renderer },
+  renderers: { html: lambda do |_document, **_options|
+    require "metanorma/iso/html"
+    Metanorma::Iso::Html::Renderer
+  end },
 ))
