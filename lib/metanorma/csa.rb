@@ -1,5 +1,6 @@
 require "metanorma-core"
 require "metanorma-generic"
+require "metanorma/iso/document/models"
 require_relative './csa/processor'
 
 module Metanorma
