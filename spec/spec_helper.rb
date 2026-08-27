@@ -70,7 +70,9 @@ HDR
 
 def boilerplate_read(file)
   HTMLEntities.new.decode(
-    Metanorma::Csa::Converter.new(:csa, {}).boilerplate_file_restructure(file)
+    Metanorma::Generic::Cleanup
+  .new(Metanorma::Csa::Converter.new(:csa, {}))
+  .boilerplate_file_restructure(file)
     .to_xml.gsub(/<(\/)?sections>/, "<\\1boilerplate>")
       .gsub(/ id="_[^"]+"/, " id='_'"),
   )

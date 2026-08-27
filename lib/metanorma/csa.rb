@@ -1,5 +1,6 @@
-require "metanorma"
+require "metanorma-core"
 require "metanorma-generic"
+require "metanorma/iso/document/models"
 require_relative './csa/processor'
 
 module Metanorma
@@ -26,6 +27,8 @@ module Metanorma
     end
 
     configure {}
+    autoload :Document, "metanorma/csa/document"
+    autoload :Cleanup, "metanorma/csa/cleanup"
   end
 end
 Metanorma::Registry.instance.register(Metanorma::Csa::Processor)

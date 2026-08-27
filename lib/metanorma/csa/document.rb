@@ -1,0 +1,40 @@
+# frozen_string_literal: true
+
+require "metanorma/standoc"
+require "metanorma/iso/document/models"
+module Metanorma
+  module Csa
+  end
+end
+
+module Metanorma
+  module Csa::Document
+    autoload :Root, "metanorma/csa/document/root"
+  end
+end
+
+module Metanorma
+  existing = defined?(Metanorma::CsaDocument) && Metanorma::CsaDocument
+  if !existing.equal?(Metanorma::Csa::Document)
+    Metanorma.send(:remove_const, :CsaDocument) if existing
+    CsaDocument = Metanorma::Csa::Document
+  end
+end
+
+require "metanorma/csa/registers"
+Metanorma::Csa::Registers.setup
+
+# OCP adoption: ONE registration in the metanorma-core flavor table
+require "metanorma-core"
+require "metanorma/iso/html"
+
+Metanorma::Core::Flavors.register(Metanorma::Core::Flavor.new(
+  name: :csa,
+  gem: "metanorma-csa",
+  model_root: Metanorma::Csa::Document::Root,
+  pubid_module: :"Pubid::Csa",
+  renderers: { html: lambda do |_document, **_options|
+    require "metanorma/iso/html"
+    Metanorma::Iso::Html::Renderer
+  end },
+))
