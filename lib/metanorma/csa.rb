@@ -1,4 +1,5 @@
 require "metanorma"
+require "metanorma/csa/document"
 require "metanorma-generic"
 require_relative './csa/processor'
 
