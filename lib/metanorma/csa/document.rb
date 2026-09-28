@@ -27,9 +27,9 @@ module Metanorma
   end
 end
 
-if defined?(Metanorma::Registers::Setup.setup_csa_register)
-  Metanorma::Registers::Setup.setup_csa_register
-end
+require_relative "registers"
+
+Metanorma::Csa::Registers.setup
 
 module Metanorma
   deprecate_constant :CsaDocument
