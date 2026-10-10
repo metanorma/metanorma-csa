@@ -12,7 +12,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0'
-      - run: bundle lock --add-platform ruby aarch64-darwin arm64-darwin x86_64-darwin aarch64-linux x86_64-linux x64-mingw-ucrt x64-mingw32
+      - run: bundle lock --update --add-platform ruby aarch64-darwin arm64-darwin x86_64-darwin aarch64-linux x86_64-linux x64-mingw-ucrt x64-mingw32
       - name: Commit refreshed lock
         run: |
           git config user.name "lockbot"
