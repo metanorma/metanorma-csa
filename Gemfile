@@ -10,7 +10,7 @@ gem "metanorma-mirror", "~> 1.0"
 # Revert each pin once the corresponding PR merges:
 #   - https://github.com/metanorma/metanorma-standoc/pull/1232
 #   - https://github.com/metanorma/metanorma-document/pull/45
-gem "metanorma-standoc", github: "metanorma/metanorma-standoc", branch: "feat/term-grammar-coverage" # TEMPORARY audit chain (stacked)
+gem "metanorma-standoc", github: "metanorma/metanorma-standoc", branch: "main" # TEMPORARY audit chain (stacked)
 gem "metanorma-document", github: "metanorma/metanorma-document", branch: "main" # TEMPORARY audit chain
 gem "metanorma-generic", github: "metanorma/metanorma-generic", branch: "feat/move-generic-document" # TEMPORARY audit chain: the migrated tree
 gem "isodoc", github: "metanorma/isodoc", branch: "main" # merged as #825
