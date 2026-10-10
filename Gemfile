@@ -21,3 +21,4 @@ eval_gemfile("Gemfile.devel") rescue nil
 
 gem "metanorma-iso", github: "metanorma/metanorma-iso", branch: "feat/model-validation-migration" # TEMPORARY audit chain
 gem "metanorma-core", github: "metanorma/metanorma-core", branch: "feat/flavor-table" # TEMPORARY audit chain
+gem "relaton", "= 3.0.0.pre.alpha.4"
