@@ -13,9 +13,10 @@ RSpec.describe Metanorma::Csa::Processor do
   end
 
   it "registers output formats against metanorma" do
-    expect(processor.output_formats.sort.to_s).to eq <<~OUTPUT
-      [[:doc, "doc"], [:html, "html"], [:pdf, "pdf"], [:presentation, "presentation.xml"], [:rxl, "rxl"], [:xml, "xml"]]
-    OUTPUT
+    expect(processor.output_formats.sort).to eq(
+      [[:doc, "doc"], [:html, "html"], [:pdf, "pdf"],
+       [:presentation, "presentation.xml"], [:rxl, "rxl"], [:xml, "xml"]],
+    )
   end
 
   it "registers version against metanorma" do
