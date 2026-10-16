@@ -13,7 +13,7 @@ RSpec.describe Metanorma::Csa::Processor do
   end
 
   it "registers output formats against metanorma" do
-    expect(processor.output_formats.sort.to_s).to be_equivalent_to <<~OUTPUT
+    expect(processor.output_formats.sort.to_s).to eq <<~OUTPUT
       [[:doc, "doc"], [:html, "html"], [:pdf, "pdf"], [:presentation, "presentation.xml"], [:rxl, "rxl"], [:xml, "xml"]]
     OUTPUT
   end
@@ -31,8 +31,8 @@ RSpec.describe Metanorma::Csa::Processor do
       <sections/>
       </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(processor.input_to_isodoc(input, nil))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(processor.input_to_isodoc(input, nil)))
+      .to be_xml_equivalent_to output
   end
 
   it "generates HTML from IsoDoc XML" do
@@ -53,7 +53,7 @@ RSpec.describe Metanorma::Csa::Processor do
     test_html = File.read("test.html", encoding: "utf-8")
       .gsub(/^.*<main/m, "<main")
       .gsub(%r{</main>.*}m, "</main>")
-    expect(Canon.format_xml(strip_guid(test_html))).to be_equivalent_to Canon.format_xml(strip_guid(<<~OUTPUT))
+    expect(strip_guid(test_html)).to be_xml_equivalent_to strip_guid(<<~OUTPUT)
       <main class="main-section"><button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
         <div id="H"><h1 id="_">
              <a class="anchor" href="#H"/>

@@ -11,7 +11,7 @@ RSpec.describe Metanorma::Csa do
   it "processes a blank document" do
     input = Asciidoctor.convert(ASCIIDOC_BLANK_HDR, backend: :csa,
                                                     header_footer: true)
-    expect(Canon.format_xml(strip_guid(input))).to be_equivalent_to Canon.format_xml(<<~"OUTPUT")
+    expect(strip_guid(input)).to be_xml_equivalent_to <<~"OUTPUT"
       #{BLANK_HDR}
       <sections/>
       </metanorma>
@@ -33,8 +33,8 @@ RSpec.describe Metanorma::Csa do
       <sections/>
       </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
     expect(File.exist?("test.html")).to be true
     expect(File.exist?("test.pdf")).to be true
   end
@@ -165,29 +165,19 @@ RSpec.describe Metanorma::Csa do
                      <semantic-metadata>
          <stage-published>false</stage-published>
       </semantic-metadata>
-           <presentation-metadata>
-             <name>TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>HTML TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>DOC TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>PDF TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
+<presentation-metadata>
+           <toc-heading-levels>2</toc-heading-levels>
+           <html-toc-heading-levels>2</html-toc-heading-levels>
+           <doc-toc-heading-levels>2</doc-toc-heading-levels>
+           <pdf-toc-heading-levels>2</pdf-toc-heading-levels>
+         </presentation-metadata>
          </metanorma-extension>
           #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
       <sections/>
       </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
   end
 
   it "processes committee-draft" do
@@ -249,29 +239,19 @@ RSpec.describe Metanorma::Csa do
                        <semantic-metadata>
          <stage-published>false</stage-published>
       </semantic-metadata>
-           <presentation-metadata>
-             <name>TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>HTML TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>DOC TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>PDF TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
+<presentation-metadata>
+           <toc-heading-levels>2</toc-heading-levels>
+           <html-toc-heading-levels>2</html-toc-heading-levels>
+           <doc-toc-heading-levels>2</doc-toc-heading-levels>
+           <pdf-toc-heading-levels>2</pdf-toc-heading-levels>
+         </presentation-metadata>
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
         <sections/>
         </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
   end
 
   it "processes draft-standard" do
@@ -333,29 +313,19 @@ RSpec.describe Metanorma::Csa do
                 <semantic-metadata>
          <stage-published>false</stage-published>
       </semantic-metadata>
-           <presentation-metadata>
-             <name>TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>HTML TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>DOC TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>PDF TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
+<presentation-metadata>
+           <toc-heading-levels>2</toc-heading-levels>
+           <html-toc-heading-levels>2</html-toc-heading-levels>
+           <doc-toc-heading-levels>2</doc-toc-heading-levels>
+           <pdf-toc-heading-levels>2</pdf-toc-heading-levels>
+         </presentation-metadata>
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement")}
         <sections/>
         </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
   end
 
   it "ignores unrecognised status" do
@@ -418,29 +388,19 @@ RSpec.describe Metanorma::Csa do
                        <semantic-metadata>
          <stage-published>false</stage-published>
       </semantic-metadata>
-           <presentation-metadata>
-             <name>TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>HTML TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>DOC TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
-           <presentation-metadata>
-             <name>PDF TOC Heading Levels</name>
-             <value>2</value>
-           </presentation-metadata>
+<presentation-metadata>
+           <toc-heading-levels>2</toc-heading-levels>
+           <html-toc-heading-levels>2</html-toc-heading-levels>
+           <doc-toc-heading-levels>2</doc-toc-heading-levels>
+           <pdf-toc-heading-levels>2</pdf-toc-heading-levels>
+         </presentation-metadata>
          </metanorma-extension>
       #{BOILERPLATE.sub(/<legal-statement/, "#{LICENSE_BOILERPLATE}\n<legal-statement").sub(/#{Date.today.year} Cloud Security Alliance/, '2001 Cloud Security Alliance')}
         <sections/>
         </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
   end
 
   it "processes figures" do
@@ -468,8 +428,8 @@ RSpec.describe Metanorma::Csa do
        </sections>
        </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
   end
 
   it "strips inline header" do
@@ -491,8 +451,8 @@ RSpec.describe Metanorma::Csa do
          </clause></sections>
          </metanorma>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(Asciidoctor.convert(input, args))))
-      .to be_equivalent_to Canon.format_xml(output)
+    expect(strip_guid(Asciidoctor.convert(input, args)))
+      .to be_xml_equivalent_to output
   end
 
   it "uses default fonts" do

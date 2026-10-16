@@ -8,9 +8,11 @@ end
 require "bundler/setup"
 require "metanorma-csa"
 require "rspec/matchers"
-require "equivalent-xml"
 require "htmlentities"
 require "canon"
+require "canon/rspec_matchers"
+
+Canon::Config.instance.profile = :metanorma
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -69,8 +71,10 @@ VALIDATING_BLANK_HDR = <<~HDR
 HDR
 
 def boilerplate_read(file)
+  conv = Metanorma::Csa::Converter.new(:csa, {})
+  cl = Metanorma::Csa::Cleanup.new(conv)
   HTMLEntities.new.decode(
-    Metanorma::Csa::Converter.new(:csa, {}).boilerplate_file_restructure(file)
+    cl.boilerplate_file_restructure(file)
     .to_xml.gsub(/<(\/)?sections>/, "<\\1boilerplate>")
       .gsub(/ id="_[^"]+"/, " id='_'"),
   )
@@ -184,3 +188,4 @@ def mock_pdf
     FileUtils.cp(url.gsub(/"/, ""), output.gsub(/"/, ""))
   end
 end
+Dir[File.join(__dir__, "support/**/*.rb")].each { |f| require f }
