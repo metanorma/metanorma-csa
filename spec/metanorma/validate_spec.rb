@@ -80,6 +80,8 @@ RSpec.describe Metanorma::Csa do
       :docfile: test.adoc
       :no-pdf:
 
+      == Clause
+
       [align=mid-air]
       Para
     INPUT

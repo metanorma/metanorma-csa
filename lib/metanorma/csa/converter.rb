@@ -43,25 +43,22 @@ module Metanorma
                                      nil, false, "#{@filename}.pdf")
       end
 
+      CSA_LOG_MESSAGES = {
+        # rubocop:disable Naming/VariableNumber
+        "CSA_1": { category: "Document Attributes",
+                   error: "%s is not a recognised role",
+                   severity: 2 },
+        # rubocop:enable Naming/VariableNumber
+      }.freeze
+
+      def log_messages
+        super.merge(CSA_LOG_MESSAGES)
+      end
+
       def sections_cleanup(xml)
         super
         xml.xpath("//*[@inline-header]").each do |h|
           h.delete("inline-header")
-        end
-      end
-
-      def bibdata_validate(doc)
-        super
-        role_validate(doc)
-      end
-
-      def role_validate(doc)
-        doc&.xpath("//bibdata/contributor/role[description]")&.each do |r|
-          r["type"] == "author" or next
-          role = r.at("./description").text
-          %w{full-author contributor staff reviewer}.include?(role) or
-            @log.add("Document Attributes", nil,
-                     "#{role} is not a recognised role")
         end
       end
 
