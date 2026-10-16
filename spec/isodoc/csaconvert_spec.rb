@@ -88,7 +88,7 @@ RSpec.describe IsoDoc::Csa do
     INPUT
 
     expect(metadata(csdc.info(docxml, nil)))
-      .to be_equivalent_to(
+      .to eq(
         { accesseddate: "XXX",
           adapteddate: "XXX",
           agency: "Ribose",
@@ -530,10 +530,10 @@ RSpec.describe IsoDoc::Csa do
          </bibliography>
       </csa-standard>
     OUTPUT
-    expect(Canon.format_xml(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
       .convert("test", input, true))))
-      .to be_equivalent_to Canon.format_xml(output)
+      .to be_xml_equivalent_to output
   end
 
   it "injects JS into blank html" do
@@ -639,10 +639,10 @@ RSpec.describe IsoDoc::Csa do
           </preface>
        </iso-standard>
     INPUT
-    expect(Canon.format_xml(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(strip_guid(IsoDoc::Csa::PresentationXMLConvert
         .new(presxml_options)
         .convert("test", input, true))))
-      .to be_equivalent_to Canon.format_xml(presxml)
+      .to be_xml_equivalent_to presxml
   end
 
   it "processes ordered lists" do
@@ -755,9 +755,9 @@ RSpec.describe IsoDoc::Csa do
          </preface>
       </iso-standard>
     INPUT
-    expect(Canon.format_xml(strip_guid(IsoDoc::Csa::PresentationXMLConvert
+    expect(strip_guid(IsoDoc::Csa::PresentationXMLConvert
       .new(presxml_options)
       .convert("test", input, true))))
-      .to be_equivalent_to Canon.format_xml(presxml)
+      .to be_xml_equivalent_to presxml
   end
 end
