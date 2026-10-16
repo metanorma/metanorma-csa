@@ -137,10 +137,8 @@ RSpec.describe Metanorma::Csa do
           </organization>
         </contributor>
           <edition>2</edition>
-      <version>
-        <revision-date>2000-01-01</revision-date>
-        <draft>3.4</draft>
-      </version>
+      <date type="updated"><on>2000-01-01</on></date>
+      <version>3.4</version>
         <language>en</language>
         <script>Latn</script>
         <status>
