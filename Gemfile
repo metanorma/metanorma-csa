@@ -7,12 +7,12 @@ git_source(:github) { |repo| "https://github.com/#{repo}" }
 gemspec
 
 # Canonical line: the relaton 3 finals over the α engine line.
-gem "metanorma", "~> 2.5.6.pre.alpha"
+gem "metanorma", "~> 2.5"
 gem "metanorma-generic", github: "metanorma/metanorma-generic", branch: "main"
-gem "metanorma-standoc", "~> 3.5.1.pre.alpha"
-gem "metanorma-core", "~> 0.2.5.pre.alpha" # published flavor/taste table (metanorma-core#18)
-gem "metanorma-document", "~> 0.5.2.pre.alpha"
-gem "isodoc", "~> 3.7.4.pre.alpha"
+gem "metanorma-standoc", "~> 3.5"
+gem "metanorma-core", "~> 0.2.7" # published flavor/taste table (metanorma-core#18)
+gem "metanorma-document", "~> 0.5.4"
+gem "isodoc", "~> 3.7.4"
 gem "metanorma-mirror", github: "metanorma/metanorma-mirror", branch: "main"
 gem "metanorma-plugin-lutaml", github: "metanorma/metanorma-plugin-lutaml", branch: "main"
 gem "relaton", "~> 3.0"
